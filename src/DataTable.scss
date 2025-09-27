@@ -1,0 +1,82 @@
+.data-table {
+  @apply relative table-fixed b-1 border-collapse outline-0;
+
+  td, th {
+    @apply px-2 py-.5 lh-[28px] outline-0 box-border;
+    text-align: inherit;
+  }
+
+  &--border {
+    @apply outline-(1 solid #ebeef5);
+    th, td {
+      @apply b-(0 solid #ebeef5) b-r-1 b-b-1;
+    }
+  }
+}
+
+.range-selected {
+  @apply relative;
+  &::before {
+    @apply content-[''] absolute inset-0 bg-blue/20 b-(0px solid blue) pointer-events-none;
+  }
+
+  &-l { @apply before:b-l-(2px) }
+  &-r { @apply before:b-r-(2px) }
+  &-t { @apply before:b-t-(2px) }
+  &-b { @apply before:b-b-(2px) }
+}
+
+.row-range-highlight, .col-range-highlight {
+  @apply relative;
+  &::before {
+    @apply content-[''] absolute inset-0 bg-gray/25;
+  }
+}
+
+.sticky-header {
+  @apply sticky top-0 bg-#fff z-9;
+  &::after {
+    @apply content-[''] absolute top-full w-full h-[10px] pointer-events-none;
+    box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, .15);
+  }
+}
+
+.fixed-left, .fixed-right {
+  @apply sticky z-1 bg-#fff;
+  &::after {
+    @apply content-[''] absolute top-0 w-[10px] h-full pointer-events-none;
+  }
+}
+
+.fixed-left::after {
+  @apply left-full;
+  box-shadow: inset 10px 0 10px -10px rgba(0, 0, 0, .15);
+}
+
+.fixed-right::after {
+  @apply right-full;
+  box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, .15);
+}
+
+.copied .range-selected {
+  &::before { border-style: dashed; }
+}
+
+// 
+.data-table.virtual {
+  @apply block of-auto w-fit;
+
+  thead { @apply block w-fit [&>tr]-(flex) [&>tr>th]-(block flex-[0_0_auto]); }
+  tbody { @apply block w-fit [&>tr]-(flex) [&>tr>td]-(block flex-[0_0_auto]); }
+}
+
+.icon-clickable { 
+  @apply flex justify-center items-center p-.5 w-5 h-5 box-border rd-1 hover:bg-gray/30 [&>svg]:(w-full h-full);
+}
+
+input[type="checkbox"].you-checkbox {
+  @apply relative size-4 m-1 rd-1 c-#2196f3 b-(2 solid current) outline-offset--0 focus:outline-(4 solid #2196f3/40) cusor-pointer appearance-none checked:bg-current;
+  &:checked::after {
+    @apply content-["✓"] absolute top-50% left-50% translate--50% text-3 c-#fff z-1;
+  }
+}
