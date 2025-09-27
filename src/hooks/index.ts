@@ -167,7 +167,7 @@ export function useTinykeys(el: MaybeAccessor<HTMLElement | undefined>, handlers
 export function useHistory([val, setVal]) {
   let bool = 1
   const state = createMutable({ index: -1, history: [] as any[] })
-  const clear = () => (state.index = -1, state.history = [])
+  const clear = () => (state.index = 0, state.history = [val()])
   const canUndo = () => state.index > 0
   const canRedo = () => state.index < state.history.length - 1
   const undo = () => canUndo() && ((bool = 0) || setVal(state.history[--state.index]))

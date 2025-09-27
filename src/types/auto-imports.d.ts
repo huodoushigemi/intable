@@ -9,4 +9,5 @@ declare global {
   const ILucideChevronRight: typeof import('~icons/lucide/chevron-right.jsx')['default']
   const ILucidePlus: typeof import('~icons/lucide/plus.jsx')['default']
   const ILucideX: typeof import('~icons/lucide/x.jsx')['default']
+  const IMyLoading: typeof import('~icons/my/loading.jsx')['default']
 }

@@ -1,10 +1,9 @@
-import { createMutable, unwrap } from 'solid-js/store'
+import { batch } from 'solid-js'
+import { unwrap } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
 import { useHistory, useTinykeys } from '@/hooks'
 import { type Plugin } from '../xxx'
-import { log } from '@/utils'
-import { batch, untrack } from 'solid-js'
 
 declare module '../xxx' {
   interface TableProps {

@@ -5,7 +5,7 @@ import { clamp, difference, identity, isEqual, mapValues, sumBy } from 'es-toolk
 import { toReactive, useMemo, usePointerDrag } from '@/hooks'
 import { useSplit } from '@/components/Split'
 
-import './DataTable.scss'
+import './styles/index.scss'
 import { log, unFn } from '@/utils'
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { CellSelectionPlugin } from './plugins/CellSelectionPlugin'
