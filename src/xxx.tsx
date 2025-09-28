@@ -17,6 +17,7 @@ import { EditablePlugin } from './plugins/EditablePlugin'
 import { RenderPlugin } from './plugins/RenderPlugin'
 import { HistoryPlugin } from './plugins/HistoryPlugin'
 import { captureStoreUpdates } from '@solid-primitives/deep'
+import { MenuPlugin } from './plugins/MenuPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2
@@ -335,4 +336,5 @@ export const defaultsPlugins = [
   // RowGroupPlugin,
   EditablePlugin,
   HistoryPlugin,
+  MenuPlugin,
 ]
