@@ -30,7 +30,7 @@ type ProcessProps = {
   [K in keyof TableProps]?: (props: TableProps2, ctx: { store: TableStore }) => TableProps[K]
 }
 
-export type Plugin = {
+export interface Plugin {
   priority?: number
   store?: (store: TableStore) => Partial<TableStore>
   processProps?: ProcessProps
@@ -89,6 +89,7 @@ export interface TableStore extends Obj {
   internal: symbol
   props?: TableProps
   rawProps: TableProps
+  plugins: Plugin[]
 }
 
 export const Table = (props: TableProps) => {
@@ -96,8 +97,10 @@ export const Table = (props: TableProps) => {
 
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
 
-  const store = createMutable({}) as TableStore
-  store.rawProps = props
+  const store: TableStore = createMutable({
+    rawProps: props,
+    get plugins() { return plugins() }
+  })
 
   const owner = getOwner()!
   createComputed((old: Plugin[]) => {

@@ -1,12 +1,11 @@
-import { batch, createMemo, createSignal } from 'solid-js'
-import { createMutable, unwrap } from 'solid-js/store'
+import { batch, createEffect, createMemo, createSignal, mapArray } from 'solid-js'
+import { createMutable, unwrap, type Store } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
 import { useHistory, useMemoAsync, useTinykeys } from '@/hooks'
 import { type Plugin } from '../xxx'
 import { Menu } from '@/components/Menu'
 import { Floating } from '@/components/Popover'
-import { offset } from 'floating-ui-solid'
 import { autoPlacement, computePosition, detectOverflow, flip, shift } from '@floating-ui/dom'
 import { log } from '@/utils'
 
@@ -16,6 +15,9 @@ declare module '../xxx' {
   }
   interface TableStore {
     
+  }
+  interface Plugin {
+    menu?: (store: TableStore) => any[]
   }
 }
 
@@ -28,6 +30,9 @@ export const MenuPlugin: Plugin = {
       // let el: HTMLBodyElement
       const [el, setEl] = createSignal<HTMLElement>()
       const [menuEl, setMenuEl] = createSignal<HTMLElement>()
+
+      const _menus = mapArray(() => store.plugins || [], (o) => createMemo(() => o.menu?.(store)))
+      const menus = createMemo(() => _menus().flatMap(e => e() || []))
 
       // useTinykeys(() => el, {
       //   'Control+Z': () => store.history.undo(),
@@ -61,17 +66,7 @@ export const MenuPlugin: Plugin = {
       o = combineProps({ ref: setEl, tabindex: -1, onContextMenu }, o)
       return (
         <Table {...o}>
-          <Menu ref={setMenuEl} style={style()} items={[
-            { label: 'xxx' },
-            { label: 'xxx' },
-            { label: 'xxx' },
-            { label: 'xxx' },
-            { label: 'xxx' },
-            { label: 'xxx' },
-            { label: 'xxx' },
-            { label: 'xxx' },
-            { label: 'xxx' },
-          ]} />
+          <Menu ref={setMenuEl} style={style()} items={menus()} />
           {o.children}
         </Table>
       )
@@ -80,4 +75,18 @@ export const MenuPlugin: Plugin = {
       get style() { return o.data[o.col.id] != store.unsaveData[o.y][o.col.id] ? `background: #80808030` : `` }
     })
   },
+  menu: (store) => [
+    {
+      label: 'Undo',
+      cb: () => store.history.undo(),
+    },
+    {
+      label: 'Redo',
+      cb: () => store.history.redo(),
+    },
+    {
+      label: 'Save',
+      cb: () => store.unsaveData = structuredClone(unwrap(store.raw))
+    }
+  ]
 }
