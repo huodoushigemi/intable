@@ -1,4 +1,4 @@
-import { batch, createEffect, createMemo, createSignal, mapArray } from 'solid-js'
+import { batch, createEffect, createMemo, createSignal, mapArray, on } from 'solid-js'
 import { createMutable, unwrap, type Store } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
@@ -34,22 +34,23 @@ export const MenuPlugin: Plugin = {
       const _menus = mapArray(() => store.plugins || [], (o) => createMemo(() => o.menu?.(store)))
       const menus = createMemo(() => _menus().flatMap(e => e() || []))
 
-      // useTinykeys(() => el, {
-      //   'Control+Z': () => store.history.undo(),
-      //   'Control+Y': () => store.history.redo(),
-      //   'Control+S': () => store.unsaveData = structuredClone(unwrap(store.rawProps.data)),
-      // })
-      const pos = createMutable({ x: 0, y: 0 })
+      const [pos, setPos] = createSignal<{ x: number; y: number }>()
       function onContextMenu(e: PointerEvent) {
         e.preventDefault()
-        pos.x = e.x
-        pos.y = e.y
+        setPos({ x: e.x, y: e.y })
       }
+
+      createEffect(() => {
+        if (pos()) {
+          const sss = createMemo(() => JSON.stringify(store.selected))
+          createEffect(on(sss, () => setPos(), { defer: true }))
+        }
+      })
 
       const style = useMemoAsync(() => {
         const mel = menuEl()
         if (!mel) return
-        const p = DOMRect.fromRect(pos)
+        const p = DOMRect.fromRect(pos())
         return computePosition({ getBoundingClientRect: () => p }, mel, {
           strategy: 'absolute',
           placement: 'top-start',
@@ -58,35 +59,43 @@ export const MenuPlugin: Plugin = {
         .then(({ x, y }) => ({
           position: 'absolute',
           transform: `translate(${x}px, ${y}px)`,
-          background: 'red',
-          'z-index': 9
+          'z-index': 10
         }))
       })
 
       o = combineProps({ ref: setEl, tabindex: -1, onContextMenu }, o)
       return (
         <Table {...o}>
-          <Menu ref={setMenuEl} style={style()} items={menus()} />
+          {pos() && <Menu ref={setMenuEl} style={style() || 'position: absolute'} items={menus()} />}
           {o.children}
         </Table>
       )
     },
-    tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
-      get style() { return o.data[o.col.id] != store.unsaveData[o.y][o.col.id] ? `background: #80808030` : `` }
-    })
   },
   menu: (store) => [
     {
-      label: 'Undo',
-      cb: () => store.history.undo(),
+      label: '新增行 ↑',
+      cb: () => {
+        const data = [...store.props?.data || []]
+        data.splice(store.selected.end[1], 0, {})
+        store.props?.onDataChange?.(data)
+      },
     },
     {
-      label: 'Redo',
-      cb: () => store.history.redo(),
+      label: '新增行 ↓',
+      cb: () => {
+        const data = [...store.props?.data || []]
+        data.splice(store.selected.end[1] + 1, 0, {})
+        store.props?.onDataChange?.(data)
+      },
     },
     {
-      label: 'Save',
-      cb: () => store.unsaveData = structuredClone(unwrap(store.raw))
+      label: '删除行',
+      cb: () => {
+        const data = [...store.rawProps?.data || []]
+        data.splice(store.selected.end[1], 1)
+        store.props?.onDataChange?.(data)
+      }
     }
   ]
 }

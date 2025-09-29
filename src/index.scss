@@ -1,0 +1,133 @@
+:root {
+  color-scheme: light;
+  --bg: #fff;
+  --menu-bg: #fff;
+  --header-bg: #f6f6f7;
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: #121212;
+  --menu-bg: #121212;
+  --header-bg: #161618;
+}
+
+body {
+  @apply bg-[--bg] m-0;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 1em;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+img, iframe {
+  // margin: 1rem 0;
+}
+
+mark {
+  padding: .1rem .3rem;
+}
+
+.col-hand {
+  --w: 4px;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  height: 100%;
+  // flex: 0 0 auto;
+  width: var(--gap);
+  cursor: w-resize;
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 100ms linear;
+
+  &:hover, &:active {
+    opacity: 1;
+  }
+
+  &::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 4px;
+    height: 100%;
+    background: rgba(gray, .5);
+  }
+
+  > .dot {
+    --w: 20px;
+    position: absolute;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+    width: calc(var(--w) * 1);
+    height: calc(var(--w) * 1);
+    
+    &:hover {
+      &::after {
+        content: '+';
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: calc(var(--w) * 1);
+        height: calc(var(--w) * 1);
+        background-color: rgba(blue, .75);
+        box-shadow: 0 4px 6px rgba(#000, .2);
+      }
+    }
+
+    &::after {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      color: #fff;
+      background-color: rgba(blue, .5);
+      border-radius: 50%;
+      transition: all 100ms;
+      cursor: pointer;
+    }
+  }
+}
+
+.li {
+  @apply relative cursor-pointer;
+  &:hover, &.hover {
+    @apply bg-gray/20;
+  }
+  &:active, &.selected, &.active {
+    &::before {
+      content: '';
+      @apply absolute inset-0 rd-inherit bg-gray/15;
+    }
+  }
+  &.disabled, &[disabled] {
+    opacity: .4;
+  }
+}
+
+.tt-menu {
+  @apply py-1 shadow-lg rd-2 space-y-.5 text-sm b-(1 solid gray/30) bg-[--menu-bg] cursor-default;
+}
+
+.tt-menu-x {
+  @apply px-1 shadow-lg rd-2 space-x-.5 text-sm b-(1 solid gray/30) bg-[--menu-bg] cursor-default;
+
+  & > .hr {
+    @apply w-[1px] my-1.5 bg-gray/30;
+  }
+}

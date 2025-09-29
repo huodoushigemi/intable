@@ -97,10 +97,10 @@ export const Table = (props: TableProps) => {
 
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
 
-  const store: TableStore = createMutable({
+  const store = createMutable({
     rawProps: props,
     get plugins() { return plugins() }
-  })
+  }) as TableStore
 
   const owner = getOwner()!
   createComputed((old: Plugin[]) => {

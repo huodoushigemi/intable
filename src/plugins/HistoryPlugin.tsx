@@ -54,7 +54,7 @@ export const HistoryPlugin: Plugin = {
       return <Table {...o} />
     },
     tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
-      get style() { return o.data[o.col.id] != store.unsaveData[o.y][o.col.id] ? `background: #80808030` : `` }
+      // get style() { return o.data[o.col.id] != store.unsaveData[o.y]?.[o.col.id] ? `background: #80808030` : `` }
     })
   },
 }

@@ -1,16 +1,19 @@
+import { batch } from 'solid-js'
 import { render } from 'solid-js/web'
 import { createMutable, createStore, produce, reconcile } from 'solid-js/store'
 import { range } from 'es-toolkit'
 import { Table } from './xxx.tsx'
 
+import './index.scss'
 import 'virtual:uno.css'
+import { log } from './utils.ts'
 
 const root = document.getElementById('root')!
 
 const state = createMutable({ bool: true })
 
 const cols = range(30).map(e => ({ name: 'col_' + e, id: e, width: 80 }))
-let data = createMutable(range(100).map((e, i) => Object.fromEntries(cols.map(e => [e.id, i + 1]))))
+let data = createMutable(range(10).map((e, i) => Object.fromEntries(cols.map(e => [e.id, i + 1]))))
 render(() => <input type='checkbox' checked={state.bool} onChange={(e) => state.bool = e.currentTarget.checked} />, root)
 render(() => <button onClick={() => data[0][1] = 'xxx'}>xxx</button>, root)
 
@@ -33,7 +36,8 @@ render(() => <Table
     // props => ({ ...props, td: (o) => <props.td {...o}>asd{o.children}</props.td> })
   ]}
   // th={o => <th asd {...o} />}
-  onDataChange={v => reconcile(v)(data)}
+  // onDataChange={v => batch(() => reconcile(v)(data))}
+  onDataChange={v => batch(() => (data.length = 0, data.push(...v)))}
   expand={{ render: ({ data }) => <div class='p-6'>{JSON.stringify(data)}</div> }}
   rowGroup={{ fields: ['g', 'n'] }}
 />, root)
