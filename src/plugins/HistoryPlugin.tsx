@@ -29,7 +29,7 @@ export const HistoryPlugin: Plugin = {
 
         for (const { path, value } of delta) {
           if (path.length == 0) {
-            clonedState = structuredClone(unwrap(value))
+            clonedState = [...unwrap(value)]
           } else {
             const target = { ...clonedState }
             path.reduce((o, k, i) => o[k] = i < path.length -1 ? Array.isArray(o[k]) ? [...o[k]] : { ...o[k] } : structuredClone(unwrap(value)), target)
@@ -37,7 +37,7 @@ export const HistoryPlugin: Plugin = {
           }
         }
         return clonedState
-      }, v => batch(() => store.rawProps.onDataChange?.(v))])
+      }, v => store.props!.onDataChange?.(v)])
     })
   },
   processProps: {
@@ -47,7 +47,6 @@ export const HistoryPlugin: Plugin = {
       useTinykeys(() => el, {
         'Control+Z': () => store.history.undo(),
         'Control+Y': () => store.history.redo(),
-        'Control+S': () => store.unsaveData = structuredClone(unwrap(store.rawProps.data)),
       })
 
       o = combineProps({ ref: e => el = e, tabindex: -1 }, o)

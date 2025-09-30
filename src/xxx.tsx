@@ -18,6 +18,7 @@ import { RenderPlugin } from './plugins/RenderPlugin'
 import { HistoryPlugin } from './plugins/HistoryPlugin'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { MenuPlugin } from './plugins/MenuPlugin'
+import { CommandPlugin } from './plugins/CommandPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2
@@ -82,6 +83,7 @@ export interface TableColumn extends Obj {
 type Nullable<T> = T | undefined
 
 export interface TableStore extends Obj {
+  table: HTMLElement
   ths: Nullable<Element>[]
   thSizes: Nullable<{ width: number; height: number }>[]
   trs: Nullable<Element>[]
@@ -199,9 +201,12 @@ function BasePlugin(): Plugin {
       data: ({ data }) => data![$PROXY] ?? data,
       Tbody: ({ Tbody = tbody }) => Tbody,
       Thead: ({ Thead = thead }) => Thead,
-      Table: ({ Table = table }) => o => {
+      Table: ({ Table = table }, { store }) => o => {
+        const [el, setEl] = createSignal<HTMLElement>()
+        Object.defineProperty(store, 'table', { get: () => el() })
         const { props } = useContext(Ctx)
         o = combineProps({
+          ref: setEl,
           get class() { return `data-table ${props.class} ${props.border && 'data-table--border'}` },
           get style() { return props.style }
         }, o)
@@ -326,6 +331,8 @@ const ResizePlugin: Plugin = {
 
 export const defaultsPlugins = [
   BasePlugin(),
+  CommandPlugin,
+  MenuPlugin,
   VirtualScrollPlugin,
   RenderPlugin,
   IndexPlugin,
@@ -339,5 +346,4 @@ export const defaultsPlugins = [
   // RowGroupPlugin,
   EditablePlugin,
   HistoryPlugin,
-  MenuPlugin,
 ]

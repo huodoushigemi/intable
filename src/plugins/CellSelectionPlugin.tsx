@@ -59,6 +59,7 @@ export const CellSelectionPlugin: Plugin = {
             const getXY = (cell: Element) => [cell.getAttribute('x'), cell.getAttribute('y')]
             const cell = findCell(e)
             if (!cell) return
+            if (e.buttons != 1 && cell.classList.contains('range-selected')) return
             if (cell.tagName == 'TH') {
               const [x, y] = getXY(cell)
               if (x == null) return

@@ -41,12 +41,21 @@ export function Menu(props) {
 
     const req = createMutable({ loading: false })
 
-    function onClick() {
+    async function onClick() {
       if (req.loading) return
       const ret = e.cb?.()
-      if (!(ret instanceof Promise)) return
-      req.loading = true
-      ret.finally(() => req.loading = false)
+      if (ret instanceof Promise) {
+        try {
+          await ret
+          req.loading = true
+        } finally {
+          req.loading = false
+          props.onAction?.(e)
+        }
+      }
+      else {
+        props.onAction?.(e)
+      }
     }
 
     onMount(() => {

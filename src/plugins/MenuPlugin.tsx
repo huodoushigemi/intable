@@ -2,12 +2,13 @@ import { batch, createEffect, createMemo, createSignal, mapArray, on } from 'sol
 import { createMutable, unwrap, type Store } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
-import { useHistory, useMemoAsync, useTinykeys } from '@/hooks'
-import { type Plugin } from '../xxx'
+import { createEventListener } from '@solid-primitives/event-listener'
+import { range } from 'es-toolkit'
+import { useMemoAsync, useTinykeys } from '@/hooks'
 import { Menu } from '@/components/Menu'
-import { Floating } from '@/components/Popover'
-import { autoPlacement, computePosition, detectOverflow, flip, shift } from '@floating-ui/dom'
+import { autoPlacement, computePosition } from '@floating-ui/dom'
 import { log } from '@/utils'
+import { type Plugin } from '../xxx'
 
 declare module '../xxx' {
   interface TableProps {
@@ -17,7 +18,11 @@ declare module '../xxx' {
     
   }
   interface Plugin {
-    menu?: (store: TableStore) => any[]
+    menus?: (store: TableStore) => any[]
+  }
+  interface Commands {
+    addRows: (i: number, rows: any[]) => void
+    deleteRows: (i: number[]) => void
   }
 }
 
@@ -31,7 +36,7 @@ export const MenuPlugin: Plugin = {
       const [el, setEl] = createSignal<HTMLElement>()
       const [menuEl, setMenuEl] = createSignal<HTMLElement>()
 
-      const _menus = mapArray(() => store.plugins || [], (o) => createMemo(() => o.menu?.(store)))
+      const _menus = mapArray(() => store.plugins || [], (o) => createMemo(() => o.menus?.(store)))
       const menus = createMemo(() => _menus().flatMap(e => e() || []))
 
       const [pos, setPos] = createSignal<{ x: number; y: number }>()
@@ -40,20 +45,16 @@ export const MenuPlugin: Plugin = {
         setPos({ x: e.x, y: e.y })
       }
 
-      createEffect(() => {
-        if (pos()) {
-          const sss = createMemo(() => JSON.stringify(store.selected))
-          createEffect(on(sss, () => setPos(), { defer: true }))
-        }
+      createEventListener(document, 'pointerdown', e => {
+        menuEl()?.contains(e.target as Element) || setPos()
       })
 
       const style = useMemoAsync(() => {
         const mel = menuEl()
         if (!mel) return
-        const p = DOMRect.fromRect(pos())
-        return computePosition({ getBoundingClientRect: () => p }, mel, {
+        return computePosition({ getBoundingClientRect: () => DOMRect.fromRect(pos()) }, mel, {
           strategy: 'absolute',
-          placement: 'top-start',
+          placement: 'top-start', 
           middleware: [autoPlacement({ boundary: document.body, alignment: 'start' })]
         })
         .then(({ x, y }) => ({
@@ -66,36 +67,32 @@ export const MenuPlugin: Plugin = {
       o = combineProps({ ref: setEl, tabindex: -1, onContextMenu }, o)
       return (
         <Table {...o}>
-          {pos() && <Menu ref={setMenuEl} style={style() || 'position: absolute'} items={menus()} />}
+          {pos() && <Menu ref={setMenuEl} style={style() || 'position: absolute'} items={menus()} onAction={() => setPos()} />}
           {o.children}
         </Table>
       )
     },
   },
-  menu: (store) => [
-    {
-      label: '新增行 ↑',
-      cb: () => {
-        const data = [...store.props?.data || []]
-        data.splice(store.selected.end[1], 0, {})
-        store.props?.onDataChange?.(data)
-      },
+  menus: (store) => [
+    { label: '新增行 ↑', disabled: () => true, cb: () => store.commands.addRows(store.selected.end[1], [{}]) },
+    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1] + 1, [{}]) },
+    { label: '删除行', cb: () => store.commands.deleteRows(range( ...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number] )) },
+  ],
+  commands: (store) => ({
+    addRows(i, rows) {
+      const data = [...store.props?.data || []]
+      data.splice(i, 0, ...rows)
+      store.props?.onDataChange?.(data)
+      batch(() => {
+        if (!store.selected) return
+        store.selected.start = [0, i]
+        store.selected.end = [Infinity, i + rows.length - 1]
+      })
     },
-    {
-      label: '新增行 ↓',
-      cb: () => {
-        const data = [...store.props?.data || []]
-        data.splice(store.selected.end[1] + 1, 0, {})
-        store.props?.onDataChange?.(data)
-      },
-    },
-    {
-      label: '删除行',
-      cb: () => {
-        const data = [...store.rawProps?.data || []]
-        data.splice(store.selected.end[1], 1)
-        store.props?.onDataChange?.(data)
-      }
+    deleteRows(ii) {
+      let data = [...store.rawProps?.data || []]
+      data = data.filter((e, i) => !ii.includes(i))
+      store.props?.onDataChange?.(data)
     }
-  ]
+  })
 }
