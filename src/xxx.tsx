@@ -9,7 +9,7 @@ import './styles/index.scss'
 import { log, unFn } from '@/utils'
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { CellSelectionPlugin } from './plugins/CellSelectionPlugin'
-import { CopyPlugin, PastePlugin } from './plugins/CopyPastePlugin'
+import { ClipboardPlugin } from './plugins/CopyPastePlugin'
 import { VirtualScrollPlugin } from './plugins/VirtualScrollPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
@@ -19,13 +19,17 @@ import { HistoryPlugin } from './plugins/HistoryPlugin'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { MenuPlugin } from './plugins/MenuPlugin'
 import { CommandPlugin } from './plugins/CommandPlugin'
+import { DiffPlugin } from './plugins/DiffPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2
 })
 
 type Requireds<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
-type TableProps2 = Requireds<TableProps, 'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells'>
+type CompKS = 'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells'
+type KS = 'rowKey' | 'data' | 'columns'
+// const aaa: SS = 'data'
+type TableProps2 = Requireds<TableProps, CompKS | KS>
 
 type ProcessProps = {
   [K in keyof TableProps]?: (props: TableProps2, ctx: { store: TableStore }) => TableProps[K]
@@ -45,6 +49,7 @@ export interface TableProps {
   stickyHeader?: boolean
   class: any
   style: any
+  rowKey?: any
   // Component
   Table?: Component<any>
   Thead?: Component<any>
@@ -89,12 +94,13 @@ export interface TableStore extends Obj {
   trs: Nullable<Element>[]
   trSizes: Nullable<{ width: number; height: number }>[]
   internal: symbol
-  props?: TableProps
+  props?: TableProps2
   rawProps: TableProps
   plugins: Plugin[]
 }
 
 export const Table = (props: TableProps) => {
+  props = mergeProps({ rowKey: 'id' } as Partial<TableProps>, props)
   const plugins = createMemo(() => [...defaultsPlugins, ...props.plugins || []].sort((a, b) => (b.priority || 0) - (a.priority || 0)))
 
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
@@ -198,7 +204,8 @@ function BasePlugin(): Plugin {
       internal: Symbol('internal')
     }),
     processProps: {
-      data: ({ data }) => data![$PROXY] ?? data,
+      data: ({ data = [] }) => data![$PROXY] ?? data,
+      columns: ({ columns = [] }) => columns,
       Tbody: ({ Tbody = tbody }) => Tbody,
       Thead: ({ Thead = thead }) => Thead,
       Table: ({ Table = table }, { store }) => o => {
@@ -340,10 +347,10 @@ export const defaultsPlugins = [
   FixedColumnPlugin,
   ResizePlugin,
   CellSelectionPlugin,
-  CopyPlugin,
-  PastePlugin,
+  ClipboardPlugin,
   // ExpandPlugin,
   // RowGroupPlugin,
   EditablePlugin,
   HistoryPlugin,
+  // DiffPlugin
 ]

@@ -49,10 +49,9 @@ export const CellSelectionPlugin: Plugin = {
       return <Td {...mergedProps} />
     },
     Table: ({ Table }, { store }) => (o) => {
-      let el: HTMLElement
       const { props } = useContext(Ctx)
       
-      usePointerDrag(() => el, {
+      usePointerDrag(() => store.table, {
         start(e, move, end) {
           batch(() => {
             const findCell = (e: PointerEvent) => e.composedPath().find((e) => e.tagName == 'TH' || e.tagName == 'TD') as Element
@@ -104,7 +103,7 @@ export const CellSelectionPlugin: Plugin = {
         },
       })
 
-      useTinykeys(() => el, {
+      useTinykeys(() => store.table, {
         'ArrowLeft': () => {
           const { start, end } = store.selected
           start[0] = end[0] = Math.max(start[0] - 1, 0)
@@ -132,12 +131,10 @@ export const CellSelectionPlugin: Plugin = {
       })
 
       const scrollIntoView = () => {
-        const cell = el.querySelector(`td[x="${store.selected.start[0]}"][y="${store.selected.start[1]}"]`)
-        cell.scrollIntoViewIfNeeded(false)
-        cell.focus()
+        const cell = store.table.querySelector(`td[x="${store.selected.start[0]}"][y="${store.selected.start[1]}"]`)
+        cell?.scrollIntoViewIfNeeded(false)
+        cell?.focus()
       }
-
-      o = combineProps(o, { ref: e => el = e })
       
       return <Table {...o} />
     }

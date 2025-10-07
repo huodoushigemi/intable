@@ -40,20 +40,7 @@ export interface EditorProps extends Record<any, any> {
 
 export const EditablePlugin: Plugin = {
   store: () => ({
-    editors: {
-      text,
-      number,
-      range,
-      date,
-      time,
-      datetime,
-      color,
-      tel,
-      password,
-      file,
-      checkbox,
-      select,
-    }
+    editors: { ...editors }
   }),
   processProps: {
     Td: ({ Td }, { store }) => o => {
@@ -62,7 +49,7 @@ export const EditablePlugin: Plugin = {
       const [editing, setEditing] = createSignal(false)
       let eventKey = ''
 
-      const selected = createAsyncMemo(() => (([x, y]) => o.x == x && o.y == y)(store.selected.start || []))
+      const selected = createMemo(() => (([x, y]) => o.x == x && o.y == y)(store.selected.start || []))
 
       const editorState = createAsyncMemo(async () => {
         if (editing()) {
@@ -95,7 +82,7 @@ export const EditablePlugin: Plugin = {
       
       o = combineProps({
         get style() { return editing() ? `padding: 0; height: ${store.trSizes[o.y]?.height}px` : '' },
-        onClick: () => input.focus?.(),
+        onClick: () => input?.focus?.(),
         onDblClick: () => setEditing(editable())
       } as JSX.HTMLAttributes<any>, o)
       
@@ -207,3 +194,18 @@ const checkbox: Editor = ({ stopEditing, eventKey, value, col, data, ...attrs })
     destroy,
   }
 })
+
+export const editors = {
+  text,
+  number,
+  range,
+  date,
+  time,
+  datetime,
+  color,
+  tel,
+  password,
+  file,
+  checkbox,
+  select,
+}

@@ -1,7 +1,7 @@
 import { createEffect, useContext, type Component } from 'solid-js'
 import { Ctx, type Plugin } from '../xxx'
 import { combineProps } from '@solid-primitives/props'
-import { createEventListener } from '@solid-primitives/event-listener'
+import { useTinykeys } from '@/hooks'
 
 declare module '../xxx' {
   interface TableProps {
@@ -19,18 +19,14 @@ declare module '../xxx' {
   }
 }
 
-export const CopyPlugin: Plugin = {
+export const ClipboardPlugin: Plugin = {
   processProps: {
     Table: ({ Table }, { store }) => o => {
       let el: HTMLElement
-      
-      createEventListener(() => el, 'keydown', e => {
-        if (e.key.toLowerCase() == 'c' && e.ctrlKey) {
-          e.preventDefault()
-          e.stopPropagation()
-          store.commands.copy()
-          el.classList.add('copied')
-        }
+
+      useTinykeys(() => el, {
+        'Control+C': () => { store.commands.copy(); el.classList.add('copied') },
+        'Control+V': () => store.commands.paste(),
       })
       
       createEffect(() => {
@@ -54,7 +50,6 @@ export const CopyPlugin: Plugin = {
       const [y1, y2] = [start[1], end[1]].sort((a, b) => a - b)
       const cols = store.props!.columns!.slice(x1, x2 + 1)
       const data = store.props!.data!.slice(y1, y2 + 1).map(row => cols.map(col => row[col.id]))
-      console.log(data)
       const text = data.map(row => row.join('\t')).join('\n')
       navigator.clipboard.writeText(text)
     },
@@ -73,23 +68,4 @@ export const CopyPlugin: Plugin = {
       store.props!.onDataChange?.(data)
     },
   })
-}
-
-export const PastePlugin: Plugin = {
-  processProps: {
-    Table: ({ Table }, { store }) => o => {
-      let el: HTMLElement
-
-      createEventListener(() => el, 'keydown', async e => {
-        if (e.key.toLowerCase() == 'v' && e.ctrlKey) {
-          e.preventDefault()
-          e.stopPropagation()
-          store.commands.paste()
-        }
-      })
-      
-      o = combineProps({ ref: e => el = e, tabindex: -1 }, o)
-      return <Table {...o} />
-    }
-  }
 }

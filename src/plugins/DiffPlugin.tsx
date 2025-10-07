@@ -1,36 +1,84 @@
 import { unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
-import { useHistory, useTinykeys } from '@/hooks'
+import { createLazyMemo } from '@solid-primitives/memo'
+import { v4 as uuid } from 'uuid'
+import { diffArrays } from 'diff'
+import { useTinykeys } from '@/hooks'
 import { type Plugin } from '../xxx'
+import { isEqual, keyBy } from 'es-toolkit'
 
 declare module '../xxx' {
   interface TableProps {
-    // todo
-    onCommit?: (data: any, opt: { addRows: any[], delRows: any[], editRows: any[] }) => any
+    onDiffCommit?: (data: any, opt: { added: any[], removed: any[], edited: any[] }) => any
   }
   interface TableStore {
-    
+    originData: any[]
+    originDataKeyed: () => any
+  }
+  interface Commands {
+    diffCommit(data?: any[]): void
   }
 }
 
+const DEL = Symbol('del')
+const NEW = Symbol('new')
+
 export const DiffPlugin: Plugin = {
   priority: Infinity,
-  store: (store) => ({
-    unsaveData: structuredClone(unwrap(store.rawProps.data)),
+  store: store => {
+    const data = store.rawProps.data || []  
+    data.forEach(row => unwrap(row)[store.rawProps.rowKey] ??= uuid())
+    return {
+      originData: structuredClone(unwrap(data || [])),
+      originDataKeyed: createLazyMemo(() => keyBy(store.originData, e => e[store.props!.rowKey]))
+    }
+  },
+  commands: store => ({
+    async diffCommit(data = store.rawProps.data || []) {
+      const { rowKey } = store.props || {}
+      data.forEach(row => unwrap(row)[rowKey] ??= uuid())
+      data = structuredClone(unwrap(data))
+      const added = [], removed = [], edited = []
+      const keyed = keyBy(data, e => e[rowKey])
+      for (const e of data) {
+        const old = store.originDataKeyed()[e[rowKey]]
+        if (!old) added.push(e)
+        else if (!isEqual(e, old)) edited.push(e)
+      }
+      for (const e of store.originData) {
+        !keyed[e[rowKey]] && removed.push(e)
+      }
+      await store.props!.onDiffCommit?.(data, { added, removed, edited })
+      store.originData = data
+    }
   }),
   processProps: {
+    data: ({ data }, { store }) => {
+      const { rowKey } = store.props || {}
+      const diff = diffArrays(store.originData || [], data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
+      return diff.flatMap(e => (
+        e.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) :
+        e.removed ? e.value.map(e => ({ ...e, [DEL]: 1, [store.internal]: 1 })) :
+        e.value
+      ))
+    },
     Table: ({ Table }, { store }) => o => {
-      let el: HTMLBodyElement
-
-      useTinykeys(() => el, {
-        'Control+S': () => store.unsaveData = structuredClone(unwrap(store.rawProps.data)),
+      useTinykeys(() => store.table, {
+        'Control+S': () => store.commands.diffCommit()
       })
 
-      o = combineProps({ ref: e => el = e, tabindex: -1 }, o)
+      o = combineProps({ tabindex: -1 }, o)
       return <Table {...o} />
     },
     tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
-      // get style() { return o.data[o.col.id] !== store.unsaveData[o.y]?.[o.col.id] ? `background: #80808030` : `` }
-    })
+      get class() {
+        const id = unwrap(o.data)[store.props!.rowKey]
+        return [
+          o.data[DEL] ? 'bg-#ffe8e8' :
+          o.data[NEW] ? 'bg-#dafaea' :
+          o.data[o.col.id] != store.originDataKeyed()[id][o.col.id] ? 'bg-#dafaea' : ''
+        ].join(' ')
+      }
+    }),
   },
 }

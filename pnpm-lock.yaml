@@ -59,6 +59,9 @@ importers:
       '@tanstack/solid-virtual':
         specifier: ^3.13.12
         version: 3.13.12(solid-js@1.9.9)
+      diff:
+        specifier: ^8.0.2
+        version: 8.0.2
       es-toolkit:
         specifier: ^1.39.10
         version: 1.39.10
@@ -74,6 +77,9 @@ importers:
       tinykeys:
         specifier: ^3.0.0
         version: 3.0.0
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
     devDependencies:
       '@babel/plugin-syntax-typescript':
         specifier: ^7.27.1
@@ -819,6 +825,10 @@ packages:
     resolution: {integrity: sha512-ecqj/sy1jcK1uWrwpR67UhYrIFQ+5WlGxth34WquCbamhFA6hkkwiu37o6J5xCHdo1oixJRfVRw+ywV+Hq/0Aw==}
     engines: {node: '>=8'}
 
+  diff@8.0.2:
+    resolution: {integrity: sha512-sSuxWU5j5SR9QQji/o2qMvqRNYRDOcBTgsJ/DeCf4iSN4gW+gNMXM7wFIP+fdXZxoNiAnHUTGjCr+TSWXdRDKg==}
+    engines: {node: '>=0.3.1'}
+
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
 
@@ -1353,6 +1363,10 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
+
+  uuid@13.0.0:
+    resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
+    hasBin: true
 
   validate-html-nesting@1.2.3:
     resolution: {integrity: sha512-kdkWdCl6eCeLlRShJKbjVOU2kFKxMF8Ghu50n+crEoyx+VKm3FxAxF9z4DCy6+bbTOqNW0+jcIYRnjoIRzigRw==}
@@ -2165,6 +2179,8 @@ snapshots:
 
   detect-libc@2.1.1: {}
 
+  diff@8.0.2: {}
+
   duplexer@0.1.2: {}
 
   electron-to-chromium@1.5.224: {}
@@ -2633,6 +2649,8 @@ snapshots:
       browserslist: 4.26.2
       escalade: 3.2.0
       picocolors: 1.1.1
+
+  uuid@13.0.0: {}
 
   validate-html-nesting@1.2.3: {}
 

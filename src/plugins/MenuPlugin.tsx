@@ -3,12 +3,12 @@ import { createMutable, unwrap, type Store } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
 import { createEventListener } from '@solid-primitives/event-listener'
-import { range } from 'es-toolkit'
+import { range, remove } from 'es-toolkit'
 import { useMemoAsync, useTinykeys } from '@/hooks'
 import { Menu } from '@/components/Menu'
 import { autoPlacement, computePosition } from '@floating-ui/dom'
-import { log } from '@/utils'
 import { type Plugin } from '../xxx'
+import { log } from '@/utils'
 
 declare module '../xxx' {
   interface TableProps {
@@ -32,11 +32,9 @@ export const MenuPlugin: Plugin = {
   }),
   processProps: {
     Table: ({ Table }, { store }) => o => {
-      // let el: HTMLBodyElement
-      const [el, setEl] = createSignal<HTMLElement>()
       const [menuEl, setMenuEl] = createSignal<HTMLElement>()
 
-      const _menus = mapArray(() => store.plugins || [], (o) => createMemo(() => o.menus?.(store)))
+      const _menus = mapArray(() => store.plugins || [], plugin => createMemo(() => plugin.menus?.(store)))
       const menus = createMemo(() => _menus().flatMap(e => e() || []))
 
       const [pos, setPos] = createSignal<{ x: number; y: number }>()
@@ -64,7 +62,7 @@ export const MenuPlugin: Plugin = {
         }))
       })
 
-      o = combineProps({ ref: setEl, tabindex: -1, onContextMenu }, o)
+      o = combineProps({ tabindex: -1, onContextMenu }, o)
       return (
         <Table {...o}>
           {pos() && <Menu ref={setMenuEl} style={style() || 'position: absolute'} items={menus()} onAction={() => setPos()} />}
@@ -90,9 +88,11 @@ export const MenuPlugin: Plugin = {
       })
     },
     deleteRows(ii) {
-      let data = [...store.rawProps?.data || []]
-      data = data.filter((e, i) => !ii.includes(i))
-      store.props?.onDataChange?.(data)
+      const { rowKey, data } = store.props!
+      const ids = new Set(data.filter((e, i) => ii.includes(i)).map(e => e[rowKey]))
+      const val = [...store.rawProps.data || []]
+      remove(val, e => ids.has(e[rowKey]))
+      store.props?.onDataChange?.(val)
     }
   })
 }

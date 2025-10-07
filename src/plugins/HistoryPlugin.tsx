@@ -1,4 +1,4 @@
-import { batch } from 'solid-js'
+import { $PROXY, batch, createMemo } from 'solid-js'
 import { unwrap } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
@@ -7,9 +7,7 @@ import { type Plugin } from '../xxx'
 
 declare module '../xxx' {
   interface TableProps {
-    history: {
-      num: number
-    }
+
   }
   interface TableStore {
     history: ReturnType<typeof useHistory>
@@ -17,21 +15,20 @@ declare module '../xxx' {
 }
 
 export const HistoryPlugin: Plugin = {
-  priority: Infinity,
   store: (store) => {
-    const getDelta = captureStoreUpdates(store.rawProps.data!)
+    const getDelta = createMemo(() => captureStoreUpdates(store.rawProps.data || []))
     let clonedState
     return ({
-      unsaveData: structuredClone(unwrap(store.rawProps.data)),
       history: useHistory([() => {
-        const delta = getDelta()
+        const delta = getDelta()()
         if (!delta.length) return
 
         for (const { path, value } of delta) {
           if (path.length == 0) {
-            clonedState = [...unwrap(value)]
+            clonedState = structuredClone(unwrap(value))
+            // clonedState = [...value]
           } else {
-            const target = { ...clonedState }
+            const target = [...clonedState]
             path.reduce((o, k, i) => o[k] = i < path.length -1 ? Array.isArray(o[k]) ? [...o[k]] : { ...o[k] } : structuredClone(unwrap(value)), target)
             clonedState = target
           }
@@ -42,14 +39,12 @@ export const HistoryPlugin: Plugin = {
   },
   processProps: {
     Table: ({ Table }, { store }) => o => {
-      let el: HTMLBodyElement
-
-      useTinykeys(() => el, {
+      useTinykeys(() => store.table, {
         'Control+Z': () => store.history.undo(),
         'Control+Y': () => store.history.redo(),
       })
 
-      o = combineProps({ ref: e => el = e, tabindex: -1 }, o)
+      o = combineProps({ tabindex: -1 }, o)
       return <Table {...o} />
     },
     tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
