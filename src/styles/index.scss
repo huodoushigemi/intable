@@ -1,3 +1,8 @@
+:root {
+  --c-primary: #51a2ff;
+  --select-area-bg: #5292f71a;
+}
+
 .data-table {
   @apply relative table-fixed b-1 border-collapse outline-0;
 
@@ -17,7 +22,7 @@
 .range-selected {
   @apply relative;
   &::before {
-    @apply content-[''] absolute inset-0 bg-blue/20 b-(0px solid blue) pointer-events-none;
+    @apply content-[''] absolute inset-0 bg-[--select-area-bg] b-(0px solid [--c-primary]) pointer-events-none;
   }
 
   &-l { @apply before:b-l-(2px) }

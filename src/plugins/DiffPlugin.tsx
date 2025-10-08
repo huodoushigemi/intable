@@ -12,8 +12,8 @@ declare module '../xxx' {
     onDiffCommit?: (data: any, opt: { added: any[], removed: any[], edited: any[] }) => any
   }
   interface TableStore {
-    originData: any[]
-    originDataKeyed: () => any
+    diffData: any[]
+    diffDataKeyed: () => any
   }
   interface Commands {
     diffCommit(data?: any[]): void
@@ -26,11 +26,11 @@ const NEW = Symbol('new')
 export const DiffPlugin: Plugin = {
   priority: Infinity,
   store: store => {
-    const data = store.rawProps.data || []  
+    const data = store.rawProps.data || []
     data.forEach(row => unwrap(row)[store.rawProps.rowKey] ??= uuid())
     return {
-      originData: structuredClone(unwrap(data || [])),
-      originDataKeyed: createLazyMemo(() => keyBy(store.originData, e => e[store.props!.rowKey]))
+      diffData: structuredClone(unwrap(data || [])),
+      diffDataKeyed: createLazyMemo(() => keyBy(store.diffData, e => e[store.props!.rowKey]))
     }
   },
   commands: store => ({
@@ -41,21 +41,21 @@ export const DiffPlugin: Plugin = {
       const added = [], removed = [], edited = []
       const keyed = keyBy(data, e => e[rowKey])
       for (const e of data) {
-        const old = store.originDataKeyed()[e[rowKey]]
+        const old = store.diffDataKeyed()[e[rowKey]]
         if (!old) added.push(e)
         else if (!isEqual(e, old)) edited.push(e)
       }
-      for (const e of store.originData) {
+      for (const e of store.diffData) {
         !keyed[e[rowKey]] && removed.push(e)
       }
       await store.props!.onDiffCommit?.(data, { added, removed, edited })
-      store.originData = data
+      store.diffData = data
     }
   }),
   processProps: {
     data: ({ data }, { store }) => {
       const { rowKey } = store.props || {}
-      const diff = diffArrays(store.originData || [], data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
+      const diff = diffArrays(store.diffData || [], data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
       return diff.flatMap(e => (
         e.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) :
         e.removed ? e.value.map(e => ({ ...e, [DEL]: 1, [store.internal]: 1 })) :
@@ -76,7 +76,7 @@ export const DiffPlugin: Plugin = {
         return [
           o.data[DEL] ? 'bg-#ffe8e8' :
           o.data[NEW] ? 'bg-#dafaea' :
-          o.data[o.col.id] != store.originDataKeyed()[id][o.col.id] ? 'bg-#dafaea' : ''
+          o.data[o.col.id] != store.diffDataKeyed()[id][o.col.id] ? 'bg-#dafaea' : ''
         ].join(' ')
       }
     }),
