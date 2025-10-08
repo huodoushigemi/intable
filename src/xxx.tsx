@@ -25,11 +25,13 @@ export const Ctx = createContext({
   props: {} as TableProps2
 })
 
-type Requireds<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
-type CompKS = 'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells'
-type KS = 'rowKey' | 'data' | 'columns'
-// const aaa: SS = 'data'
-type TableProps2 = Requireds<TableProps, CompKS | KS>
+type Requireds<T, K extends keyof T> = Pri<Omit<T, K> & Required<Pick<T, K>>>
+type Pri<T> = { [K in keyof T]: T[K] }
+type TableProps2 = Requireds<TableProps, (
+  'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells' |
+  'rowKey' | 'data' | 'columns' |
+  'newRow'
+)>
 
 type ProcessProps = {
   [K in keyof TableProps]?: (props: TableProps2, ctx: { store: TableStore }) => TableProps[K]
@@ -50,6 +52,7 @@ export interface TableProps {
   class: any
   style: any
   rowKey?: any
+  newRow?: () => any
   // Component
   Table?: Component<any>
   Thead?: Component<any>
@@ -206,6 +209,7 @@ function BasePlugin(): Plugin {
     processProps: {
       data: ({ data = [] }) => data![$PROXY] ?? data,
       columns: ({ columns = [] }) => columns,
+      newRow: ({ newRow = () => ({}) }) => newRow,
       Tbody: ({ Tbody = tbody }) => Tbody,
       Thead: ({ Thead = thead }) => Thead,
       Table: ({ Table = table }, { store }) => o => {

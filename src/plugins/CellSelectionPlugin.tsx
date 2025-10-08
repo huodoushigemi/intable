@@ -12,6 +12,9 @@ declare module '../xxx' {
   interface TableStore {
     selected: { start: number[]; end: number[] }
   }
+  interface Commands {
+    getAreaRows(): any[]
+  }
 }
 
 const inrange = (v, min, max) => v <= max && v >= min
@@ -19,6 +22,13 @@ const inrange = (v, min, max) => v <= max && v >= min
 export const CellSelectionPlugin: Plugin = {
   store: () => ({
     selected: { start: [], end: [] }
+  }),
+  commands: store => ({
+    getAreaRows() {
+      const { start, end } = store.selected
+      const [y1, y2] = [start[1], end[1]].sort((a, b) => a - b)
+      return store.props!.data.slice(y1, y2 + 1)
+    }
   }),
   processProps: {
     thProps: ({ thProps }, { store }) => (o) => {

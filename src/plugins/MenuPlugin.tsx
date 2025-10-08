@@ -7,7 +7,7 @@ import { range, remove } from 'es-toolkit'
 import { useMemoAsync, useTinykeys } from '@/hooks'
 import { Menu } from '@/components/Menu'
 import { autoPlacement, computePosition } from '@floating-ui/dom'
-import { type Plugin } from '../xxx'
+import { type Plugin, type TableStore } from '../xxx'
 import { log } from '@/utils'
 
 declare module '../xxx' {
@@ -21,7 +21,7 @@ declare module '../xxx' {
     menus?: (store: TableStore) => any[]
   }
   interface Commands {
-    addRows: (i: number, rows: any[]) => void
+    addRows: (i: number, rows: any[], before?: boolean) => void
     deleteRows: (i: number[]) => void
   }
 }
@@ -72,20 +72,13 @@ export const MenuPlugin: Plugin = {
     },
   },
   menus: (store) => [
-    { label: '新增行 ↑', disabled: () => true, cb: () => store.commands.addRows(store.selected.end[1], [{}]) },
-    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1] + 1, [{}]) },
+    { label: '新增行 ↑', disabled: () => true, cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow()]) },
+    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow()], false) },
     { label: '删除行', cb: () => store.commands.deleteRows(range( ...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number] )) },
   ],
   commands: (store) => ({
-    addRows(i, rows) {
-      const data = [...store.props?.data || []]
-      data.splice(i, 0, ...rows)
-      store.props?.onDataChange?.(data)
-      batch(() => {
-        if (!store.selected) return
-        store.selected.start = [0, i]
-        store.selected.end = [Infinity, i + rows.length - 1]
-      })
+    addRows(i, rows, before = true) {
+      addRows(store, i, rows, before)
     },
     deleteRows(ii) {
       const { rowKey, data } = store.props!
@@ -95,4 +88,33 @@ export const MenuPlugin: Plugin = {
       store.props?.onDataChange?.(val)
     }
   })
+}
+
+function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
+  const { data, rowKey } = store.props!
+  const prev = i => {
+    before = false
+    while (--i >= 0 && data[i]?.[store.internal]) {}
+    return i >= 0 ? data[i] : null
+  }
+  const next = i => {
+    before = true
+    while (++i < data.length && data[i]?.[store.internal]) {}
+    return i < data.length ? data[i] : null
+  }
+  const anchor = !data[i]?.[store.internal] ? data[i] : before ? prev(i) || next(i) : next(i) || prev(i)
+  if (anchor) {
+    batch(() => {
+      i = data.indexOf(anchor)
+      if (!store.selected) return
+      store.selected.start = [0, i + (before ? 0 : 1)]
+      store.selected.end = [Infinity, i + rows.length - 1 + (before ? 0 : 1)]
+    })
+  }
+  ;(() => {
+    const data = [...store.rawProps.data || []]
+    const i = anchor ? data.findIndex(e => e[rowKey] == anchor[rowKey]) + (before ? 0 : 1) : data.length
+    data.splice(i, 0, ...rows)
+    store.props?.onDataChange?.(data)
+  })()
 }

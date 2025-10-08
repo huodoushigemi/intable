@@ -9,7 +9,7 @@ declare module '../xxx' {
     commands: Commands
   }
   interface Plugin {
-    commands?: (store: TableStore) => Partial<Commands>
+    commands?: (store: TableStore, commands: Partial<Commands>) => Partial<Commands> & Record<string, any>
   }
   interface Commands {
     
@@ -21,7 +21,7 @@ export const CommandPlugin: Plugin = {
     Table: ({ Table }, { store }) => o => {
 
       createComputed(() => {
-        store.commands = store.plugins.reduce((o, e) => Object.assign(o, e.commands?.(store)), {} as Commands)
+        store.commands = store.plugins.reduce((o, e) => Object.assign(o, e.commands?.(store, {...o})), {} as Commands)
       })
       
       return <Table {...o} />

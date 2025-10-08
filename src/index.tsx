@@ -27,18 +27,14 @@ cols.forEach(e => (e.editable = true, e.editOnInput = true))
 
 render(() => <Table
   class='w-50vw! h-80vh of-auto'
-  // {...window.www}
   index={state.bool}
   stickyHeader={state.bool}
   columns={cols}
   data={data}
   border
   plugins={[
-    // props => ({ ...props, td: (o) => <props.td {...o}>asd{o.children}</props.td> })
     DiffPlugin
   ]}
-  // th={o => <th asd {...o} />}
-  // onDataChange={v => batch(() => reconcile(v)(data))}
   onDataChange={v => batch(() => (data.length = 0, data.push(...v)))}
   expand={{ render: ({ data }) => <div class='p-6'>{JSON.stringify(data)}</div> }}
   rowGroup={{ fields: ['g', 'n'] }}
