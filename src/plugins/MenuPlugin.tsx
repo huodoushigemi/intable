@@ -72,8 +72,8 @@ export const MenuPlugin: Plugin = {
     },
   },
   menus: (store) => [
-    { label: '新增行 ↑', disabled: () => true, cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow()]) },
-    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow()], false) },
+    { label: '新增行 ↑', disabled: () => true, cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])]) },
+    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])], false) },
     { label: '删除行', cb: () => store.commands.deleteRows(range( ...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number] )) },
   ],
   commands: (store) => ({

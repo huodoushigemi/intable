@@ -52,7 +52,7 @@ export interface TableProps {
   class: any
   style: any
   rowKey?: any
-  newRow?: () => any
+  newRow?: (i: number) => any
   // Component
   Table?: Component<any>
   Thead?: Component<any>
