@@ -1,4 +1,4 @@
-import { batch } from 'solid-js'
+import { batch, createMemo } from 'solid-js'
 import { render } from 'solid-js/web'
 import { createMutable, createStore, produce, reconcile } from 'solid-js/store'
 import { range } from 'es-toolkit'
@@ -40,3 +40,10 @@ render(() => <Table
   rowGroup={{ fields: ['g', 'n'] }}
   onDiffCommit={(...arg) => log(arg)}
 />, root)
+
+const a = createMutable({ a: 1 })
+const aa = createMemo(() => log(a.a))
+batch(() => a.a = 2)
+log('xxx')
+batch(() => a.a = 3)
+log('xxx')

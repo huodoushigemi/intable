@@ -1,7 +1,7 @@
 import { groupBy, isEqual, remove, zipObject } from 'es-toolkit'
 import { findLastIndex } from 'es-toolkit/compat'
 import { Ctx, type Plugin } from '../xxx'
-import { createMemo, useContext } from 'solid-js'
+import { batch, createMemo, useContext } from 'solid-js'
 import type { TableStore } from '../xxx'
 
 declare module '../xxx' {
@@ -14,6 +14,7 @@ declare module '../xxx' {
     rowGroup: {
       expands: string[][]
       isExpand: (data) => boolean
+      expand: (data, r?) => void
       toggleExpand: (data) => void
     }
   }
@@ -25,8 +26,28 @@ export const RowGroupPlugin: Plugin = {
     rowGroup: {
       expands: [],
       isExpand: data => store.rowGroup.expands.some(e => isEqual(e, data[GROUP].path)),
-      toggleExpand: data => store.rowGroup.isExpand(data) ? remove(store.rowGroup.expands, e => isEqual(e, data[GROUP].path)) : store.rowGroup.expands.push(data[GROUP].path)
+      expand: (data, r) => batch(() => r ? data[GROUP].path2.forEach(e => store.rowGroup.isExpand(e) || store.rowGroup.expands.push(e[GROUP].path)) : (store.rowGroup.isExpand(data) || store.rowGroup.expands.push(data[GROUP].path))),
+      toggleExpand: data => store.rowGroup.isExpand(data) ? remove(store.rowGroup.expands, e => isEqual(e, data[GROUP].path)) : store.rowGroup.expand(data)
     }
+  }),
+  commands: (store, { addRows }) => ({
+    addRows(i, rows, before) {
+      const { data, rowGroup, rowKey } = store.props!
+      if (rowGroup?.fields?.length) {
+        const group = findLastIndex(data, e => e[GROUP], i)
+        if (group) {
+          if (data[i][GROUP]) {
+            const leaf = (function r(group) { return group[GROUP]?.children[0]?.[GROUP] ? r(group[GROUP].children[0]) : group })(group)
+            store.rowGroup.expand(leaf, true)
+            const anchor = leaf[GROUP].children[0]
+            i = store.props!.data.indexOf(anchor)
+          }
+        }
+        addRows?.(i, rows, true)
+      } else {
+        addRows?.(...arguments)
+      }
+    },
   }),
   processProps: {
     data: ({ data }, { store }) => (
@@ -38,11 +59,11 @@ export const RowGroupPlugin: Plugin = {
       const row = newRow(...arguments)
       const { data, rowGroup } = store.props!
       if (rowGroup?.fields?.length) {
-        let group = findLastIndex(data, e => e[GROUP], i)
+        const group = findLastIndex(data, e => e[GROUP], i)
         if (group) {
-          const leaf = (function r(group) { return group[GROUP]?.children[0]?.[GROUP] ? r(group[GROUP].children[0][GROUP]) : group })(group)
-          leaf[GROUP].path2.forEach(e => store.rowGroup.isExpand(e) || store.rowGroup.toggleExpand(e))
-          const extra = zipObject(store.props!.rowGroup!.fields!, leaf[GROUP].path)
+          const leaf = (function r(group) { return group[GROUP]?.children[0]?.[GROUP] ? r(group[GROUP].children[0]) : group })(group)
+          store.rowGroup.expand(leaf, true)
+          const extra = zipObject(rowGroup!.fields!, leaf[GROUP].path)
           Object.assign(row, extra)
         }
       }
