@@ -113,7 +113,7 @@ function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
   }
   ;(() => {
     const data = [...store.rawProps.data || []]
-    const i = anchor ? data.findIndex(e => e[rowKey] == anchor[rowKey]) + (before ? 0 : 1) : data.length
+    const i = anchor ? data.indexOf(anchor) + (before ? 0 : 1) : data.length
     data.splice(i, 0, ...rows)
     store.props?.onDataChange?.(data)
   })()

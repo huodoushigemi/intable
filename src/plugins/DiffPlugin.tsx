@@ -49,6 +49,7 @@ export const DiffPlugin: Plugin = {
         !keyed[e[rowKey]] && removed.push(e)
       }
       await store.props!.onDiffCommit?.(data, { added, removed, edited })
+      added[NEW] = 0
       store.diffData = data
     }
   }),
@@ -57,7 +58,8 @@ export const DiffPlugin: Plugin = {
       const { rowKey } = store.props || {}
       const diff = diffArrays(store.diffData || [], data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
       return diff.flatMap(e => (
-        e.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) :
+        // e.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) :
+        e.added ? e.value.map(e => (e[NEW] = 1, e)) :
         e.removed ? e.value.map(e => ({ ...e, [DEL]: 1, [store.internal]: 1 })) :
         e.value
       ))

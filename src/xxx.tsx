@@ -345,7 +345,7 @@ export const defaultsPlugins = [
   CommandPlugin,
   MenuPlugin,
   VirtualScrollPlugin,
-  RenderPlugin,
+  // RenderPlugin,
   IndexPlugin,
   StickyHeaderPlugin,
   FixedColumnPlugin,
@@ -353,8 +353,7 @@ export const defaultsPlugins = [
   CellSelectionPlugin,
   ClipboardPlugin,
   // ExpandPlugin,
-  // RowGroupPlugin,
+  RowGroupPlugin,
   EditablePlugin,
   HistoryPlugin,
-  // DiffPlugin
 ]

@@ -14,7 +14,7 @@ const root = document.getElementById('root')!
 const state = createMutable({ bool: true })
 
 const cols = range(30).map(e => ({ name: 'col_' + e, id: 'col_' + e, width: 80 }))
-let data = createMutable(range(10).map((e, i) => Object.fromEntries(cols.map(e => [e.id, i + 1]))))
+let data = createMutable(range(100).map((e, i) => Object.fromEntries(cols.map(e => [e.id, i + 1]))))
 render(() => <input type='checkbox' checked={state.bool} onChange={(e) => state.bool = e.currentTarget.checked} />, root)
 render(() => <button onClick={() => data[0].col_1 = 'xxx'}>xxx</button>, root)
 
@@ -25,6 +25,9 @@ cols[0].enum = { 1: 1, 2: 2, 3: 3 }
 // cols[0].render = 'file'
 cols.forEach(e => (e.editable = true, e.editOnInput = true))
 
+data.forEach(e => e.g = e.col_0 % 10)
+data.forEach(e => e.n = e.col_0 % 3)
+
 render(() => <Table
   class='w-50vw! h-80vh of-auto'
   index={state.bool}
@@ -33,17 +36,11 @@ render(() => <Table
   data={data}
   border
   plugins={[
-    DiffPlugin
+    // DiffPlugin
   ]}
   onDataChange={v => batch(() => (data.length = 0, data.push(...v)))}
   expand={{ render: ({ data }) => <div class='p-6'>{JSON.stringify(data)}</div> }}
-  rowGroup={{ fields: ['g', 'n'] }}
+  // rowGroup={{ fields: ['g', 'n'] }}
+  rowGroup={{ fields: ['g'] }}
   onDiffCommit={(...arg) => log(arg)}
 />, root)
-
-const a = createMutable({ a: 1 })
-const aa = createMemo(() => log(a.a))
-batch(() => a.a = 2)
-log('xxx')
-batch(() => a.a = 3)
-log('xxx')

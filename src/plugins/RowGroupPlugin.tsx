@@ -1,8 +1,9 @@
 import { groupBy, isEqual, remove, zipObject } from 'es-toolkit'
-import { findLastIndex } from 'es-toolkit/compat'
+import { findLast } from 'es-toolkit/compat'
 import { Ctx, type Plugin } from '../xxx'
 import { batch, createMemo, useContext } from 'solid-js'
 import type { TableStore } from '../xxx'
+import { log } from '@/utils'
 
 declare module '../xxx' {
   interface TableProps {
@@ -34,16 +35,17 @@ export const RowGroupPlugin: Plugin = {
     addRows(i, rows, before) {
       const { data, rowGroup, rowKey } = store.props!
       if (rowGroup?.fields?.length) {
-        const group = findLastIndex(data, e => e[GROUP], i)
+        const group = findLast(data, e => e[GROUP], i)
         if (group) {
           if (data[i][GROUP]) {
             const leaf = (function r(group) { return group[GROUP]?.children[0]?.[GROUP] ? r(group[GROUP].children[0]) : group })(group)
             store.rowGroup.expand(leaf, true)
             const anchor = leaf[GROUP].children[0]
             i = store.props!.data.indexOf(anchor)
+            before = true
           }
         }
-        addRows?.(i, rows, true)
+        addRows?.(i, rows, before)
       } else {
         addRows?.(...arguments)
       }
@@ -59,10 +61,9 @@ export const RowGroupPlugin: Plugin = {
       const row = newRow(...arguments)
       const { data, rowGroup } = store.props!
       if (rowGroup?.fields?.length) {
-        const group = findLastIndex(data, e => e[GROUP], i)
+        const group = findLast(data, e => e[GROUP], i)
         if (group) {
           const leaf = (function r(group) { return group[GROUP]?.children[0]?.[GROUP] ? r(group[GROUP].children[0]) : group })(group)
-          store.rowGroup.expand(leaf, true)
           const extra = zipObject(rowGroup!.fields!, leaf[GROUP].path)
           Object.assign(row, extra)
         }
@@ -93,15 +94,16 @@ const GROUP = Symbol('row-group')
 
 const expandData = (data, store: TableStore, path2 = [] as any[]) => {
   const fields = store.props!.rowGroup!.fields!
-  const col = store.props!.columns?.find(e => !e[store.internal])
+  const col = store.props!.columns.find(e => !e[store.internal])
   if (!col) return data
+  if (fields.length == path2.length) return data
   const path = path2[path2.length - 1]?.[GROUP].path || []
-  if (fields.length == path.length) return data
   const obj = groupBy(data, e => e[fields[path.length]])
   return Object.keys(obj).flatMap(k => {
     const group = { [col.id]: k, [store.internal]: 1 } as any
-    path2 = [...path2, group]
-    group[GROUP] = { path: [...path, k], value: k, col, path2, children: expandData(obj[k], store, path2) }
+    const ps = [...path2, group]
+    group[GROUP] = { path: [...path, k], value: k, path2: ps }
+    group[GROUP].children = expandData(obj[k], store, ps)
     const arr = store.rowGroup.isExpand(group) ? group[GROUP].children : []
     return [group, ...arr]
   })

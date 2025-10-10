@@ -11,6 +11,10 @@
     text-align: inherit;
   }
 
+  td:empty::after {
+    content: 'ㅤ' !important;
+  }
+
   &--border {
     @apply outline-(1 solid #ebeef5);
     th, td {
