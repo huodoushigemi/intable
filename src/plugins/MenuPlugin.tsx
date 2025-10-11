@@ -21,6 +21,9 @@ declare module '../xxx' {
     menus?: (store: TableStore) => any[]
   }
   interface Commands {
+    rowEquals: (a, b) => boolean
+    rowIndexOf: (data: any[], row) => number
+    // 
     addRows: (i: number, rows: any[], before?: boolean) => void
     deleteRows: (i: number[]) => void
   }
@@ -77,21 +80,31 @@ export const MenuPlugin: Plugin = {
     { label: '删除行', cb: () => store.commands.deleteRows(range( ...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number] )) },
   ],
   commands: (store) => ({
+    rowEquals(a, b) {
+      // return a[store.props!.rowKey] == b[store.props!.rowKey]
+      return a == b
+    },
+    rowIndexOf(data, row) {
+      return data.findIndex(e => store.commands.rowEquals(e, row))
+    },
     addRows(i, rows, before = true) {
       addRows(store, i, rows, before)
     },
     deleteRows(ii) {
       const { rowKey, data } = store.props!
-      const ids = new Set(data.filter((e, i) => ii.includes(i)).map(e => e[rowKey]))
       const val = [...store.rawProps.data || []]
-      remove(val, e => ids.has(e[rowKey]))
+      // const ids = new Set(data.filter((e, i) => ii.includes(i)).map(e => e[rowKey]))
+      // remove(val, e => ids.has(e[rowKey]))
+      const ids = new Set(ii.map(i => data[i]))
+      log([...ids])
+      remove(val, e => ids.has(e))
       store.props?.onDataChange?.(val)
     }
   })
 }
 
 function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
-  const { data, rowKey } = store.props!
+  const { data } = store.props!
   const prev = i => {
     before = false
     while (--i >= 0 && data[i]?.[store.internal]) {}
@@ -105,7 +118,7 @@ function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
   const anchor = !data[i]?.[store.internal] ? data[i] : before ? prev(i) || next(i) : next(i) || prev(i)
   if (anchor) {
     batch(() => {
-      i = data.indexOf(anchor)
+      i = store.commands.rowIndexOf(data, anchor)
       if (!store.selected) return
       store.selected.start = [0, i + (before ? 0 : 1)]
       store.selected.end = [Infinity, i + rows.length - 1 + (before ? 0 : 1)]
@@ -113,7 +126,7 @@ function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
   }
   ;(() => {
     const data = [...store.rawProps.data || []]
-    const i = anchor ? data.indexOf(anchor) + (before ? 0 : 1) : data.length
+    const i = anchor ? store.commands.rowIndexOf(data, anchor) + (before ? 0 : 1) : data.length
     data.splice(i, 0, ...rows)
     store.props?.onDataChange?.(data)
   })()
