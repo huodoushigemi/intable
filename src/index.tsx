@@ -8,6 +8,7 @@ import './index.scss'
 import 'virtual:uno.css'
 import { log } from './utils.ts'
 import { DiffPlugin } from '@/plugins/DiffPlugin.tsx'
+import { VirtualScrollPlugin } from './plugins/VirtualScrollPlugin.tsx'
 
 const root = document.getElementById('root')!
 
@@ -36,11 +37,18 @@ render(() => <Table
   data={data}
   border
   plugins={[
-    // DiffPlugin
+    DiffPlugin,
+    VirtualScrollPlugin,
   ]}
   onDataChange={v => batch(() => (data.length = 0, data.push(...v)))}
   expand={{ render: ({ data }) => <div class='p-6'>{JSON.stringify(data)}</div> }}
   // rowGroup={{ fields: ['g', 'n'] }}
-  rowGroup={{ fields: ['g'] }}
-  onDiffCommit={(...arg) => log(arg)}
+  // rowGroup={{ fields: ['g'] }}
+  diff={{
+    onCommit: (...arg) => log(arg)
+  }}
+  virtual={{
+    // x: { enable: false },
+    // y: { enable: false },
+  }}
 />, root)

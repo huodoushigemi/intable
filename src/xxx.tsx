@@ -344,7 +344,7 @@ export const defaultsPlugins = [
   BasePlugin(),
   CommandPlugin,
   MenuPlugin,
-  VirtualScrollPlugin,
+  // todo
   // RenderPlugin,
   IndexPlugin,
   StickyHeaderPlugin,

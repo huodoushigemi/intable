@@ -6,10 +6,16 @@ import { diffArrays } from 'diff'
 import { useTinykeys } from '@/hooks'
 import { type Plugin } from '../xxx'
 import { isEqual, keyBy } from 'es-toolkit'
+import { log } from '@/utils'
 
 declare module '../xxx' {
   interface TableProps {
-    onDiffCommit?: (data: any, opt: { added: any[], removed: any[], edited: any[] }) => any
+    diff?: {
+      /** @default true */ added?: boolean
+      /** @default true */ removed?: boolean
+      /** @default true */ changed?: boolean
+      onCommit?: (data: any, opt: { added: any[], removed: any[], changed: any[] }) => any
+    }
   }
   interface TableStore {
     diffData: any[]
@@ -38,29 +44,35 @@ export const DiffPlugin: Plugin = {
       const { rowKey } = store.props || {}
       data.forEach(row => unwrap(row)[rowKey] ??= uuid())
       data = structuredClone(unwrap(data))
-      const added = [], removed = [], edited = []
+      const added = [], removed = [], changed = []
       const keyed = keyBy(data, e => e[rowKey])
       for (const e of data) {
         const old = store.diffDataKeyed()[e[rowKey]]
         if (!old) added.push(e)
-        else if (!isEqual(e, old)) edited.push(e)
+        else if (!isEqual(e, old)) changed.push(e)
       }
       for (const e of store.diffData) {
         !keyed[e[rowKey]] && removed.push(e)
       }
-      await store.props!.onDiffCommit?.(data, { added, removed, edited })
+      await store.props!.diff?.onCommit?.(data, { added, removed, changed })
       added[NEW] = 0
       store.diffData = data
     }
   }),
   processProps: {
+    diff: ({ diff }) => ({
+      added: true,
+      removed: true,
+      changed: true,
+      ...diff
+    }),
     data: ({ data }, { store }) => {
-      const { rowKey } = store.props || {}
-      const diff = diffArrays(store.diffData || [], data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
-      return diff.flatMap(e => (
+      const { rowKey, diff } = store.props || {}
+      const diffArr = diffArrays(store.diffData || [], data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
+      return diffArr.flatMap(e => (
         // e.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) :
         e.added ? e.value.map(e => (e[NEW] = 1, e)) :
-        e.removed ? e.value.map(e => ({ ...e, [DEL]: 1, [store.internal]: 1 })) :
+        e.removed ? diff!.removed ? e.value.map(e => ({ ...e, [DEL]: 1, [store.internal]: 1 })) : [] :
         e.value
       ))
     },
@@ -74,11 +86,13 @@ export const DiffPlugin: Plugin = {
     },
     tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
       get class() {
+        const { diff } = store.props || {}
         const id = unwrap(o.data)[store.props!.rowKey]
         return [
+          o.data[NEW] ? diff?.added ? 'bg-#dafaea' : '' :
           o.data[DEL] ? 'bg-#ffe8e8' :
-          o.data[NEW] ? 'bg-#dafaea' :
-          o.data[o.col.id] != store.diffDataKeyed()[id][o.col.id] ? 'bg-#dafaea' : ''
+          o.data[store.internal] ? '' :
+          diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id][o.col.id] ? 'bg-#dafaea' : ''
         ].join(' ')
       }
     }),

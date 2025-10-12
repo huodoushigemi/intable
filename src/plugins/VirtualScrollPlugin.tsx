@@ -3,9 +3,9 @@ import { createMutable, createStore, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { createVirtualizer, defaultRangeExtractor, Virtualizer } from '@tanstack/solid-virtual'
+import { useVirtualizer } from '@/hooks/useVirtualizer'
+import { defaultsDeep } from 'es-toolkit/compat'
 import { Ctx, type Plugin } from '../xxx'
-import { createElementSize } from '@solid-primitives/resize-observer'
-import { uniqBy } from 'es-toolkit'
 import { log } from '@/utils'
 
 const $ML = Symbol()
@@ -13,35 +13,42 @@ const $ML = Symbol()
 // const aa: TableProps
 declare module '../xxx' {
   interface TableProps {
-    
+    virtual?: {
+      x?: Partial<Parameters<typeof useVirtualizer>[0]>
+      y?: Partial<Parameters<typeof useVirtualizer>[0]>
+    }
   }
   interface TableStore {
-    virtualizerY: Virtualizer<HTMLElement, Element>
-    virtualizerX: Virtualizer<HTMLElement, Element>
+    // virtualizerY: Virtualizer<HTMLElement, Element>
+    // virtualizerX: Virtualizer<HTMLElement, Element>
+    virtualizerY: ReturnType<typeof useVirtualizer>
+    virtualizerX: ReturnType<typeof useVirtualizer>
   }
 }
 
 export const VirtualScrollPlugin: Plugin = {
   processProps: {
+    virtual: ({ virtual }) => defaultsDeep({
+      x: { overscan: 5 },
+      y: { overscan: 10 },
+    }, virtual),
     Table: ({ Table }, { store }) => (o) => {
       let el: HTMLElement
 
       const { props } = useContext(Ctx)
       
-      const virtualizerY = useVirtualizer({
+      const virtualizerY = useVirtualizer(mergeProps(() => props.virtual?.y, {
         getScrollElement: () => el,
         get count() { return props.data?.length || 0 },
         estimateSize: () => 20,
-        overscan: 10,
         indexAttribute: 'y',
-      })
+      }))
 
-      const virtualizerX = useVirtualizer({
+      const virtualizerX = useVirtualizer(mergeProps(() => props.virtual?.x, {
         horizontal: true,
         getScrollElement: () => el,
         get count() { return props.columns?.length || 0 },
         estimateSize: i => props.columns?.[i].width ?? 40,
-        overscan: 5,
         indexAttribute: 'x',
         rangeExtractor(range) {
           return [
@@ -52,7 +59,7 @@ export const VirtualScrollPlugin: Plugin = {
           ]
         },
         extras: () => props.columns?.map((e, i) => e.fixed ? i : void 0).filter(e => e != null) || []
-      })
+      }))
 
       store.virtualizerY = virtualizerY
       store.virtualizerX = virtualizerX
@@ -139,66 +146,3 @@ export const VirtualScrollPlugin: Plugin = {
   }
 }
 
-function useVirtualizer(opt) {
-  opt = mergeProps({ overscan: 0 }, opt)
-  const size = createElementSize(opt.getScrollElement)
-  const pos = createScrollPosition(opt.getScrollElement)
-  const y = createMemo(() => opt.horizontal ? pos.x : pos.y)
-  const h = createMemo(() => opt.horizontal ? size.width : size.height)
-  const y2 = createMemo(() => y() + h())
-  
-  const sizes = createMutable(Array(opt.count))
-  createComputed(() => {
-    const { count } = opt
-    untrack(() => {
-      for (let i = 0; i < count; i++) sizes[i] ||= opt.estimateSize(i)
-    })
-  })
-
-  type Item = { start: number; end: number; index: number }
-  const [items, setItems] = createSignal([] as Item[])
-  createRenderEffect(() => {
-    const { count } = opt
-    let arr = Array(count) as Item[]
-    let t = 0
-    for (let i = 0; i < count; i++) {
-      arr[i] = { start: t, end: t + sizes[i], index: i }
-      t = arr[i].end
-    }
-    setItems(arr)
-  })
-
-  const start = createMemo(() => {
-    const i = findClosestIndex(items(), e => e.start > y() ? -1 : e.end < y() ? 1 : 0)!
-    return Math.max(i - opt.overscan, 0)
-  })
-  const end = createMemo(() => {
-    const i = findClosestIndex(items(), e => e.start > y2() ? -1 : e.end < y2() ? 1 : 0)
-    return Math.min(i + opt.overscan, opt.count - 1)
-  })
-  const items2 = createMemo(() => {
-    const arr = items().slice(start(), end() + 1).concat(opt.extras?.()?.map(i => items()[i]) || [])
-    return uniqBy(arr, e => e.index).sort((a, b) => a.index - b.index)
-  })
-
-  function findClosestIndex<T>(arr: T[], fn: (e: T) => any) {
-    let l = 0, r = arr.length - 1
-    while (l < r) {
-      const m = l + Math.floor((r - l) / 2)
-      const v = fn(arr[m])
-      if (v < 0 && r != m) r = m
-      else if (v > 0 && l != m) l = m
-      else return m
-    }
-    return l
-  }
-
-  return {
-    getTotalSize: () => items()[items().length - 1]?.end || 0,
-    resizeItem: (i, size) => {
-      if (i <= start() && size != sizes[i]) opt.getScrollElement().scrollTop += size - sizes[i] // 修复滚动抖动
-      sizes[i] = size
-    },
-    getVirtualItems: items2
-  }
-}
