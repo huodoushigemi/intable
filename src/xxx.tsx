@@ -262,6 +262,7 @@ function BasePlugin(): Plugin {
         const mProps = combineProps(
           o,
           () => ({ class: o.col.class, style: o.col.style }),
+          { get style() { return { width: `${o.col.width}px` } } },
           createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
           createMemo(() => props.tdProps?.(o) || {}, null, { equals: isEqual }),
           createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
