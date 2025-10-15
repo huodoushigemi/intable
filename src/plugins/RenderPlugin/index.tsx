@@ -23,13 +23,7 @@ export type Render = (props: Parameters<TD>[0] & { onChange?: (v) => void }) => 
 export const RenderPlugin: Plugin = {
   priority: -Infinity,
   store: () => ({
-    renders: {
-      text,
-      number,
-      date,
-      checkbox,
-      file
-    }
+    renders: { ...renders }
   }),
   processProps: {
     Td: ({ Td }, { store }) => o => {
@@ -37,7 +31,7 @@ export const RenderPlugin: Plugin = {
         <Td {...o}>
           {(() => {
             const Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render) || text
-            return <Comp {...o} />
+            return <Comp {...o} onChange={v => store.commands.rowChange({ ...o.data, [o.col.id]: v }, o.y)} />
           })()}
         </Td>
       )
@@ -70,3 +64,11 @@ const file: Render = component(({ data, col, onChange }) => {
     <Files value={data[col.id]} onChange={onChange} disabled />
   )
 })
+
+export const renders = {
+  text,
+  number,
+  date,
+  checkbox,
+  file
+}

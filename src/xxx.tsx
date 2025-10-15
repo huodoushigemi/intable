@@ -104,7 +104,11 @@ export interface TableStore extends Obj {
 
 export const Table = (props: TableProps) => {
   props = mergeProps({ rowKey: 'id' } as Partial<TableProps>, props)
-  const plugins = createMemo(() => [...defaultsPlugins, ...props.plugins || []].sort((a, b) => (b.priority || 0) - (a.priority || 0)))
+  const plugins = createMemo(() => [
+    ...defaultsPlugins,
+    ...props.plugins || [],
+    RenderPlugin
+  ].sort((a, b) => (b.priority || 0) - (a.priority || 0)))
 
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
 
@@ -345,8 +349,6 @@ export const defaultsPlugins = [
   BasePlugin(),
   CommandPlugin,
   MenuPlugin,
-  // todo
-  // RenderPlugin,
   IndexPlugin,
   StickyHeaderPlugin,
   FixedColumnPlugin,

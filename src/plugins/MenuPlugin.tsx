@@ -23,6 +23,7 @@ declare module '../xxx' {
   interface Commands {
     rowEquals: (a, b) => boolean
     rowIndexOf: (data: any[], row) => number
+    rowChange: (row, i?) => void
     // 
     addRows: (i: number, rows: any[], before?: boolean) => void
     deleteRows: (i: number[]) => void
@@ -86,6 +87,16 @@ export const MenuPlugin: Plugin = {
     },
     rowIndexOf(data, row) {
       return data.findIndex(e => store.commands.rowEquals(e, row))
+    },
+    rowChange(row, i) {
+      const data = [...store.rawProps.data || []]
+      i = i != null
+        ? data.findIndex(ee => ee == store.props!.data[i])
+        : store.commands.rowIndexOf(data, row)
+      if (i > -1) {
+        data[i] = row
+        store.props!.onDataChange?.(data)
+      }
     },
     addRows(i, rows, before = true) {
       addRows(store, i, rows, before)

@@ -40,7 +40,7 @@ export const VirtualScrollPlugin: Plugin = {
       const virtualizerY = useVirtualizer(mergeProps(() => props.virtual?.y, {
         getScrollElement: () => el,
         get count() { return props.data?.length || 0 },
-        estimateSize: () => 20,
+        estimateSize: () => 32,
         indexAttribute: 'y',
       }))
 
@@ -64,7 +64,7 @@ export const VirtualScrollPlugin: Plugin = {
       store.virtualizerY = virtualizerY
       store.virtualizerX = virtualizerX
 
-      store[$ML] ??= createMemo(() => {
+      store[$ML] = createMemo(() => {
         const items = store.virtualizerX.getVirtualItems()
         const ret = {}
         for (let i = 1; i < items.length; i++) {
@@ -85,14 +85,14 @@ export const VirtualScrollPlugin: Plugin = {
     },
     Td: ({ Td }, { store }) => (o) => {
       const ml = createMemo(() => store[$ML]()[o.x])
-      const mo = combineProps({ get style() { return `width: ${o.col.width || 80}px; margin-left: ${ml()?.offset}px` } }, o)
+      const mo = combineProps({ get style() { return `width: ${o.col.width || 80}px; margin-left: ${ml()?.offset ?? 0}px` } }, o)
       return <Td {...mo} />
     },
     Th: ({ Th }, { store }) => (o) => {
-      const ml = createMemo(() => store[$ML]?.()[o.x])
-      o = combineProps(() => ({ style: `width: ${o.col.width || 80}px; margin-left: ${ml()?.offset}px` }), o)
       createEffect(() => store.thSizes[o.x] && store.virtualizerX.resizeItem(o.y, store.thSizes[o.x]!.width))
-      return <Th {...o} />
+      const ml = createMemo(() => store[$ML]?.()[o.x])
+      const mo = combineProps(() => ({ style: `width: ${o.col.width || 80}px; margin-left: ${ml()?.offset ?? 0}px` }), o)
+      return <Th {...mo} />
     },
     Tr: ({ Tr }, { store }) => (o) => {
       createEffect(() => store.trSizes[o.y] && store.virtualizerY.resizeItem(o.y, store.trSizes[o.y]!.height))

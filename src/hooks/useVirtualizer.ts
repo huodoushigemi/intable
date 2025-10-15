@@ -73,7 +73,16 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     options: opt,
     getTotalSize: () => items()[items().length - 1]?.end || 0,
     resizeItem: (i, size) => {
-      if (i <= start() && size != sizes[i]) opt.getScrollElement().scrollTop += size - sizes[i] // 修复滚动抖动
+      // 修复滚动抖动
+      if (i <= start() && size != sizes[i]) {
+        const el = opt.getScrollElement()
+        const v = opt.horizontal ? el.scrollLeft : el.scrollTop
+        if (v != 0) {
+          opt.horizontal
+            ? el.scrollLeft += size - sizes[i]
+            : el.scrollTop += size - sizes[i]
+        }
+      }
       sizes[i] = size
     },
     getVirtualItems: items2
