@@ -2,6 +2,7 @@ import { createContext, createMemo, createSignal, For, useContext, createEffect,
 import { createMutable, createStore, unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { clamp, difference, identity, isEqual, mapValues, sumBy } from 'es-toolkit'
+import { defaultsDeep } from 'es-toolkit/compat'
 import { toReactive, useMemo, usePointerDrag } from '@/hooks'
 import { useSplit } from '@/components/Split'
 
@@ -111,12 +112,12 @@ export const Table = (props: TableProps) => {
   ].sort((a, b) => (b.priority || 0) - (a.priority || 0)))
 
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
-
+  
   const store = createMutable({
-    rawProps: props,
+    get rawProps() { return props },
     get plugins() { return plugins() }
   }) as TableStore
-
+  
   const owner = getOwner()!
   createComputed((old: Plugin[]) => {
     const added = difference(plugins(), old)
@@ -147,9 +148,6 @@ export const Table = (props: TableProps) => {
   return (
     <Ctx.Provider value={ctx}>
       <ctx.props.Table>
-        <colgroup>
-          <For each={ctx.props.columns}>{e => <col style={`width: ${e.width}px`} />}</For>
-        </colgroup>
         <THead />
         <TBody />
       </ctx.props.Table>
@@ -211,7 +209,7 @@ function BasePlugin(): Plugin {
       internal: Symbol('internal')
     }),
     processProps: {
-      data: ({ data = [] }) => data![$PROXY] ?? data,
+      data: ({ data = [] }) => data,
       columns: ({ columns = [] }) => columns,
       newRow: ({ newRow = () => ({}) }) => newRow,
       Tbody: ({ Tbody = tbody }) => Tbody,
@@ -318,22 +316,30 @@ const FixedColumnPlugin: Plugin = {
 
 const ResizePlugin: Plugin = {
   processProps: {
+    resizable: ({ resizable }) => defaultsDeep({
+      col: { enable: true, min: 45, max: 800 },
+      row: { enable: true, min: 20, max: 400 }
+    }, resizable),
     Thead: ({ Thead }, { store }) => o => {
       let theadEl: HTMLElement
       const { props } = useContext(Ctx)
+      const ths = createMemo(() => store.ths.filter(e => e != null))
       onMount(() => {
-        useSplit({ container: theadEl, cells: () => store.ths.filter(identity), size: 8, handle: i => <Handle i={i} /> })
+        useSplit({ container: theadEl, cells: ths, size: 8, handle: i => <Handle i={i} /> })
       })
       
       const Handle: Component = ({ i }) => {
-        let el!: HTMLElement
+        let el!: HTMLDivElement
         usePointerDrag(() => el, {
           start(e, move, end) {
-            const col = theadEl.parentElement?.querySelector('colgroup')?.children[i - 1]! as HTMLTableColElement
-            const sw = col.offsetWidth
-                      move((e, o) => col.style.width = `${clamp(sw + o.ox, 45, 800)}px`)
-            // end(() => props.columns[o.i - 1].width = col.offsetWidth) // todo
-            end(() => props.columns![i - 1].onWidthChange?.(col.offsetWidth))
+            const { min, max }  = props.resizable.col
+            const th = ths()[i] as HTMLTableColElement
+            const sw = th.offsetWidth
+            move((e, o) => th.style.width = `${clamp(sw + o.ox, min, max)}px`)
+            end(() => {
+              props.columns[i - 1].width = th.offsetWidth
+              props.columns[i - 1].onWidthChange?.(th.offsetWidth)
+            })
           },
         })
         return <div ref={el} class="handle size-full cursor-w-resize hover:bg-gray active:bg-gray" />
@@ -342,21 +348,48 @@ const ResizePlugin: Plugin = {
       o = combineProps({ ref: e => theadEl = e }, o)
       return <Thead {...o} />
     },
+    Tbody: ({ Tbody }, { store }) => o => {
+      let el!: HTMLElement
+      const { props } = useContext(Ctx)
+      const trs = createMemo(() => store.trs.filter(e => e != null))
+      onMount(() => {
+        useSplit({ container: el, cells: trs, size: 8, handle: i => <Handle i={i} /> })
+      })
+
+      const Handle: Component = ({ i }) => {
+        let el!: HTMLDivElement
+        usePointerDrag(() => el, {
+          start(e, move, end) {
+            const { min, max }  = props.resizable.row
+            const tr = trs()[i] as HTMLTableColElement
+            const sw = tr.offsetWidth
+            move((e, o) => tr.style.width = `${clamp(sw + o.ox, min, max)}px`)
+            end(() => {
+              // todo
+            })
+          },
+        })
+        return <div ref={el} class="handle size-full cursor-w-resize hover:bg-gray active:bg-gray" />
+      }
+
+      o = combineProps({ ref: e => el = e }, o)
+      return <Tbody {...o}/>
+    }
   }
 }
 
 export const defaultsPlugins = [
   BasePlugin(),
-  CommandPlugin,
-  MenuPlugin,
-  IndexPlugin,
-  StickyHeaderPlugin,
-  FixedColumnPlugin,
+  // CommandPlugin,
+  // MenuPlugin,
+  // IndexPlugin,
+  // StickyHeaderPlugin,
+  // FixedColumnPlugin,
   ResizePlugin,
-  CellSelectionPlugin,
-  ClipboardPlugin,
+  // CellSelectionPlugin,
+  // ClipboardPlugin,
   // ExpandPlugin,
-  RowGroupPlugin,
-  EditablePlugin,
-  HistoryPlugin,
+  // RowGroupPlugin,
+  // EditablePlugin,
+  // HistoryPlugin,
 ]
