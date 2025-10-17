@@ -325,7 +325,7 @@ const ResizePlugin: Plugin = {
       const { props } = useContext(Ctx)
       const ths = createMemo(() => store.ths.filter(e => e != null))
       onMount(() => {
-        useSplit({ container: theadEl, cells: ths, size: 8, handle: i => <Handle i={i} /> })
+        useSplit({ container: theadEl, cells: ths, size: 8, trailing: true, dir: 'x', handle: i => <Handle i={i} /> })
       })
       
       const Handle: Component = ({ i }) => {
@@ -337,8 +337,8 @@ const ResizePlugin: Plugin = {
             const sw = th.offsetWidth
             move((e, o) => th.style.width = `${clamp(sw + o.ox, min, max)}px`)
             end(() => {
-              props.columns[i - 1].width = th.offsetWidth
-              props.columns[i - 1].onWidthChange?.(th.offsetWidth)
+              props.columns[i].width = th.offsetWidth
+              props.columns[i].onWidthChange?.(th.offsetWidth)
             })
           },
         })
@@ -351,9 +351,9 @@ const ResizePlugin: Plugin = {
     Tbody: ({ Tbody }, { store }) => o => {
       let el!: HTMLElement
       const { props } = useContext(Ctx)
-      const trs = createMemo(() => store.trs.filter(e => e != null))
+      const tds = createMemo(() => store.trs.filter(e => e != null).map(e => e.firstElementChild!))
       onMount(() => {
-        useSplit({ container: el, cells: trs, size: 8, handle: i => <Handle i={i} /> })
+        useSplit({ container: el, cells: tds, size: 8, trailing: true, dir: 'y', handle: i => <Handle i={i} /> })
       })
 
       const Handle: Component = ({ i }) => {
@@ -361,15 +361,15 @@ const ResizePlugin: Plugin = {
         usePointerDrag(() => el, {
           start(e, move, end) {
             const { min, max }  = props.resizable.row
-            const tr = trs()[i] as HTMLTableColElement
-            const sw = tr.offsetWidth
-            move((e, o) => tr.style.width = `${clamp(sw + o.ox, min, max)}px`)
+            const tr = tds()[i] as HTMLTableColElement
+            const sw = tr.offsetHeight
+            move((e, o) => tr.style.height = `${clamp(sw + o.oy, min, max)}px`)
             end(() => {
               // todo
             })
           },
         })
-        return <div ref={el} class="handle size-full cursor-w-resize hover:bg-gray active:bg-gray" />
+        return <div ref={el} class="handle size-full cursor-s-resize hover:bg-gray active:bg-gray" />
       }
 
       o = combineProps({ ref: e => el = e }, o)
