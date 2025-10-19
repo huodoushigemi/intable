@@ -26,7 +26,7 @@ export default defineConfig({
       },
       presets: [
         // (await import('@ameinhardt/unocss-preset-daisy')).presetDaisy({ base: true, utils: true, logs: true, styled: true }),
-        (await import('unocss/preset-wind4')).default({ dark: 'media', preflights: { reset: false, theme: true } }),
+        (await import('unocss/preset-wind4')).default({ dark: 'media' }),
       ],
       transformers: [
         (await import('@unocss/transformer-directives')).default(),

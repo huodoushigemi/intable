@@ -7,14 +7,18 @@ import { Table } from './xxx.tsx'
 import './index.scss'
 import 'virtual:uno.css'
 import { log } from './utils.ts'
-import { DiffPlugin } from '@/plugins/DiffPlugin.tsx'
+
 import { VirtualScrollPlugin } from './plugins/VirtualScrollPlugin.tsx'
+import { RowGroupPlugin } from './plugins/RowGroupPlugin.tsx'
+import { EditablePlugin } from './plugins/EditablePlugin.tsx'
+import { HistoryPlugin } from './plugins/HistoryPlugin.tsx'
+import { DiffPlugin } from '@/plugins/DiffPlugin.tsx'
 
 const root = document.getElementById('root')!
 
 const state = createMutable({ bool: true })
 
-const cols = range(30).map(e => ({ name: 'col_' + e, id: 'col_' + e, width: 80 }))
+const cols = createMutable(range(30).map(e => ({ name: 'col_' + e, id: 'col_' + e, width: 80 })))
 let data = createMutable(range(100).map((e, i) => Object.fromEntries(cols.map(e => [e.id, i + 1]))))
 render(() => <input type='checkbox' checked={state.bool} onChange={(e) => state.bool = e.currentTarget.checked} />, root)
 render(() => <button onClick={() => data[0].col_1 = 'xxx'}>xxx</button>, root)
@@ -37,8 +41,10 @@ render(() => <Table
   data={data}
   border
   plugins={[
-    DiffPlugin,
     VirtualScrollPlugin,
+    RowGroupPlugin,
+    HistoryPlugin,
+    DiffPlugin,
   ]}
   onDataChange={v => batch(() => (data.length = 0, data.push(...v)))}
   expand={{ render: ({ data }) => <div class='p-6'>{JSON.stringify(data)}</div> }}

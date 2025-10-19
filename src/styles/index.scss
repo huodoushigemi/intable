@@ -4,7 +4,7 @@
 }
 
 .data-table {
-  @apply relative table-fixed b-1 border-collapse outline-0;
+  @apply relative table-fixed b-1 border-collapse b-0 outline-0;
 
   td, th {
     @apply px-2 py-.5 lh-[28px] outline-0 box-border;
