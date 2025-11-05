@@ -311,10 +311,10 @@ const FixedColumnPlugin: Plugin = {
 
 const ResizePlugin: Plugin = {
   processProps: {
-    resizable: ({ resizable }) => defaultsDeep({
+    resizable: ({ resizable }) => defaultsDeep(resizable, {
       col: { enable: true, min: 45, max: 800 },
       row: { enable: true, min: 20, max: 400 }
-    }, resizable),
+    }),
     Thead: ({ Thead }, { store }) => o => {
       let theadEl: HTMLElement
       const { props } = useContext(Ctx)

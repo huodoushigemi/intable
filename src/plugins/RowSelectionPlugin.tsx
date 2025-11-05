@@ -37,10 +37,10 @@ export const RowSelectionPlugin: Plugin = {
     }
   }),
   processProps: {
-    rowSelection: ({ rowSelection }) => defaultsDeep({
+    rowSelection: ({ rowSelection }) => defaultsDeep(rowSelection, {
       enable: false,
       multiple: false,
-    } as TableProps['rowSelection'], rowSelection),
+    } as TableProps['rowSelection']),
     columns: ({ columns }, { store }) => store.props?.rowSelection?.enable ? [store.rowSelectionCol, ...columns] : columns
     // columns: ({ columns }, { store }) => [store.rowSelectionCol, ...columns]
   }

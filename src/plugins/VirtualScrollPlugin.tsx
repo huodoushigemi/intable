@@ -28,10 +28,10 @@ declare module '../xxx' {
 
 export const VirtualScrollPlugin: Plugin = {
   processProps: {
-    virtual: ({ virtual }) => defaultsDeep({
+    virtual: ({ virtual }) => defaultsDeep(virtual, {
       x: { overscan: 5 },
       y: { overscan: 10 },
-    }, virtual),
+    }),
     Table: ({ Table }, { store }) => (o) => {
       let el: HTMLElement
 
