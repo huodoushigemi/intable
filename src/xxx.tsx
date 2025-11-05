@@ -11,16 +11,11 @@ import { log, unFn } from '@/utils'
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { CellSelectionPlugin } from './plugins/CellSelectionPlugin'
 import { ClipboardPlugin } from './plugins/CopyPastePlugin'
-import { VirtualScrollPlugin } from './plugins/VirtualScrollPlugin'
-import { ExpandPlugin } from './plugins/ExpandPlugin'
-import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { EditablePlugin } from './plugins/EditablePlugin'
 import { RenderPlugin } from './plugins/RenderPlugin'
-import { HistoryPlugin } from './plugins/HistoryPlugin'
-import { captureStoreUpdates } from '@solid-primitives/deep'
 import { MenuPlugin } from './plugins/MenuPlugin'
 import { CommandPlugin } from './plugins/CommandPlugin'
-import { DiffPlugin } from './plugins/DiffPlugin'
+import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2
@@ -389,4 +384,5 @@ export const defaultsPlugins = [
   CellSelectionPlugin,
   ClipboardPlugin,
   EditablePlugin,
+  RowSelectionPlugin
 ]
