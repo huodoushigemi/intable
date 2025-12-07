@@ -23,6 +23,12 @@ const VueTable: Component<TableProps> = (props) => (
       createRoot(dispose => {
         // const props = createMutable(mapValues(vnode.props['.props'], v => toRaw(v)))
         const props = createMutable({ ...vnode.props['.props'] })
+        // console.log(props)
+        console.log(props.data, 1)
+        console.log(props.data, 2)
+        return
+        // console.log(props.data)
+        // const props = { ...vnode.props['.props'] }
 
         props.style = normalizeStyle([props.style])
         props.class = normalizeClass(props.class)

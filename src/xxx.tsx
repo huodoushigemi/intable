@@ -126,9 +126,6 @@ export const Table = (props: TableProps) => {
     const prev = () => pluginsProps()[i() - 1]?.[0]() || props
     // const ret = mergeProps(prev, toReactive(mapValues(e.processProps || {}, v => useMemo(() => v(prev(), { store })) )))
     const ret = mergeProps(prev, () => mapValues(e.processProps || {}, v => v(prev(), { store })))
-    
-          log(props.data)
-          log(11)
     pluginsProps()[i()][1](ret)
   }))
 
@@ -205,69 +202,67 @@ function BasePlugin(): Plugin {
       internal: Symbol('internal')
     }),
     processProps: {
-      data: ({ data = [] }) => data,
+      data: ({ data = [] }) => log(data, 11),
       columns: ({ columns = [] }) => columns,
       newRow: ({ newRow = () => ({}) }) => newRow,
       Tbody: ({ Tbody = tbody }) => Tbody,
       Thead: ({ Thead = thead }) => Thead,
       Table: ({ Table = table }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
-        // Object.defineProperty(store, 'table', { get: () => el() })
-        // const { props } = useContext(Ctx)
-        // o = combineProps({
-        //   ref: setEl,
-        //   get class() { return `data-table ${props.class} ${props.border && 'data-table--border'}` },
-        //   get style() { return props.style }
-        // }, o)
+        Object.defineProperty(store, 'table', { get: () => el() })
+        const { props } = useContext(Ctx)
+        o = combineProps({
+          ref: setEl,
+          get class() { return `data-table ${props.class} ${props.border && 'data-table--border'}` },
+          get style() { return props.style }
+        }, o)
         return <Table {...o} />
       },
       Tr: ({ Tr = tr }, { store }) => o => {
-        // const [el, setEl] = createSignal<HTMLElement>()
-        // o = combineProps({ ref: setEl }, o)
+        const [el, setEl] = createSignal<HTMLElement>()
+        o = combineProps({ ref: setEl }, o)
 
-        // createEffect(() => {
-        //   const { y } = o
-        //   store.trs[y] = el()
-        //   store.trSizes[y] = createElementSize(el())
-        //   onCleanup(() => store.trSizes[y] = store.trs[y] = void 0)
-        // })
+        createEffect(() => {
+          const { y } = o
+          store.trs[y] = el()
+          store.trSizes[y] = createElementSize(el())
+          onCleanup(() => store.trSizes[y] = store.trs[y] = void 0)
+        })
 
         return <Tr {...o} />
       },
       Th: ({ Th = th }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
         
-        // const { props } = useContext(Ctx)
-        // const mProps = combineProps(
-        //   o,
-        //   () => ({ ref: setEl, class: o.col.class, style: o.col.style }),
-        //   { get style() { return { width: `${o.col.width}px` } } },
-        //   createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
-        //   createMemo(() => props.thProps?.(o) || {}, null, { equals: isEqual }),
-        //   createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
-        // )
+        const { props } = useContext(Ctx)
+        const mProps = combineProps(
+          o,
+          () => ({ ref: setEl, class: o.col.class, style: o.col.style }),
+          { get style() { return { width: `${o.col.width}px` } } },
+          createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
+          createMemo(() => props.thProps?.(o) || {}, null, { equals: isEqual }),
+          createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
+        )
 
-        // createEffect(() => {
-        //   const { x } = o
-        //   store.ths[x] = el()
-        //   store.thSizes[x] = createElementSize(el())
-        //   onCleanup(() => store.thSizes[x] = store.ths[x] = void 0)
-        // })
-        const { props: mProps } = useContext(Ctx)
+        createEffect(() => {
+          const { x } = o
+          store.ths[x] = el()
+          store.thSizes[x] = createElementSize(el())
+          onCleanup(() => store.thSizes[x] = store.ths[x] = void 0)
+        })
         
         return <Th {...mProps}>{o.children}</Th>
       },
       Td: ({ Td = td }, { store }) => o => {
-        // const { props } = useContext(Ctx)
-        // const mProps = combineProps(
-        //   o,
-        //   () => ({ class: o.col.class, style: o.col.style }),
-        //   { get style() { return { width: `${o.col.width}px` } } },
-        //   createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
-        //   createMemo(() => props.tdProps?.(o) || {}, null, { equals: isEqual }),
-        //   createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
-        // )
-        const { props: mProps } = useContext(Ctx)
+        const { props } = useContext(Ctx)
+        const mProps = combineProps(
+          o,
+          () => ({ class: o.col.class, style: o.col.style }),
+          { get style() { return { width: `${o.col.width}px` } } },
+          createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
+          createMemo(() => props.tdProps?.(o) || {}, null, { equals: isEqual }),
+          createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
+        )
         return <Td {...mProps}>{o.children}</Td>
       },
       EachRows: ({ EachRows }) => EachRows || For,
