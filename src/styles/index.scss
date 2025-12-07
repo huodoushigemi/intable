@@ -7,7 +7,7 @@
   @apply relative table-fixed b-1 border-collapse b-0 outline-0;
 
   td, th {
-    @apply px-2 py-.5 lh-[28px] outline-0 box-border;
+    @apply px-2 py-.5 lh-[28px] outline-0 b-(0 solid #ebeef5) b-b-1 box-border;
     text-align: inherit;
   }
 
@@ -18,7 +18,7 @@
   &--border {
     @apply outline-(1 solid #ebeef5);
     th, td {
-      @apply b-(0 solid #ebeef5) b-r-1 b-b-1;
+      @apply b-r-1 b-b-1;
     }
   }
 }
@@ -85,7 +85,7 @@
 
 input[type="checkbox"].you-checkbox {
   @apply relative size-4 m-1 rd-1 c-#2196f3 b-(2 solid current) outline-offset--0 focus:outline-(4 solid #2196f3/40) cusor-pointer appearance-none checked:bg-current;
-  &:checked::after {
+  &.checked::after {
     @apply content-["✓"] absolute top-50% left-50% translate--50% text-3 c-#fff z-1;
   }
 }

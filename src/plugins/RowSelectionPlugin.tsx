@@ -1,15 +1,17 @@
-import { batch, createComputed, createEffect, createMemo, createSignal, mapArray, on } from 'solid-js'
-import { defaultsDeep } from 'es-toolkit/compat'
+import { createMemo, createRenderEffect, mergeProps, on } from 'solid-js'
+import { createMutable } from 'solid-js/store'
+import { keyBy } from 'es-toolkit'
+import { defaultsDeep, isEqual } from 'es-toolkit/compat'
 import { type Commands, type Plugin, type TableColumn, type TableProps } from '../xxx'
 import { Checkbox } from './RenderPlugin/components'
-import { log } from '@/utils'
 
 declare module '../xxx' {
   interface TableProps {
     rowSelection?: {
       enable?: boolean
-      multiple?: boolean // todo
-      selected?: any[]
+      multiple?: boolean
+      value?: any[]
+      selectable?: (row) => boolean
       onChange?: (selected: any[]) => void
     }
   }
@@ -17,31 +19,69 @@ declare module '../xxx' {
 
   }
   interface Commands {
-    
+    rowSelector: ReturnType<typeof useSelector>
   }
 }
 
 export const RowSelectionPlugin: Plugin = {
   store: (store) => ({
     rowSelectionCol: {
-      width: 40,
-      fixed: 'left',
       [store.internal]: 1,
-      class: 'rowSelection',
-      style: { display: 'flex', 'align-items': 'center' },
-      // render: (o) => <Checkbox value={store.commands.rowIndexOf(o.data) > -1} onChange={v => {}} />
-      render: (o) => <Checkbox />
+      id: Symbol('row-selection'),
+      width: 45,
+      fixed: 'left',
+      class: 'row-selection',
+      resizable: false,
+      render: (o) => (
+        <div class='hfull flex items-center'>
+          <Checkbox
+            value={store.commands.rowSelector.isSelected(o.data)}
+            onChange={v => store.commands.rowSelector.select(o.data, v)}
+            disabled={!store.props?.rowSelection?.selectable?.(o.data)}
+          />
+        </div>
+      )
     } as TableColumn,
-    rowSelection: {
-      selected: []
-    }
+  }),
+  commands: (store) => ({
+    rowSelector: useSelector(mergeProps(() => ({ rowKey: store.props?.rowKey, ...store.props?.rowSelection })))
   }),
   processProps: {
     rowSelection: ({ rowSelection }) => defaultsDeep(rowSelection, {
       enable: false,
       multiple: false,
+      selectable: () => true,
     } as TableProps['rowSelection']),
-    columns: ({ columns }, { store }) => store.props?.rowSelection?.enable ? [store.rowSelectionCol, ...columns] : columns
-    // columns: ({ columns }, { store }) => [store.rowSelectionCol, ...columns]
+
+    columns: ({ columns }, { store }) => store.props?.rowSelection?.enable
+      ? [store.rowSelectionCol, ...columns]
+      : columns
   }
+}
+
+function useSelector(opt: Partial<{ value, rowKey, multiple, selectable, onChange }>) {
+  const map = createMutable({})
+  const selected = createMemo(() => opt.value || [])
+
+  const isSelected = (data) => !!map[id(data)]
+
+  const select = (data, bool = true) => opt.selectable(data) && (opt.multiple || clear(), map[id(data)] = bool ? data : void 0)
+
+  const clear = () => opt.onChange?.([])
+
+  const set = (rows = []) => opt.onChange?.(rows)
+
+  const id = data => data[opt.rowKey]
+
+  createRenderEffect(on(selected, () => {
+    const keyed = keyBy(selected(), id)
+    for (const id in map) {
+      if (!keyed[id]) map[id] = void 0
+    }
+    for (const id in keyed) {
+      if (!map[id]) map[id] = keyed[id]
+    }
+  }))
+
+  return { isSelected, select, clear, set }
 }

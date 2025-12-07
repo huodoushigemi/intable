@@ -92,6 +92,9 @@ export const EditablePlugin: Plugin = {
             <input
               style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events; none; opacity: 0'
               ref={e => { input = e; delay(0).then(() => e.focus()) }}
+              onKeyDown={e => {
+                e.key == ' ' && e.preventDefault()
+              }}
               onInput={e => {
                 eventKey = e.target.value
                 setEditing(!e.isComposing)
@@ -114,7 +117,7 @@ export const EditablePlugin: Plugin = {
 const BaseInput: Editor = ({ stopEditing, eventKey, value, col, type }) => createRoot(destroy => {
   const [v, setV] = createSignal(eventKey || value)
   const el: HTMLElement = <input
-    class='relative block px-2 size-full z-9 box-border resize-none'
+    class='relative block px-2 size-full z-9 box-border resize-none outline-0'
     value={v() || ''}
     type={type}
     onInput={e => setV(e.target.value)}

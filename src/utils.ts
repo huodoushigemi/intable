@@ -80,6 +80,11 @@ export function findret<T, R>(arr: readonly T[], cb: (e: T, i: number) => R): R 
   }
 }
 
+export function emptyObject(o) {
+  for (const k of Object.keys(o)) delete o[k]
+  return o
+}
+
 type Fnable<T> = T | (() => T)
 type Awatable<T> = T | Promise<T>
 type BaseType = string | number | boolean | null

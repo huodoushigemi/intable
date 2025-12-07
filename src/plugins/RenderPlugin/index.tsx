@@ -10,7 +10,8 @@ declare module '../../xxx' {
 
   }
   interface TableColumn {
-    render?: string | Render
+    // render?: string | Render
+    render?: Render
     enum?: Record<string, any> | { label?: string; value: any }[]
   }
   interface TableStore {
@@ -18,7 +19,8 @@ declare module '../../xxx' {
   }
 }
 
-export type Render = (props: Parameters<TD>[0] & { onChange?: (v) => void }) => JSX.Element
+export type RenderProps = Parameters<TD>[0] & { onChange: (v) => void }
+export type Render = (props: RenderProps) => JSX.Element
 
 export const RenderPlugin: Plugin = {
   priority: -Infinity,

@@ -3,7 +3,7 @@ import { component } from 'undestructure-macros'
 import { combineProps } from '@solid-primitives/props'
 
 export const Checkbox = component(({ value, onChange, ...props }) => {
-  props = combineProps({ class: 'you-checkbox' }, props)
+  props = combineProps({ get class() { return `you-checkbox ${value && 'checked'}` } }, props)
   return (
     <input checked={value || false} onChange={(e) => onChange?.(e.currentTarget.checked)} type="checkbox" {...props} />
   )

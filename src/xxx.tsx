@@ -16,6 +16,7 @@ import { RenderPlugin } from './plugins/RenderPlugin'
 import { MenuPlugin } from './plugins/MenuPlugin'
 import { CommandPlugin } from './plugins/CommandPlugin'
 import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
+import { ResizePlugin } from './plugins/ResizePlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2
@@ -30,7 +31,7 @@ type TableProps2 = Requireds<TableProps, (
 )>
 
 type ProcessProps = {
-  [K in keyof TableProps]?: (props: TableProps2, ctx: { store: TableStore }) => TableProps[K]
+  [K in keyof TableProps]?: (prev: TableProps2, ctx: { store: TableStore }) => TableProps[K]
 }
 
 export interface Plugin {
@@ -45,8 +46,8 @@ export interface TableProps {
   index?: boolean
   border?: boolean
   stickyHeader?: boolean
-  class: any
-  style: any
+  class?: any
+  style?: any
   rowKey?: any
   newRow?: (i: number) => any
   // Component
@@ -77,11 +78,9 @@ export interface TableColumn extends Obj {
   name?: string
   width?: number
   fixed?: 'left' | 'right'
-  // render?: (data: any, index: number) => JSXElement
   class?: any
   style?: any
   props?: (props) => JSX.HTMLAttributes<any>
-  onWidthChange?: (width: number) => void
 }
 
 type Nullable<T> = T | undefined
@@ -105,14 +104,13 @@ export const Table = (props: TableProps) => {
     ...props.plugins || [],
     RenderPlugin
   ].sort((a, b) => (b.priority || 0) - (a.priority || 0)))
-
-  const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
   
   const store = createMutable({
     get rawProps() { return props },
     get plugins() { return plugins() }
   }) as TableStore
   
+  // init store
   const owner = getOwner()!
   createComputed((old: Plugin[]) => {
     const added = difference(plugins(), old)
@@ -121,22 +119,25 @@ export const Table = (props: TableProps) => {
     })
     return plugins()
   }, [])
-  // const aaa = mapArray(plugins, (o) => {
-  //   Object.assign(store, o.store?.(store))
-  // })
-  // createEffect(() => [...aaa()])
   
+  // init processProps
+  const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
   createComputed(mapArray(plugins, (e, i) => {
-    const prev = createMemo(() => pluginsProps()[i() - 1]?.[0]() || props)
-    const ret = mergeProps(prev(), toReactive(mapValues(e.processProps || {}, v => useMemo(() => v(prev(), { store })) )))
+    const prev = () => pluginsProps()[i() - 1]?.[0]() || props
+    // const ret = mergeProps(prev, toReactive(mapValues(e.processProps || {}, v => useMemo(() => v(prev(), { store })) )))
+    const ret = mergeProps(prev, () => mapValues(e.processProps || {}, v => v(prev(), { store })))
+    
+          log(props.data)
+          log(11)
     pluginsProps()[i()][1](ret)
   }))
+
   
   const mProps = toReactive(() => pluginsProps()[pluginsProps().length - 1][0]()) as TableProps2
   store.props = mProps
-
+  
   const ctx = createMutable({ props: mProps })
-
+  
   window.store = store
   window.ctx = ctx
 
@@ -211,59 +212,62 @@ function BasePlugin(): Plugin {
       Thead: ({ Thead = thead }) => Thead,
       Table: ({ Table = table }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
-        Object.defineProperty(store, 'table', { get: () => el() })
-        const { props } = useContext(Ctx)
-        o = combineProps({
-          ref: setEl,
-          get class() { return `data-table ${props.class} ${props.border && 'data-table--border'}` },
-          get style() { return props.style }
-        }, o)
+        // Object.defineProperty(store, 'table', { get: () => el() })
+        // const { props } = useContext(Ctx)
+        // o = combineProps({
+        //   ref: setEl,
+        //   get class() { return `data-table ${props.class} ${props.border && 'data-table--border'}` },
+        //   get style() { return props.style }
+        // }, o)
         return <Table {...o} />
       },
       Tr: ({ Tr = tr }, { store }) => o => {
-        const [el, setEl] = createSignal<HTMLElement>()
-        o = combineProps({ ref: setEl }, o)
+        // const [el, setEl] = createSignal<HTMLElement>()
+        // o = combineProps({ ref: setEl }, o)
 
-        createEffect(() => {
-          const { y } = o
-          store.trs[y] = el()
-          store.trSizes[y] = createElementSize(el())
-          onCleanup(() => store.trSizes[y] = store.trs[y] = void 0)
-        })
+        // createEffect(() => {
+        //   const { y } = o
+        //   store.trs[y] = el()
+        //   store.trSizes[y] = createElementSize(el())
+        //   onCleanup(() => store.trSizes[y] = store.trs[y] = void 0)
+        // })
 
         return <Tr {...o} />
       },
       Th: ({ Th = th }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
         
-        const { props } = useContext(Ctx)
-        const mProps = combineProps(
-          o,
-          () => ({ ref: setEl, class: o.col.class, style: o.col.style }),
-          createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
-          createMemo(() => props.thProps?.(o) || {}, null, { equals: isEqual }),
-          createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
-        )
+        // const { props } = useContext(Ctx)
+        // const mProps = combineProps(
+        //   o,
+        //   () => ({ ref: setEl, class: o.col.class, style: o.col.style }),
+        //   { get style() { return { width: `${o.col.width}px` } } },
+        //   createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
+        //   createMemo(() => props.thProps?.(o) || {}, null, { equals: isEqual }),
+        //   createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
+        // )
 
-        createEffect(() => {
-          const { x } = o
-          store.ths[x] = el()
-          store.thSizes[x] = createElementSize(el())
-          onCleanup(() => store.thSizes[x] = store.ths[x] = void 0)
-        })
+        // createEffect(() => {
+        //   const { x } = o
+        //   store.ths[x] = el()
+        //   store.thSizes[x] = createElementSize(el())
+        //   onCleanup(() => store.thSizes[x] = store.ths[x] = void 0)
+        // })
+        const { props: mProps } = useContext(Ctx)
         
         return <Th {...mProps}>{o.children}</Th>
       },
       Td: ({ Td = td }, { store }) => o => {
-        const { props } = useContext(Ctx)
-        const mProps = combineProps(
-          o,
-          () => ({ class: o.col.class, style: o.col.style }),
-          { get style() { return { width: `${o.col.width}px` } } },
-          createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
-          createMemo(() => props.tdProps?.(o) || {}, null, { equals: isEqual }),
-          createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
-        )
+        // const { props } = useContext(Ctx)
+        // const mProps = combineProps(
+        //   o,
+        //   () => ({ class: o.col.class, style: o.col.style }),
+        //   { get style() { return { width: `${o.col.width}px` } } },
+        //   createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
+        //   createMemo(() => props.tdProps?.(o) || {}, null, { equals: isEqual }),
+        //   createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
+        // )
+        const { props: mProps } = useContext(Ctx)
         return <Td {...mProps}>{o.children}</Td>
       },
       EachRows: ({ EachRows }) => EachRows || For,
@@ -309,80 +313,16 @@ const FixedColumnPlugin: Plugin = {
   }
 }
 
-const ResizePlugin: Plugin = {
-  processProps: {
-    resizable: ({ resizable }) => defaultsDeep(resizable, {
-      col: { enable: true, min: 45, max: 800 },
-      row: { enable: true, min: 20, max: 400 }
-    }),
-    Thead: ({ Thead }, { store }) => o => {
-      let theadEl: HTMLElement
-      const { props } = useContext(Ctx)
-      const ths = createMemo(() => store.ths.filter(e => e != null))
-      onMount(() => {
-        useSplit({ container: theadEl, cells: ths, size: 8, trailing: true, dir: 'x', handle: i => <Handle i={i} /> })
-      })
-      
-      const Handle: Component = ({ i }) => {
-        let el!: HTMLDivElement
-        usePointerDrag(() => el, {
-          start(e, move, end) {
-            const { min, max }  = props.resizable.col
-            const th = ths()[i] as HTMLTableColElement
-            const sw = th.offsetWidth
-            move((e, o) => th.style.width = `${clamp(sw + o.ox, min, max)}px`)
-            end(() => {
-              props.columns[i].width = th.offsetWidth
-              props.columns[i].onWidthChange?.(th.offsetWidth)
-            })
-          },
-        })
-        return <div ref={el} class="handle size-full cursor-w-resize hover:bg-gray active:bg-gray" />
-      }
-      
-      o = combineProps({ ref: e => theadEl = e }, o)
-      return <Thead {...o} />
-    },
-    Tbody: ({ Tbody }, { store }) => o => {
-      let el!: HTMLElement
-      const { props } = useContext(Ctx)
-      const tds = createMemo(() => store.trs.filter(e => e != null).map(e => e.firstElementChild!))
-      onMount(() => {
-        useSplit({ container: el, cells: tds, size: 8, trailing: true, dir: 'y', handle: i => <Handle i={i} /> })
-      })
-
-      const Handle: Component = ({ i }) => {
-        let el!: HTMLDivElement
-        usePointerDrag(() => el, {
-          start(e, move, end) {
-            const { min, max }  = props.resizable.row
-            const tr = tds()[i] as HTMLTableColElement
-            const sw = tr.offsetHeight
-            move((e, o) => tr.style.height = `${clamp(sw + o.oy, min, max)}px`)
-            end(() => {
-              // todo
-            })
-          },
-        })
-        return <div ref={el} class="handle size-full cursor-s-resize hover:bg-gray active:bg-gray" />
-      }
-
-      o = combineProps({ ref: e => el = e }, o)
-      return <Tbody {...o}/>
-    }
-  }
-}
-
 export const defaultsPlugins = [
   BasePlugin(),
-  CommandPlugin,
-  MenuPlugin,
-  IndexPlugin,
-  StickyHeaderPlugin,
-  FixedColumnPlugin,
-  ResizePlugin,
-  CellSelectionPlugin,
-  ClipboardPlugin,
-  EditablePlugin,
-  RowSelectionPlugin
+  // CommandPlugin,
+  // MenuPlugin,
+  // IndexPlugin,
+  // RowSelectionPlugin,
+  // StickyHeaderPlugin,
+  // FixedColumnPlugin,
+  // // ResizePlugin,
+  // CellSelectionPlugin,
+  // ClipboardPlugin,
+  // EditablePlugin,
 ]

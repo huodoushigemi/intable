@@ -8,7 +8,7 @@ import { isFunction, isPromise, mapValues } from 'es-toolkit'
 import { castArray } from 'es-toolkit/compat'
 import { createKeybindingsHandler } from 'tinykeys'
 import { log, unFn } from '@/utils'
-import { createMutable } from 'solid-js/store'
+import { $RAW, createMutable } from 'solid-js/store'
 
 interface UseDragOptions {
   start?(
@@ -111,7 +111,7 @@ export function toReactive<T extends object>(fn: (() => T) | T): Reactive<T> {
   const trueFn = () => true
   const get = k => (e => typeof e == 'function' && $MEMO in e ? e() : e)(v()[k])
   return new Proxy(Object.create(null), {
-    get: (o, k, r) => k == $PROXY ? r : (v => typeof v == 'function' && $MEMO in v ? v() : v)(v()[k]),
+    get: (o, k, r) => k == $PROXY ? r : k == $RAW ? r : (v => typeof v == 'function' && $MEMO in v ? v() : v)(v()[k]),
     set: trueFn,
     defineProperty: (o, k, attributes) => Object.defineProperty(v(), k, attributes),
     deleteProperty: trueFn,

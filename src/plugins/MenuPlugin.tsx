@@ -1,6 +1,4 @@
 import { batch, createEffect, createMemo, createSignal, mapArray, on } from 'solid-js'
-import { createMutable, unwrap, type Store } from 'solid-js/store'
-import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { range, remove } from 'es-toolkit'

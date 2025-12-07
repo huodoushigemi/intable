@@ -8,6 +8,7 @@ import { Ctx, type Plugin, type TableStore } from '../xxx'
 declare module '../xxx' {
   interface TableProps {
     expand?: {
+      enable?: boolean // todo
       render?: (props: { data: any, y: number }) => JSX.Element
     }
   }
