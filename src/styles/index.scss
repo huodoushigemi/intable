@@ -4,10 +4,20 @@
 }
 
 .data-table {
-  @apply relative table-fixed b-1 border-collapse b-0 outline-0;
+  @apply relative table-fixed border-collapse b-0 b-[--table-b-c] outline-0 c-[--table-c];
+
+  thead {
+    @apply c-[--table-header-c];
+  }
+
+  tr:hover {
+    & > td, & > th {
+      @apply bg-[--table-row-hover-bg];
+    }
+  }
 
   td, th {
-    @apply px-2 py-.5 lh-[28px] outline-0 b-(0 solid #ebeef5) b-b-1 box-border;
+    @apply px-2 py-.5 lh-[28px] outline-0 b-(0 solid [--table-b-c]) b-b-1 bg-[--table-bg] box-border;
     text-align: inherit;
   }
 
@@ -16,7 +26,14 @@
   }
 
   &--border {
-    @apply outline-(1 solid #ebeef5);
+    // @apply outline-(1 solid [--table-b-c]);
+    @apply b-t-1 b-l-1;
+    
+    // @apply relative;
+    // &::before {
+    //   @apply content-[''] absolute inset-0 b-(1 solid [--table-b-c]) pointer-events-none z-9;
+    // }
+
     th, td {
       @apply b-r-1 b-b-1;
     }
@@ -37,6 +54,7 @@
 
 .row-range-highlight, .col-range-highlight {
   @apply relative;
+  // bg-[--table-row-hover-bg]
   &::before {
     @apply content-[''] absolute inset-0 bg-gray/25;
   }

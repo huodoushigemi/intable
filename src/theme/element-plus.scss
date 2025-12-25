@@ -1,0 +1,18 @@
+.data-table {
+  --table-c: var(--el-table-text-color, #606266);
+  --table-header-c: var(--el-table-header-text-color, #909399);
+  --table-b-c: var(--el-table-border-color, #ebeef5);
+  --table-b: 1px solid var(--table-b-c);
+  --table-bg: var(--el-table-tr-bg-color, #fff);
+  --table-row-hover-bg: var(--el-table-row-hover-bg-color, #f5f7fa);
+
+  @apply text-[14px];
+  
+  thead th {
+    @apply font-600;
+  }
+
+  th, td {
+    @apply px-[12px];
+  }
+}

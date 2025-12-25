@@ -124,17 +124,15 @@ export const Table = (props: TableProps) => {
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
   createComputed(mapArray(plugins, (e, i) => {
     const prev = () => pluginsProps()[i() - 1]?.[0]() || props
-    // const ret = mergeProps(prev, toReactive(mapValues(e.processProps || {}, v => useMemo(() => v(prev(), { store })) )))
-    const ret = mergeProps(prev, () => mapValues(e.processProps || {}, v => v(prev(), { store })))
+    const ret = mergeProps(prev, toReactive(mapValues(e.processProps || {}, v => useMemo(() => v(prev(), { store })) )))
     pluginsProps()[i()][1](ret)
   }))
-
   
   const mProps = toReactive(() => pluginsProps()[pluginsProps().length - 1][0]()) as TableProps2
   store.props = mProps
   
   const ctx = createMutable({ props: mProps })
-  
+
   window.store = store
   window.ctx = ctx
 
@@ -202,14 +200,14 @@ function BasePlugin(): Plugin {
       internal: Symbol('internal')
     }),
     processProps: {
-      data: ({ data = [] }) => log(data, 11),
+      data: ({ data = [] }) => data,
       columns: ({ columns = [] }) => columns,
       newRow: ({ newRow = () => ({}) }) => newRow,
       Tbody: ({ Tbody = tbody }) => Tbody,
       Thead: ({ Thead = thead }) => Thead,
       Table: ({ Table = table }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
-        Object.defineProperty(store, 'table', { get: () => el() })
+        Object.defineProperty(store, 'table', { get: () => el(), configurable: true })
         const { props } = useContext(Ctx)
         o = combineProps({
           ref: setEl,
@@ -310,14 +308,14 @@ const FixedColumnPlugin: Plugin = {
 
 export const defaultsPlugins = [
   BasePlugin(),
-  // CommandPlugin,
-  // MenuPlugin,
-  // IndexPlugin,
-  // RowSelectionPlugin,
-  // StickyHeaderPlugin,
-  // FixedColumnPlugin,
-  // // ResizePlugin,
-  // CellSelectionPlugin,
-  // ClipboardPlugin,
-  // EditablePlugin,
+  CommandPlugin,
+  MenuPlugin,
+  IndexPlugin,
+  RowSelectionPlugin,
+  StickyHeaderPlugin,
+  FixedColumnPlugin,
+  // ResizePlugin,
+  CellSelectionPlugin,
+  ClipboardPlugin,
+  EditablePlugin,
 ]

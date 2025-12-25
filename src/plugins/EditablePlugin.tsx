@@ -51,6 +51,8 @@ export const EditablePlugin: Plugin = {
 
       const selected = createMemo(() => (([x, y]) => o.x == x && o.y == y)(store.selected.start || []))
 
+      const preEdit = createMemo(() => selected() && editable() && !editing() && o.col.editOnInput)
+
       const editorState = createAsyncMemo(async () => {
         if (editing()) {
           const editor = (editor => typeof editor == 'string' ? store.editors[editor] : editor)(o.col.editor || 'text')
@@ -81,14 +83,14 @@ export const EditablePlugin: Plugin = {
       let input: HTMLInputElement
       
       o = combineProps({
-        get style() { return editing() ? `padding: 0; height: ${store.trSizes[o.y]?.height}px` : '' },
+        get style() { return editing() ? `padding: 0; height: ${store.trSizes[o.y]?.height}px` : preEdit() ? `height: ${store.trSizes[o.y]?.height}px` : '' },
         onClick: () => input?.focus?.(),
         onDblClick: () => setEditing(editable())
       } as JSX.HTMLAttributes<any>, o)
       
       return (
         <Td {...o}>
-          {selected() && editable() && !editing() && o.col.editOnInput &&
+          {preEdit() &&
             <input
               style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events; none; opacity: 0'
               ref={e => { input = e; delay(0).then(() => e.focus()) }}
