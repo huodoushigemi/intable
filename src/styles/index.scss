@@ -11,13 +11,21 @@
   }
 
   tr:hover {
-    & > td, & > th {
+    & > td {
       @apply bg-[--table-row-hover-bg];
     }
   }
 
+  th {
+    @apply bg-[--table-header-bg];
+  }
+
+  td {
+    @apply bg-[--table-bg];
+  }
+
   td, th {
-    @apply px-2 py-.5 lh-[28px] outline-0 b-(0 solid [--table-b-c]) b-b-1 bg-[--table-bg] box-border;
+    @apply px-2 py-.5 outline-0 b-(0 solid [--table-b-c]) b-b-1 box-border v-mid;
     text-align: inherit;
   }
 
@@ -95,6 +103,12 @@
 
   thead { @apply block w-fit [&>tr]-(flex) [&>tr>th]-(block flex-[0_0_auto]); }
   tbody { @apply block w-fit [&>tr]-(flex) [&>tr>td]-(block flex-[0_0_auto]); }
+}
+
+.row-selection {
+  & > label {
+    @apply flex justify-center items-center;
+  }
 }
 
 .icon-clickable { 

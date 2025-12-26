@@ -33,13 +33,14 @@ export const RowSelectionPlugin: Plugin = {
       class: 'row-selection',
       resizable: false,
       render: (o) => (
-        <div class='hfull flex items-center'>
+        <label>
           <Checkbox
+            style='position: absolute'
             value={store.commands.rowSelector.isSelected(o.data)}
             onChange={v => store.commands.rowSelector.select(o.data, v)}
             disabled={!store.props?.rowSelection?.selectable?.(o.data)}
           />
-        </div>
+        </label>
       )
     } as TableColumn,
   }),

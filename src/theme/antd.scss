@@ -1,0 +1,27 @@
+.data-table {
+  --table-b: 1px solid var(--table-b-c);
+  --table-b-c: var(--ant-table-border-color, #f0f0f0);
+  --table-c: var(--ant-color-text, rgba(0,0,0,0.88));
+  --table-bg: var(--ant-color-bg-container, #fff);
+
+  --table-header-c: var(--ant-table-header-color, rgba(0,0,0,0.88));
+  --table-header-bg: var(--ant-table-header-bg, #fafafa);
+
+  --table-row-hover-bg: var(--ant-table-row-hover-bg, #fafafa);
+
+  @apply text-[14px];
+  
+  &:not(&--border) thead th {
+    @apply not-last:b-r-1 font-600;
+  }
+
+  th, td {
+    @apply px-2 py-3 lh-[22px];
+  }
+
+  &--small {
+    th, td {
+      @apply px-2;
+    }
+  }
+}
