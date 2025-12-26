@@ -107,7 +107,7 @@
 
 .row-selection {
   & > label {
-    @apply flex justify-center items-center;
+    @apply absolute inset-0 flex justify-center items-center w-full h-full;
   }
 }
 
