@@ -4,6 +4,7 @@ import { keyBy } from 'es-toolkit'
 import { defaultsDeep, isEqual } from 'es-toolkit/compat'
 import { type Commands, type Plugin, type TableColumn, type TableProps } from '../xxx'
 import { Checkbox } from './RenderPlugin/components'
+import { solidComponent } from '@/components/utils'
 
 declare module '../xxx' {
   interface TableProps {
@@ -32,7 +33,7 @@ export const RowSelectionPlugin: Plugin = {
       fixed: 'left',
       class: 'row-selection',
       resizable: false,
-      render: (o) => (
+      render: solidComponent((o) => (
         <label>
           <Checkbox
             style='position: absolute'
@@ -41,7 +42,7 @@ export const RowSelectionPlugin: Plugin = {
             disabled={!store.props?.rowSelection?.selectable?.(o.data)}
           />
         </label>
-      )
+      ))
     } as TableColumn,
   }),
   commands: (store) => ({

@@ -17,6 +17,7 @@ import { MenuPlugin } from './plugins/MenuPlugin'
 import { CommandPlugin } from './plugins/CommandPlugin'
 import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
 import { ResizePlugin } from './plugins/ResizePlugin'
+import { solidComponent } from './components/utils'
 
 export const Ctx = createContext({
   props: {} as TableProps2
@@ -49,6 +50,7 @@ export interface TableProps {
   class?: any
   style?: any
   rowKey?: any
+  size?: string
   newRow?: (i: number) => any
   // Component
   Table?: Component<any>
@@ -63,6 +65,8 @@ export interface TableProps {
   thProps?: (props) => JSX.HTMLAttributes<any> | void
   tdProps?: (props: Parameters<TD>[0]) => JSX.HTMLAttributes<any> | void
   cellProps?: (props) => JSX.HTMLAttributes<any> | void
+  // 
+  renderer?: (comp: (props) => JSX.Element) => ((props) => JSX.Element)
   // Plugin
   plugins?: Plugin[]
 
@@ -211,7 +215,7 @@ function BasePlugin(): Plugin {
         const { props } = useContext(Ctx)
         o = combineProps({
           ref: setEl,
-          get class() { return `data-table ${props.class} ${props.border && 'data-table--border'}` },
+          get class() { return `data-table ${props.class} ${props.border && 'data-table--border'} data-table--${props.size}` },
           get style() { return props.style }
         }, o)
         return <Table {...o} />
@@ -264,14 +268,15 @@ function BasePlugin(): Plugin {
         return <Td {...mProps}>{o.children}</Td>
       },
       EachRows: ({ EachRows }) => EachRows || For,
-      EachCells: ({ EachCells }) => EachCells || For
+      EachCells: ({ EachCells }) => EachCells || For,
+      renderer: ({ renderer = a => a }) => renderer
     }
   }
 }
 
 const IndexPlugin: Plugin = {
   store: (store) => ({
-    $index: { name: '', id: Symbol('index'), fixed: 'left', [store.internal]: 1, width: 40, style: 'text-align: center', class: 'index', render: (o) => o.y + 1 } as TableColumn
+    $index: { name: '', id: Symbol('index'), fixed: 'left', [store.internal]: 1, width: 40, style: 'text-align: center', class: 'index', render: solidComponent((o) => o.y + 1) } as TableColumn
   }),
   processProps: {
     columns: (props, { store }) => props.index ? [store.$index, ...props.columns || []] : props.columns

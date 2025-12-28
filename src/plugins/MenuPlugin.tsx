@@ -60,6 +60,8 @@ export const MenuPlugin: Plugin = {
         .then(({ x, y }) => ({
           position: 'absolute',
           transform: `translate(${x}px, ${y}px)`,
+          top: 0,
+          left: 0,
           'z-index': 10
         }))
       })

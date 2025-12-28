@@ -24,7 +24,8 @@ const VueTable: Component<TableProps> = props => (
     '.options': {
       ...mapValues(props, v => toRaw(v)),
       class: '',
-      style: 'width: 100%; height: 100%'
+      style: 'width: 100%; height: 100%',
+      renderer: comp => component(comp)
     }
   })
 )
@@ -119,11 +120,14 @@ createApp(() => [
     class: 'w-200 m-4',
     data: data.value,
     border: true,
+    index: true,
+    // size: 'small',
     columns: [
       { name: 'Date', id: 'date', editable: true, editOnInput: true },
       { name: 'Name', id: 'name' },
       { name: 'Address', id: 'address' },
       // { name: '4', id: '4', render: component<RenderProps>(o => h('div', { class: 'c-red' }, o.x)) },
+      { name: '4', id: '4', render: o => h('div', { class: 'c-red' }, '111') },
     ],
     rowSelection: { enable: true }
   }),

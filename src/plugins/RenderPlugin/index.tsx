@@ -4,6 +4,7 @@ import { component } from 'undestructure-macros'
 import { type Plugin, type TD } from '../../xxx'
 import { Checkbox, Files } from './components'
 import { resolveOptions } from '@/utils'
+import { solidComponent } from '@/components/utils'
 
 declare module '../../xxx' {
   interface TableProps {
@@ -32,7 +33,8 @@ export const RenderPlugin: Plugin = {
       return (
         <Td {...o}>
           {(() => {
-            const Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render) || text
+            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render) || text
+            Comp = Comp.__solid ? Comp : store.props!.renderer!(Comp)
             return <Comp {...o} onChange={v => store.commands.rowChange({ ...o.data, [o.col.id]: v }, o.y)} />
           })()}
         </Td>
@@ -73,4 +75,8 @@ export const renders = {
   date,
   checkbox,
   file
+}
+
+for (const k in renders) {
+  renders[k] = solidComponent(renders[k])
 }

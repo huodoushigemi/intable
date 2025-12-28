@@ -9,7 +9,7 @@
   
   --table-row-hover-bg: var(--el-table-row-hover-bg-color, #f5f7fa);
 
-  @apply text-[14px];
+  @apply lh-[23px] text-[14px];
   
   thead th {
     @apply font-600;
@@ -17,5 +17,13 @@
 
   th, td {
     @apply px-3 py-2;
+  }
+
+  &--small {
+    @apply text-3;
+
+    th, td {
+      @apply px-2 py-1;
+    }
   }
 }
