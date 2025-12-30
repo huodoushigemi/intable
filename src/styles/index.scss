@@ -4,7 +4,13 @@
 }
 
 .data-table {
-  @apply relative table-fixed border-collapse b-0 b-[--table-b-c] outline-0 c-[--table-c];
+  @apply relative c-[--table-c] b-[--table-b-c];
+
+  &--table {
+    @apply w-max min-w-full table-fixed border-collapse b-0 outline-0 c-[--table-c];
+    border-collapse: separate;
+    border-spacing: 0;
+  }
 
   thead {
     @apply c-[--table-header-c];
@@ -35,7 +41,8 @@
 
   &--border {
     // @apply outline-(1 solid [--table-b-c]);
-    @apply b-t-1 b-l-1;
+    @apply b-1;
+    // @apply outline-1 outline-[--table-b-c];
     
     // @apply relative;
     // &::before {
@@ -45,6 +52,10 @@
     th, td {
       @apply b-r-1 b-b-1;
     }
+  }
+
+  &--scroll-view {
+    @apply of-auto;
   }
 }
 
@@ -83,14 +94,18 @@
   }
 }
 
-.fixed-left::after {
-  @apply left-full;
-  box-shadow: inset 10px 0 10px -10px rgba(0, 0, 0, .15);
+.is-scroll-right, .is-scroll-mid {
+  .fixed-left::after {
+    @apply left-full;
+    box-shadow: inset 10px 0 10px -10px rgba(0, 0, 0, .15);
+  }
 }
 
-.fixed-right::after {
-  @apply right-full;
-  box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, .15);
+.is-scroll-left, .is-scroll-mid {
+  .fixed-right::after {
+    @apply right-full;
+    box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, .15);
+  }
 }
 
 .copied .range-selected {

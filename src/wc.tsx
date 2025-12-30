@@ -23,10 +23,10 @@ export const TableElement = customElement('wc-table', PROPS, (attrs, { element }
   
   return (
     <>
-      <style>
+      {/* <style>
         {`${attrs.css} :host {display: block}`}
         {`wc-table { display: block }`}
-      </style>
+      </style> */}
       <Table {...props} />
     </>
   )

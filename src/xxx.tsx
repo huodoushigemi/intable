@@ -1,4 +1,4 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, $PROXY } from 'solid-js'
+import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, $PROXY, splitProps } from 'solid-js'
 import { createMutable, createStore, unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { clamp, difference, identity, isEqual, mapValues, sumBy } from 'es-toolkit'
@@ -18,6 +18,7 @@ import { CommandPlugin } from './plugins/CommandPlugin'
 import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
 import { ResizePlugin } from './plugins/ResizePlugin'
 import { solidComponent } from './components/utils'
+import { createScrollPosition } from '@solid-primitives/scroll'
 
 export const Ctx = createContext({
   props: {} as TableProps2
@@ -90,6 +91,7 @@ export interface TableColumn extends Obj {
 type Nullable<T> = T | undefined
 
 export interface TableStore extends Obj {
+  scroll_el?: HTMLElement
   table: HTMLElement
   ths: Nullable<Element>[]
   thSizes: Nullable<{ width: number; height: number }>[]
@@ -307,11 +309,44 @@ const FixedColumnPlugin: Plugin = {
         class: `fixed-${fixed}`,
         style: `${fixed}: ${sumBy(store.thSizes.slice(fixed == 'left' ? 0 : x + 1, fixed == 'left' ? x : Infinity), size => size?.width || 0)}px`
       }) : prev
+    },
+  }
+}
+
+export const ScrollPlugin: Plugin = {
+  priority: Infinity,
+  processProps: {
+    Table: (prev, { store }) => o => {
+      const pos = createScrollPosition(() => store.scroll_el)
+
+      const clazz = createMemo(() => {
+        const el = store.scroll_el
+        if (!el) return
+        const isleft = pos.x == 0
+        const isright = pos.x >= el.scrollWidth - el.offsetWidth
+        return (
+          !isleft && !isright ? 'is-scroll-mid' :
+          isleft ? 'is-scroll-left' : 
+          isright ? 'is-scroll-right' :
+          ''
+        )
+      })
+      
+      const _o = combineProps(splitProps(o, ['class', 'style'])[1], { class: 'data-table--table' }, { get class() { return clazz() } })
+
+      o = combineProps(o, { ref: el => store.scroll_el = el, class: 'data-table--scroll-view' })
+      
+      return (
+        <div {...o}>
+          <table {..._o} />
+        </div>
+      )
     }
   }
 }
 
 export const defaultsPlugins = [
+  ScrollPlugin,
   BasePlugin(),
   CommandPlugin,
   MenuPlugin,

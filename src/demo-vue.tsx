@@ -21,14 +21,17 @@ import './wc'
 const VueTable: Component<TableProps> = props => (
   h('wc-table', {
     noShadow: true,
+    style: 'display: contents',
     '.options': {
       ...mapValues(props, v => toRaw(v)),
-      class: '',
-      style: 'width: 100%; height: 100%',
+      class: normalizeClass(props.class),
+      style: normalizeStyle([props.style]),
       renderer: comp => component(comp)
     }
   })
 )
+
+VueTable.inheritAttrs = false
 
 const component = <T extends Record<string, any>>(Comp: Component<T>) => {
   return (props: T) => {
@@ -110,25 +113,25 @@ const solidNode2vnode3 = (node) => {
 }
 
 const data = ref([{ 1: 'x1', id: 1 }])
+data.value = [{ id: 1, date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' }, {  }, {}]
 setTimeout(() => {
-  data.value = [{ id: 1, date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' }, {  }, {}]
   // data.value.push({})
 }, 1000);
 
 createApp(() => [
   h(VueTable, {
     style: '',
-    class: 'w-200 m-4',
+    class: 'w-100 m-4',
     data: data.value,
     border: true,
     index: true,
-    // size: 'small',
+    size: 'small',
     columns: [
       { name: 'Date', id: 'date', editable: true, editOnInput: true },
       { name: 'Name', id: 'name' },
-      { name: 'Address', id: 'address' },
+      { name: 'Address', id: 'address', width: 250 },
       // { name: '4', id: '4', render: component<RenderProps>(o => h('div', { class: 'c-red' }, o.x)) },
-      { name: '4', id: '4', render: o => h('div', { class: 'c-red' }, '111') },
+      { name: '4', id: '4', render: o => h('div', { class: 'c-red' }, '111'), fixed: 'right' },
     ],
     rowSelection: { enable: true }
   }),
