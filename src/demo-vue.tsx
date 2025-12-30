@@ -36,6 +36,7 @@ const component = <T extends Record<string, any>>(Comp: Component<T>) => {
     createRenderEffect(() => render(h(Comp, { ...props }), root))
     // createEffect(() => render(h(Comp, { ...props }), root))
     onCleanup(() => render(null, root))
+    root.remove = () => {}
     return root
   }
 }

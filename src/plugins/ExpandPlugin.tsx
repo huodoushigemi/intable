@@ -4,7 +4,7 @@ import { unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { remove } from 'es-toolkit'
 import { Ctx, type Plugin, type TableStore } from '../xxx'
-import { solidComponent } from '@/components/utils'
+import { renderComponent, solidComponent } from '@/components/utils'
 
 declare module '../xxx' {
   interface TableProps {
@@ -47,7 +47,9 @@ export const ExpandPlugin: Plugin = {
 
       return (
         <Tr {...o}>
-          <td colspan={props.columns?.length} style='width: 100%'>{props.expand?.render?.(o)}</td>
+          <td colspan={props.columns?.length} style='width: 100%'>
+            {props.expand?.render && renderComponent(props.expand.render, o, props.renderer)}
+          </td>
         </Tr>
       )
       

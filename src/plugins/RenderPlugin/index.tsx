@@ -1,10 +1,10 @@
-import { type JSX } from 'solid-js'
+import { mergeProps, type JSX } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { component } from 'undestructure-macros'
 import { type Plugin, type TD } from '../../xxx'
 import { Checkbox, Files } from './components'
 import { resolveOptions } from '@/utils'
-import { solidComponent } from '@/components/utils'
+import { renderComponent, solidComponent } from '@/components/utils'
 
 declare module '../../xxx' {
   interface TableProps {
@@ -34,8 +34,7 @@ export const RenderPlugin: Plugin = {
         <Td {...o}>
           {(() => {
             let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render) || text
-            Comp = Comp.__solid ? Comp : store.props!.renderer!(Comp)
-            return <Comp {...o} onChange={v => store.commands.rowChange({ ...o.data, [o.col.id]: v }, o.y)} />
+            return renderComponent(Comp, mergeProps(o, { onChange: v => store.commands.rowChange({ ...o.data, [o.col.id]: v }, o.y) }), store.props!.renderer!)
           })()}
         </Td>
       )
