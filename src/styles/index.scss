@@ -4,7 +4,17 @@
 }
 
 .data-table {
-  @apply relative c-[--table-c] b-[--table-b-c];
+  --table-b: 1px solid var(--table-b-c);
+  --table-b-c: #ebeef5;
+  --table-c: #606266;
+  --table-bg: #fff;
+
+  --table-header-c: #909399;
+  --table-header-bg: var(--table-bg);
+  
+  --table-row-hover-bg: #f5f7fa;
+
+  @apply relative text-[14px] c-[--table-c] b-[--table-b-c];
 
   &--table {
     @apply w-max min-w-full table-fixed border-collapse b-0 outline-0 c-[--table-c];
@@ -31,8 +41,12 @@
   }
 
   td, th {
-    @apply px-2 py-.5 outline-0 b-(0 solid [--table-b-c]) b-b-1 box-border v-mid;
+    @apply px-2 py-.5 outline-0 b-(0 solid [--table-b-c]) b-b-0 box-border v-mid;
     text-align: inherit;
+      background-image: linear-gradient(var(--table-b-c), var(--table-b-c));
+      background-repeat: no-repeat;
+      background-size: 100% 1px, 1px 100%;
+      background-position: 100% 100%, 100% 0;
   }
 
   td:empty::after {
@@ -40,22 +54,19 @@
   }
 
   &--border {
-    // @apply outline-(1 solid [--table-b-c]);
     @apply b-1;
-    // @apply outline-1 outline-[--table-b-c];
-    
-    // @apply relative;
-    // &::before {
-    //   @apply content-[''] absolute inset-0 b-(1 solid [--table-b-c]) pointer-events-none z-9;
-    // }
 
     th, td {
-      @apply b-r-1 b-b-1;
+      background-image: linear-gradient(var(--table-b-c), var(--table-b-c)), linear-gradient(var(--table-b-c), var(--table-b-c));
     }
   }
 
   &--scroll-view {
     @apply of-auto;
+  }
+
+  &__layers {
+    @apply pointer-events-none absolute left-0 top-0 [&>*]:absolute z-1;
   }
 }
 
@@ -73,10 +84,17 @@
 
 .row-range-highlight, .col-range-highlight {
   @apply relative;
-  // bg-[--table-row-hover-bg]
-  &::before {
-    @apply content-[''] absolute inset-0 bg-gray/25;
+  & > .area {
+    @apply absolute inset-0 bg-[--c-primary]/10 b-(0 solid [--c-primary]) pointer-events-none;
   }
+}
+
+.row-range-highlight > .area {
+  @apply b-r-1;
+}
+
+.col-range-highlight > .area {
+  @apply b-b-1;
 }
 
 .sticky-header {
@@ -88,7 +106,7 @@
 }
 
 .fixed-left, .fixed-right {
-  @apply sticky z-1 bg-#fff;
+  @apply sticky! z-1 bg-#fff;
   &::after {
     @apply content-[''] absolute top-0 w-[10px] h-full pointer-events-none;
   }
@@ -121,6 +139,7 @@
 }
 
 .row-selection {
+  @apply w-10;
   & > label {
     @apply absolute inset-0 flex justify-center items-center w-full h-full;
   }

@@ -12,11 +12,18 @@
   @apply text-[14px];
   
   &:not(&--border) thead th {
-    @apply not-last:b-r-1 font-600;
+    @apply relative;
+    &:not(:last-child)::before {
+      @apply content-[''] absolute top-1/2 right-0 h-[1.6em] w-[1px] bg-[--table-b-c] translate-y-[-50%];
+    }
   }
 
   th, td {
     @apply px-2 py-3 lh-[22px];
+  }
+
+  .row-selection {
+    width: 35px;
   }
 
   &--small {

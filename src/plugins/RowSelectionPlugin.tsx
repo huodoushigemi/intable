@@ -29,7 +29,6 @@ export const RowSelectionPlugin: Plugin = {
     rowSelectionCol: {
       [store.internal]: 1,
       id: Symbol('row-selection'),
-      width: 45,
       fixed: 'left',
       class: 'row-selection',
       resizable: false,

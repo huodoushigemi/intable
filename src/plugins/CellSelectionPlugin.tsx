@@ -31,10 +31,19 @@ export const CellSelectionPlugin: Plugin = {
     }
   }),
   processProps: {
-    thProps: ({ thProps }, { store }) => (o) => {
-      const { start, end } = store.selected
-      const inx = inrange(o.x, ...[start[0], end[0]].sort((a, b) => a - b))
-      return combineProps(thProps?.(o) || {}, { class: inx ? 'col-range-highlight' : '' })
+    Th: ({ Th }, { store }) => o => {
+      const clazz = createMemo(() => {
+        const { start, end } = store.selected
+        const inx = inrange(o.x, ...[start[0], end[0]].sort((a, b) => a - b))
+        return inx ? 'col-range-highlight' : ''
+      })
+      const mo = combineProps(o, { get class() { return clazz() } })
+      return (
+        <Th {...mo}>
+          {mo.children}
+          {clazz() && <div class='area' />}
+        </Th>
+      )
     },
     Td: ({ Td }, { store }) => (o) => {
       const clazz = createMemo(() => {
@@ -51,12 +60,17 @@ export const CellSelectionPlugin: Plugin = {
           if (o.y == ys[0]) clazz += 'range-selected-t '
           if (o.y == ys[1]) clazz += 'range-selected-b '
         }
-        if (o.col.id == store.$index?.id && iny) clazz += 'row-range-highlight '
+        if (o.x == 0 && iny) clazz += 'row-range-highlight '
         return clazz
       })
-      
-      const mergedProps = combineProps(o, { get class() { return clazz() }, tabindex: -1 })
-      return <Td {...mergedProps} />
+
+      const mo = combineProps(o, { get class() { return clazz() }, tabindex: -1 })
+      return (
+        <Td {...mo}>
+          {mo.children}
+          {clazz() && <div class='area' />}
+        </Td>
+      )
     },
     Table: ({ Table }, { store }) => (o) => {
       const { props } = useContext(Ctx)

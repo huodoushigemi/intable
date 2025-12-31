@@ -40,6 +40,7 @@ export interface Plugin {
   priority?: number
   store?: (store: TableStore) => Partial<TableStore>
   processProps?: ProcessProps
+  layers?: Component<TableStore>[]
 }
 
 export interface TableProps {
@@ -114,7 +115,7 @@ export const Table = (props: TableProps) => {
   const store = createMutable({
     get rawProps() { return props },
     get plugins() { return plugins() }
-  }) as TableStore
+  } as TableStore)
   
   // init store
   const owner = getOwner()!
@@ -318,13 +319,15 @@ export const ScrollPlugin: Plugin = {
   processProps: {
     Table: (prev, { store }) => o => {
       const pos = createScrollPosition(() => store.scroll_el)
+      const size = createElementSize(() => store.scroll_el)
 
       const clazz = createMemo(() => {
         const el = store.scroll_el
         if (!el) return
         const isleft = pos.x == 0
-        const isright = pos.x >= el.scrollWidth - el.offsetWidth
+        const isright = pos.x >= el.scrollWidth - (size.width || 0)
         return (
+          isleft && isright ? '' :
           !isleft && !isright ? 'is-scroll-mid' :
           isleft ? 'is-scroll-left' : 
           isright ? 'is-scroll-right' :
@@ -335,9 +338,14 @@ export const ScrollPlugin: Plugin = {
       const _o = combineProps(splitProps(o, ['class', 'style'])[1], { class: 'data-table--table' }, { get class() { return clazz() } })
 
       o = combineProps(o, { ref: el => store.scroll_el = el, class: 'data-table--scroll-view' })
+
+      const layers = mapArray(() => store.plugins.flatMap(e => e.layers ?? []), Layer => <Layer {...store} />)
       
       return (
         <div {...o}>
+          <div class='data-table__layers'>
+            {layers()}
+          </div>
           <table {..._o} />
         </div>
       )
