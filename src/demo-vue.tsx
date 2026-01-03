@@ -1,17 +1,13 @@
 // import './inject'
-import { $PROXY, batch, children, createEffect, createRoot, For, mergeProps, onMount, onCleanup, createComponent, createRenderEffect } from 'solid-js'
-import { insert, render as solidRender } from 'solid-js/web'
-import { $RAW, createMutable, reconcile } from 'solid-js/store'
-import { Table, type TableProps } from './xxx'
-import { log } from './utils'
+import { onCleanup, createRenderEffect } from 'solid-js'
+import { type Plugin, type TableProps } from './xxx'
 
 import './index.scss'
 import './theme/element-plus.scss'
 import 'virtual:uno.css'
 
-import { createApp, defineComponent, getCurrentInstance, h, onMounted, onUnmounted, normalizeStyle, normalizeClass, ref, reactive, toRaw, render, Fragment, Comment, createCommentVNode, createTextVNode, cloneVNode, type Component, createVNode, createElementVNode, shallowReactive } from 'vue'
+import { createApp, h, normalizeStyle, normalizeClass, ref, toRaw, render, type Component } from 'vue'
 import { mapValues } from 'es-toolkit'
-import type { RenderProps } from './plugins/RenderPlugin'
 
 const container = document.createElement('div')
 
@@ -26,7 +22,8 @@ const VueTable: Component<TableProps> = props => (
       ...mapValues(props, v => toRaw(v)),
       class: normalizeClass(props.class),
       style: normalizeStyle([props.style]),
-      renderer: comp => component(comp)
+      renderer: comp => component(comp),
+      plugin: []
     }
   })
 )
@@ -43,75 +40,6 @@ const component = <T extends Record<string, any>>(Comp: Component<T>) => {
     return root
   }
 }
-
-
-const solid2vue = (Comp) => {
-  return defineComponent({
-    setup() {
-      const ins = getCurrentInstance()
-      onMounted(() => {
-        const el = ins!.proxy!.$el
-        createRoot(dispose => {
-          insert(el.parentElement, typeof Comp == 'function' ? createComponent(Comp, {}) : '', el)
-          onUnmounted(dispose)
-        })
-      })
-      return () => createCommentVNode('solid-marker')
-    }
-  })
-}
-
-const solidNode2vnode = (node) => {
-  return defineComponent({
-    setup() {
-      let el
-      createRoot(dispose => {
-        insert(el.parentElement, typeof Comp == 'function' ? createComponent(Comp, {}) : '', el)
-        onUnmounted(dispose)
-      })
-      return {}
-    },
-    render(_ctx, _cache) {
-      const vnode = _cache[0] ||= createElementVNode('div', null, null, -1)
-      // vnode.el = el
-      return vnode
-    }
-  })
-}
-
-const solidNode2vnode2 = (node) => {
-  return h('div', {
-    style: 'display: contents !important',
-    onVnodeMounted({ el }) {
-      Promise.resolve().then(() => {
-      createRoot(dispose => {
-        insert(el.parentElement, node, el)
-        el.__solid = { dispose }
-        el.remove()
-      })
-      })
-    },
-    onVnodeUnmounted({ el }) {
-      el.__solid.dispose()
-      el.__solid = void 0
-    }
-  })  
-}
-
-const solidNode2vnode3 = (node) => {
-  console.log(node)
-  return createElementVNode('div', {
-    key: '__solid',
-    onVnodeBeforeMount(vnode) {
-      vnode.el = (
-        typeof node == 'function' ? children(node)() :
-        typeof node == 'string' || typeof node == 'number' ? document.createTextNode(node + '') :
-        node
-      )
-    },
-  }, null, -1)
-}
-
 const data = ref([{ 1: 'x1', id: 1 }])
 data.value = [{ id: 1, date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' }, {  }, {}]
 setTimeout(() => {

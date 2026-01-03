@@ -21,7 +21,7 @@ declare module '../../xxx' {
 }
 
 export type RenderProps = Parameters<TD>[0] & { onChange: (v) => void }
-export type Render = (props: RenderProps) => JSX.Element
+export type Render = (props: RenderProps) => JSX.Element | any
 
 export const RenderPlugin: Plugin = {
   priority: -Infinity,
