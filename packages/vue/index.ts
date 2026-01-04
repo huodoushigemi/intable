@@ -17,7 +17,7 @@ const VueTable: Component<TableProps> = props => (
       style: normalizeStyle([props.style]),
       renderer: comp => component(comp),
       plugins: [xxxPlugin]
-    }
+    } as TableProps
   })
 )
 

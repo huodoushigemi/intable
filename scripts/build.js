@@ -7,10 +7,12 @@ build({
     outDir: 'dist',
     minify: true,
     lib: {
-      // entry: ['src/xxx.tsx'],
-      entry: Object.fromEntries(flatdir('src').map(e => [e.replace('src/', ''), e])),
+      entry: {
+        index: 'src/xxx.tsx',
+        ...Object.fromEntries(flatdir('src/plugins').map(e => [e.replace('src/', '').replace('.tsx', ''), e]))
+      },
       formats: ['es']
-    }
+    },
   }
 })
 

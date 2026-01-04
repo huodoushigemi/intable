@@ -8,6 +8,15 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "files": ["dist"],
+
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*"
+  },
+
   "dependencies": {
     "@floating-ui/dom": "^1.7.4",
     "@solid-primitives/bounds": "^0.1.3",
