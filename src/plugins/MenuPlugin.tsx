@@ -32,7 +32,7 @@ export const MenuPlugin: Plugin = {
   store: (store) => ({
     
   }),
-  processProps: {
+  rewriteProps: {
     Table: ({ Table }, { store }) => o => {
       const [menuEl, setMenuEl] = createSignal<HTMLElement>()
 

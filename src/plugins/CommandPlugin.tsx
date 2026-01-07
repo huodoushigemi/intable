@@ -17,7 +17,7 @@ declare module '../xxx' {
 }
 
 export const CommandPlugin: Plugin = {
-  processProps: {
+  rewriteProps: {
     Table: ({ Table }, { store }) => o => {
 
       createComputed(() => {

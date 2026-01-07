@@ -38,8 +38,8 @@ type ProcessProps = {
 
 export interface Plugin {
   priority?: number
-  store?: (store: TableStore) => Partial<TableStore>
-  processProps?: ProcessProps
+  store?: (store: TableStore) => Partial<TableStore> | void
+  rewriteProps?: ProcessProps
   layers?: Component<TableStore>[]
 }
 
@@ -131,7 +131,7 @@ export const Table = (props: TableProps) => {
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
   createComputed(mapArray(plugins, (e, i) => {
     const prev = () => pluginsProps()[i() - 1]?.[0]() || props
-    const ret = mergeProps(prev, toReactive(mapValues(e.processProps || {}, v => useMemo(() => v(prev(), { store })) )))
+    const ret = mergeProps(prev, toReactive(mapValues(e.rewriteProps || {}, v => useMemo(() => v(prev(), { store })) )))
     pluginsProps()[i()][1](ret)
   }))
   
@@ -206,7 +206,7 @@ function BasePlugin(): Plugin {
       trSizes: [],
       internal: Symbol('internal')
     }),
-    processProps: {
+    rewriteProps: {
       data: ({ data = [] }) => data,
       columns: ({ columns = [] }) => columns,
       newRow: ({ newRow = () => ({}) }) => newRow,
@@ -263,7 +263,7 @@ function BasePlugin(): Plugin {
         const mProps = combineProps(
           o,
           () => ({ class: o.col.class, style: o.col.style }),
-          { get style() { return { width: `${o.col.width}px` } } },
+          { get style() { return o.col.width ? { width: `${o.col.width}px` } : {} } },
           createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
           createMemo(() => props.tdProps?.(o) || {}, null, { equals: isEqual }),
           createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
@@ -281,13 +281,13 @@ const IndexPlugin: Plugin = {
   store: (store) => ({
     $index: { name: '', id: Symbol('index'), fixed: 'left', [store.internal]: 1, width: 40, style: 'text-align: center', class: 'index', render: solidComponent((o) => o.y + 1) } as TableColumn
   }),
-  processProps: {
+  rewriteProps: {
     columns: (props, { store }) => props.index ? [store.$index, ...props.columns || []] : props.columns
   }
 }
 
 const StickyHeaderPlugin: Plugin = {
-  processProps: {
+  rewriteProps: {
     Thead: ({ Thead }) => o => {
       const { props } = useContext(Ctx)
       o = combineProps(() => props.stickyHeader ? { class: 'sticky-header' } : {}, o)
@@ -297,7 +297,7 @@ const StickyHeaderPlugin: Plugin = {
 }
 
 const FixedColumnPlugin: Plugin = {
-  processProps: {
+  rewriteProps: {
     columns: ({ columns }) => [
       ...columns?.filter(e => e.fixed == 'left') || [],
       ...columns?.filter(e => !e.fixed) || [],
@@ -316,7 +316,7 @@ const FixedColumnPlugin: Plugin = {
 
 export const ScrollPlugin: Plugin = {
   priority: Infinity,
-  processProps: {
+  rewriteProps: {
     Table: (prev, { store }) => o => {
       const pos = createScrollPosition(() => store.scroll_el)
       const size = createElementSize(() => store.scroll_el)

@@ -1,38 +1,40 @@
 import { onCleanup, createRenderEffect } from 'solid-js'
-import { Plugin, type TableProps } from '../../src/xxx'
+import { type Plugin, type TableProps } from '../../src'
 import '../../src/wc'
-
-import 'virtual:uno.css'
+import './style.scss'
 
 import { h, normalizeStyle, normalizeClass, toRaw, render, type Component } from 'vue'
 import { mapValues } from 'es-toolkit'
+import { ElementPlusPlugin } from './plugins/element-plus'
 
-const VueTable: Component<TableProps> = props => (
+const VueTable: Component<TableProps> = (props) => (
   h('wc-table', {
-    noShadow: true,
     style: 'display: contents',
     '.options': {
       ...mapValues(props, v => toRaw(v)),
       class: normalizeClass(props.class),
       style: normalizeStyle([props.style]),
-      renderer: comp => component(comp),
-      plugins: [xxxPlugin]
+      renderer: component,
+      plugins: [
+        VModelPlugin,
+        ElementPlusPlugin
+      ]
     } as TableProps
   })
 )
 
-const xxxPlugin: Plugin = {
-  processProps: {
-    rowSelection: ({ selected, rowSelection, onUpdateSelected }) => ({
-      value: selected,
+const VModelPlugin: Plugin = {
+  rewriteProps: {
+    rowSelection: ({ rowSelection }, { store }) => ({
+      get value() { return store.props?.selected },
       ...rowSelection,
       onChange(selected) {
-        onUpdateSelected?.(selected)
+        store.props['onUpdate:selected']?.(selected)
         rowSelection?.onChange?.(...arguments)
       },
     }),
-    onDataChange: ({ onDataChange, onUpdateData }) => (data) => {
-      onUpdateData?.(data)
+    onDataChange: ({ onDataChange }, { store }) => (data) => {
+      store.props['onUpdate:data']?.(data)
       onDataChange?.(data)
     }
   }
@@ -43,10 +45,9 @@ VueTable.inheritAttrs = false
 const component = <T extends Record<string, any>>(Comp: Component<T>) => {
   return (props: T) => {
     const root = document.createDocumentFragment()
+    root.remove ??= () => {}
     createRenderEffect(() => render(h(Comp, { ...props }), root))
-    // createEffect(() => render(h(Comp, { ...props }), root))
     onCleanup(() => render(null, root))
-    root.remove = () => {}
     return root
   }
 }

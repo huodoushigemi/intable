@@ -7,11 +7,13 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "files": ["dist"],
-  "dependencies": {
-
-  },
+  "files": [
+    "dist"
+  ],
   "peerDependencies": {
     "vue": "^3"
+  },
+  "devDependencies": {
+    "element-plus": "^2.13.0"
   }
 }

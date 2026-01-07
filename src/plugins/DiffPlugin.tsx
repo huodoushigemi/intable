@@ -59,7 +59,7 @@ export const DiffPlugin: Plugin = {
       store.diffData = data
     }
   }),
-  processProps: {
+  rewriteProps: {
     diff: ({ diff }) => ({
       added: true,
       removed: true,

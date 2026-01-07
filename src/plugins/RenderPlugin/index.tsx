@@ -28,7 +28,7 @@ export const RenderPlugin: Plugin = {
   store: () => ({
     renders: { ...renders }
   }),
-  processProps: {
+  rewriteProps: {
     Td: ({ Td }, { store }) => o => {
       return (
         <Td {...o}>

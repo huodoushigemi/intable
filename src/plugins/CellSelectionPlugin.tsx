@@ -30,7 +30,7 @@ export const CellSelectionPlugin: Plugin = {
       return store.props!.data.slice(y1, y2 + 1)
     }
   }),
-  processProps: {
+  rewriteProps: {
     Th: ({ Th }, { store }) => o => {
       const clazz = createMemo(() => {
         const { start, end } = store.selected
@@ -122,7 +122,7 @@ export const CellSelectionPlugin: Plugin = {
                 store.selected.end = [+x, +y]
               })
             }
-            scrollIntoView()
+            // scrollIntoView()
           })
         },
       })

@@ -1,5 +1,5 @@
-import { createMemo, createRenderEffect, mergeProps, on } from 'solid-js'
-import { createMutable } from 'solid-js/store'
+import { createEffect, createMemo, createRenderEffect, mergeProps, on } from 'solid-js'
+import { createMutable, reconcile } from 'solid-js/store'
 import { keyBy } from 'es-toolkit'
 import { defaultsDeep, isEqual } from 'es-toolkit/compat'
 import { type Commands, type Plugin, type TableColumn, type TableProps } from '../xxx'
@@ -47,7 +47,7 @@ export const RowSelectionPlugin: Plugin = {
   commands: (store) => ({
     rowSelector: useSelector(mergeProps(() => ({ rowKey: store.props?.rowKey, ...store.props?.rowSelection })))
   }),
-  processProps: {
+  rewriteProps: {
     rowSelection: ({ rowSelection }) => defaultsDeep(rowSelection, {
       enable: false,
       multiple: false,
@@ -62,11 +62,19 @@ export const RowSelectionPlugin: Plugin = {
 
 function useSelector(opt: Partial<{ value, rowKey, multiple, selectable, onChange }>) {
   const map = createMutable({})
-  const selected = createMemo(() => opt.value || [])
-
+  const selected = createMemo(() => [...opt.value || []])
+  
   const isSelected = (data) => !!map[id(data)]
 
-  const select = (data, bool = true) => opt.selectable(data) && (opt.multiple || clear(), map[id(data)] = bool ? data : void 0)
+  const select = (data, bool = true) => {
+    if (!opt.selectable(data)) return
+    if (opt.multiple) {
+      map[id(data)] = bool ? data : void 0
+    } else {
+      reconcile({ [id(data)]: bool ? data : void 0 })(map)
+    }
+    set(Object.values(map))
+  }
 
   const clear = () => opt.onChange?.([])
 
@@ -76,12 +84,7 @@ function useSelector(opt: Partial<{ value, rowKey, multiple, selectable, onChang
 
   createRenderEffect(on(selected, () => {
     const keyed = keyBy(selected(), id)
-    for (const id in map) {
-      if (!keyed[id]) map[id] = void 0
-    }
-    for (const id in keyed) {
-      if (!map[id]) map[id] = keyed[id]
-    }
+    reconcile(keyed)(map)
   }))
 
   return { isSelected, select, clear, set }

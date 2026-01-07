@@ -20,7 +20,7 @@ declare module '../xxx' {
 }
 
 export const ClipboardPlugin: Plugin = {
-  processProps: {
+  rewriteProps: {
     Table: ({ Table }, { store }) => o => {
       let el: HTMLElement
 

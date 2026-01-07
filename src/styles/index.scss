@@ -72,14 +72,14 @@
 
 .range-selected {
   @apply relative;
-  &::before {
-    @apply content-[''] absolute inset-0 bg-[--select-area-bg] b-(0px solid [--c-primary]) pointer-events-none;
+  & > .area {
+    @apply absolute inset-0 bg-[--select-area-bg] b-(0px solid [--c-primary]) pointer-events-none;
   }
 
-  &-l { @apply before:b-l-(2px) }
-  &-r { @apply before:b-r-(2px) }
-  &-t { @apply before:b-t-(2px) }
-  &-b { @apply before:b-b-(2px) }
+  &-l > .area { @apply b-l-(2px) }
+  &-r > .area { @apply b-r-(2px) }
+  &-t > .area { @apply b-t-(2px) }
+  &-b > .area { @apply b-b-(2px) }
 }
 
 .row-range-highlight, .col-range-highlight {
@@ -154,4 +154,12 @@ input[type="checkbox"].you-checkbox {
   &.checked::after {
     @apply content-["✓"] absolute top-50% left-50% translate--50% text-3 c-#fff z-1;
   }
+}
+
+td.is-editing {
+  
+}
+
+.in-cell-edit-wrapper {
+  @apply absolute inset-0;
 }

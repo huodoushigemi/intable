@@ -8,7 +8,7 @@ build({
     minify: true,
     lib: {
       entry: {
-        index: 'src/xxx.tsx',
+        index: 'src/index.tsx',
         ...Object.fromEntries(flatdir('src/plugins').map(e => [e.replace('src/', '').replace('.tsx', ''), e]))
       },
       formats: ['es']

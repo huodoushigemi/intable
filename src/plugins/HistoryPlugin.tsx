@@ -37,7 +37,7 @@ export const HistoryPlugin: Plugin = {
       }, v => store.props!.onDataChange?.(v)])
     })
   },
-  processProps: {
+  rewriteProps: {
     Table: ({ Table }, { store }) => o => {
       useTinykeys(() => store.table, {
         'Control+Z': () => store.history.undo(),

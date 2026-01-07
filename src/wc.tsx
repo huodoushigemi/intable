@@ -2,17 +2,18 @@
 import { batch, createEffect, createMemo, createSignal, untrack } from 'solid-js'
 import { customElement, noShadowDOM } from 'solid-element'
 import { createMutable, reconcile } from 'solid-js/store'
-import { Table } from './xxx'
+import { Table } from './'
 
 const PROPS = {
   options: {},
   css: { value: '', attribute: 'css', notify: true, reflect: false },
   theme: '',
-  noShadow: false,
+  // noShadow: false,
 }
 
 export const TableElement = customElement('wc-table', PROPS, (attrs, { element }) => {
-  if (attrs.noShadow) noShadowDOM()
+  noShadowDOM()
+  // if (attrs.noShadow) noShadowDOM()
 
   const props = createMutable(attrs.options)
 

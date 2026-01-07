@@ -1,10 +1,11 @@
-import { createEffect, createMemo, createRoot, createSignal, on, onCleanup, useContext, type JSX } from 'solid-js'
+import { createComputed, createEffect, createMemo, createRoot, createSignal, on, onCleanup, useContext, type JSX } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { createAsyncMemo } from '@solid-primitives/memo'
-import { delay } from 'es-toolkit'
+import { delay, merge } from 'es-toolkit'
 import { chooseFile, log, resolveOptions } from '@/utils'
 import { Ctx, type Plugin, type TableColumn } from '../xxx'
 import { Checkbox, Files } from './RenderPlugin/components'
+import { createMutable } from 'solid-js/store'
 
 declare module '../xxx' {
   interface TableProps {
@@ -22,7 +23,7 @@ declare module '../xxx' {
   }
 }
 
-export type Editor = (props: EditorProps) => {
+export type Editor = (props: EditorOpt) => {
   el: JSX.Element
   getValue: () => any
   destroy: () => void
@@ -30,20 +31,23 @@ export type Editor = (props: EditorProps) => {
   blur?: () => void
 }
 
-export interface EditorProps extends Record<any, any> {
+export interface EditorOpt {
   col: TableColumn
   data: any
   value: any
   eventKey?: string
-  stopEditing: () => void
+  ok: () => void
+  cancel: () => void
+  props?: any
 }
 
 export const EditablePlugin: Plugin = {
   store: () => ({
     editors: { ...editors }
   }),
-  processProps: {
+  rewriteProps: {
     Td: ({ Td }, { store }) => o => {
+      let el!: HTMLElement
       const { props } = useContext(Ctx)
       const editable = createMemo(() => !!o.col.editable && !o.data[store.internal] && !o.col[store.internal])
       const [editing, setEditing] = createSignal(false)
@@ -55,22 +59,32 @@ export const EditablePlugin: Plugin = {
 
       const editorState = createAsyncMemo(async () => {
         if (editing()) {
+          let canceled = false
           const editor = (editor => typeof editor == 'string' ? store.editors[editor] : editor)(o.col.editor || 'text')
-          const ret = editor({ ...o.col.editorProps, col: o.col, eventKey, data: o.data, value: props.data![o.y][o.col.id], stopEditing: () => setEditing(false) })
+          const opt = {
+            props: o.col.editorProps,
+            col: o.col,
+            eventKey,
+            data: o.data,
+            value: o.data[o.col.id],
+            ok: () => setEditing(false),
+            cancel: () => (canceled = true, setEditing(false))
+          }
+          const ret = editor(opt)
           onCleanup(() => {
-            if (o.data[o.col.id] != ret.getValue()) {
+            if (!canceled && ret.getValue() !== o.data[o.col.id]) {
               const arr = [...props.data!]
               arr[o.y] = { ...arr[o.y], [o.col.id]: ret.getValue() }
               props.onDataChange?.(arr)
             }
             ret.destroy()
           })
-          return ret
+          return [opt, ret] as const
         }
       })
 
       createEffect(() => {
-        editorState()?.focus?.()
+        editorState()?.[1]?.focus?.()
       })
       
       createEffect(() => {
@@ -81,18 +95,23 @@ export const EditablePlugin: Plugin = {
       })
 
       let input: HTMLInputElement
+      const size = createMutable({ w: 0, h: 0 })
+      createComputed(() => editing() && (size.w = el.getBoundingClientRect().width, size.h = el.getBoundingClientRect().height))
       
-      o = combineProps({
-        get style() { return editing() ? `padding: 0; height: ${store.trSizes[o.y]?.height}px` : preEdit() ? `height: ${store.trSizes[o.y]?.height}px` : '' },
+      o = combineProps(o, {
+        ref: v => el = v,
+        get class() { return editing() ? 'is-editing' : '' },
+        get style() { return editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '' },
         onClick: () => input?.focus?.(),
-        onDblClick: () => setEditing(editable())
-      } as JSX.HTMLAttributes<any>, o)
+        onDblClick: () => setEditing(editable()),
+        onKeyDown: e => e.key == 'Escape' && editorState()?.[0].cancel()
+      } as JSX.HTMLAttributes<any>)
       
       return (
         <Td {...o}>
           {preEdit() &&
             <input
-              style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events; none; opacity: 0'
+              style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events: none; opacity: 0'
               ref={e => { input = e; delay(0).then(() => e.focus()) }}
               onKeyDown={e => {
                 e.key == ' ' && e.preventDefault()
@@ -106,8 +125,8 @@ export const EditablePlugin: Plugin = {
               }}
             />
           }
-          {editorState()?.el
-            ? <div style={`height: 100%; box-sizing: border-box; padding: 0;`}>{editorState()?.el}</div>
+          {editorState()?.[1]?.el
+            ? <div class='in-cell-edit-wrapper'>{editorState()?.[1]?.el}</div>
             : o.children
           }
         </Td>
@@ -116,23 +135,23 @@ export const EditablePlugin: Plugin = {
   }
 }
 
-const BaseInput: Editor = ({ stopEditing, eventKey, value, col, type }) => createRoot(destroy => {
+const BaseInput: Editor = ({ eventKey, value, ok, cancel, props }) => createRoot(destroy => {
   const [v, setV] = createSignal(eventKey || value)
   const el: HTMLElement = <input
     class='relative block px-2 size-full z-9 box-border resize-none outline-0'
     value={v() || ''}
-    type={type}
+    type={props.type}
     onInput={e => setV(e.target.value)}
     on:pointerdown={e => e.stopPropagation()}
     on:keydown={e => {
       e.stopPropagation()
-      e.key == 'Enter' ? stopEditing() : e.key == 'Escape' ? (setV(value), stopEditing()) : void 0
+      e.key == 'Enter' ? ok() : e.key == 'Escape' ? cancel() : void 0
     }}
   />
   
   return {
     el,
-    getValue: () => v(),
+    getValue: v,
     focus: () => el.focus(),
     destroy,
   }
@@ -140,20 +159,20 @@ const BaseInput: Editor = ({ stopEditing, eventKey, value, col, type }) => creat
 
 const text = BaseInput
 
-const number: Editor = (props) => BaseInput({ ...props, type: 'number' })
-const range: Editor = (props) => BaseInput({ ...props, type: 'range'  })
-const date: Editor = (props) => BaseInput({ ...props, type: 'date'  })
-const time: Editor = (props) => BaseInput({ ...props, type: 'time'  })
-const datetime: Editor = (props) => BaseInput({ ...props, type: 'datetime-local'  })
-const color: Editor = (props) => BaseInput({ ...props, type: 'color'  })
-const tel: Editor = (props) => BaseInput({ ...props, type: 'tel'  })
-const password: Editor = (props) => BaseInput({ ...props, type: 'password'  })
+const number: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'number' } }))
+const range: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'range' } }))
+const date: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'date' } }))
+const time: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'time' } }))
+const datetime: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'datetime-local' } }))
+const color: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'color' } }))
+const tel: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'tel' } }))
+const password: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'password' } }))
 
-const select: Editor = ({ stopEditing, value, col }) => createRoot(destroy => {
+const select: Editor = ({ value, col, ok }) => createRoot(destroy => {
   const [v, setV] = createSignal(value)
   return {
     el: (
-      <select class='size-full' value={v()} onChange={e => { setV(e.target.value); stopEditing() }} on:pointerdown={e => e.stopPropagation()}>
+      <select class='size-full' value={v()} onChange={e => setV(e.target.value)} on:pointerdown={e => e.stopPropagation()}>
         {resolveOptions(col.enum ?? []).map(e => (
           <option value={e.value}>{e.label}</option>
         ))}
@@ -174,7 +193,7 @@ const file: Editor = (props) => createRoot(destroy => {
   }
 })
 
-const checkbox: Editor = ({ stopEditing, eventKey, value, col, data, ...attrs }) => createRoot(destroy => {
+const checkbox: Editor = ({ value, ok, cancel, props }) => createRoot(destroy => {
   const [v, setV] = createSignal(value)
   let el: HTMLElement
   
@@ -188,9 +207,9 @@ const checkbox: Editor = ({ stopEditing, eventKey, value, col, data, ...attrs })
           onChange={setV}
           on:pointerdown={e => e.stopPropagation()}
           on:keydown={e => {
-            e.key == 'Enter' ? stopEditing() : e.key == 'Escape' ? (setV(value), stopEditing()) : void 0
+            e.key == 'Enter' ? ok() : e.key == 'Escape' ? cancel() : void 0
           }}
-          {...attrs}
+          {...props}
         />
       </div>
     ),

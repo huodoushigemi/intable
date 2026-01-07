@@ -28,7 +28,7 @@ declare module '../xxx' {
 }
 
 export const ResizePlugin: Plugin = {
-  processProps: {
+  rewriteProps: {
     resizable: ({ resizable }) => defaultsDeep(resizable, {
       col: { enable: true, min: 45, max: 800 },
       row: { enable: false, min: 20, max: 400 }

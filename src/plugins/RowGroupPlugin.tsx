@@ -51,7 +51,7 @@ export const RowGroupPlugin: Plugin = {
       }
     },
   }),
-  processProps: {
+  rewriteProps: {
     data: ({ data }, { store }) => (
       store.props?.rowGroup?.fields?.length
         ? expandData(data, store)

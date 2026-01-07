@@ -26,7 +26,7 @@ declare module '../xxx' {
 }
 
 export const VirtualScrollPlugin: Plugin = {
-  processProps: {
+  rewriteProps: {
     virtual: ({ virtual }) => defaultsDeep(virtual, {
       x: { overscan: 5 },
       y: { overscan: 10 },

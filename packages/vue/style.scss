@@ -1,0 +1,12 @@
+.element-plus {
+  .is-editing {
+    & > .area { @apply hidden; }
+  }
+  .in-cell-edit-wrapper {
+    @apply flex items-center  p-1;
+
+    > .el-input > .el-input__wrapper > .el-input__prefix {
+      @apply hidden;
+    }
+  }
+}

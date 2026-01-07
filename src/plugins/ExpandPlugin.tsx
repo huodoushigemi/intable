@@ -35,7 +35,7 @@ export const ExpandPlugin: Plugin = {
     isExpand: data => !!store.expands.find(e => unwrap(e) == unwrap(data)),
     toggleExpand: (data) => store.isExpand(data) ? remove(store.expands!, e => unwrap(e) == unwrap(data)) : store.expands.push(unwrap(data))
   }),
-  processProps: {
+  rewriteProps: {
     columns: ({ columns }, { store }) => [
       store.expandCol,
       ...columns!
