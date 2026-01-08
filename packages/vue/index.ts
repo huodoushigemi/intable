@@ -8,16 +8,18 @@ import { mapValues } from 'es-toolkit'
 import { ElementPlusPlugin } from './plugins/element-plus'
 
 const VueTable: Component<TableProps> = (props) => (
+  props = mapValues(props, v => toRaw(v)),
   h('wc-table', {
     style: 'display: contents',
     '.options': {
-      ...mapValues(props, v => toRaw(v)),
+      ...props,
       class: normalizeClass(props.class),
       style: normalizeStyle([props.style]),
       renderer: component,
       plugins: [
         VModelPlugin,
-        ElementPlusPlugin
+        ElementPlusPlugin,
+        ...props.plugins || []
       ]
     } as TableProps
   })
