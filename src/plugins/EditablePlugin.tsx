@@ -1,4 +1,4 @@
-import { createComputed, createEffect, createMemo, createRoot, createSignal, on, onCleanup, useContext, type JSX } from 'solid-js'
+import { createComputed, createEffect, createMemo, createRoot, createSignal, on, onCleanup, useContext, type Component, type JSX } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { createAsyncMemo } from '@solid-primitives/memo'
 import { delay, merge } from 'es-toolkit'
@@ -135,89 +135,59 @@ export const EditablePlugin: Plugin = {
   }
 }
 
-const BaseInput: Editor = ({ eventKey, value, ok, cancel, props }) => createRoot(destroy => {
-  const [v, setV] = createSignal(eventKey || value)
-  const el: HTMLElement = <input
-    class='relative block px-2 size-full z-9 box-border resize-none outline-0'
-    value={v() || ''}
-    type={props.type}
-    onInput={e => setV(e.target.value)}
-    on:pointerdown={e => e.stopPropagation()}
-    on:keydown={e => {
-      e.stopPropagation()
-      e.key == 'Enter' ? ok() : e.key == 'Escape' ? cancel() : void 0
-    }}
-  />
-  
-  return {
-    el,
-    getValue: v,
-    focus: () => el.focus(),
-    destroy,
-  }
+const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
+  ({ eventKey, value, col, ok, cancel, props }) => createRoot(destroy => {
+    const [v, setV] = createSignal(eventKey || value)
+    let el!: HTMLElement
+    ;(<Comp
+      ref={e => el = e}
+      class='relative block px-2 size-full z-9 box-border resize-none outline-0'
+      value={v()}
+      onInput={e => setV(e instanceof Event ? e.target.value : e)}
+      onChange={e => (setV(e instanceof Event ? e.target.value : e), isSelector && ok())}
+      on:pointerdown={e => e.stopPropagation()}
+      on:keydown={e => {
+        e.stopPropagation()
+        e.key == 'Enter' && ok()
+        e.key == 'Escape' && cancel()
+      }}
+      options={col.enum ? resolveOptions(col.enum ?? []) : undefined}
+      {...extra}
+      {...props}
+    />)
+    
+    return {
+      el,
+      getValue: v,
+      focus: () => el.focus(),
+      destroy,
+    }
+  })
+)
+
+const Input = o => <input {...o} />
+
+const text = createEditor(Input)
+const number = createEditor(Input, { type: 'number' })
+const range = createEditor(Input, { type: 'range' })
+const color = createEditor(Input, { type: 'color' })
+const tel = createEditor(Input, { type: 'tel' })
+const password = createEditor(Input, { type: 'password' })
+const date = createEditor(Input, { type: 'date' }, true)
+const time = createEditor(Input, { type: 'time' }, true)
+const datetime = createEditor(Input, { type: 'datetime-local' }, true)
+const select = createEditor(o => <select {...o}>{o.options?.map(e => <option value={e.value}>{e.label}</option>)}</select>, {}, true)
+
+const file = createEditor(o => {
+  const onAdd = () => chooseFile({ multiple: true }).then(files => o.onChange([...o.value || [], ...files.map(e => ({ name: e.name, size: e.size }))]))
+  return <Files {...o} class='relative z-9 outline-(2 blue) min-h-a! h-a! p-1 bg-#fff' onAdd={onAdd} />
 })
 
-const text = BaseInput
-
-const number: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'number' } }))
-const range: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'range' } }))
-const date: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'date' } }))
-const time: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'time' } }))
-const datetime: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'datetime-local' } }))
-const color: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'color' } }))
-const tel: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'tel' } }))
-const password: Editor = (opt) => BaseInput(merge(opt, { props: { type: 'password' } }))
-
-const select: Editor = ({ value, col, ok }) => createRoot(destroy => {
-  const [v, setV] = createSignal(value)
-  return {
-    el: (
-      <select class='size-full' value={v()} onChange={e => setV(e.target.value)} on:pointerdown={e => e.stopPropagation()}>
-        {resolveOptions(col.enum ?? []).map(e => (
-          <option value={e.value}>{e.label}</option>
-        ))}
-      </select>
-    ),
-    getValue: v,
-    destroy
-  }
-})
-
-const file: Editor = (props) => createRoot(destroy => {
-  const [v, setV] = createSignal(props.value)
-  const onAdd = () => chooseFile({ multiple: true }).then(files => setV(v => [...v, ...files.map(e => ({ name: e.name, size: e.size }))]))
-  return {
-    el: <Files class='relative z-9 outline-(2 blue) min-h-a! h-a! p-1 bg-#fff' value={v()} onChange={setV} onAdd={onAdd} />,
-    getValue: v,
-    destroy
-  }
-})
-
-const checkbox: Editor = ({ value, ok, cancel, props }) => createRoot(destroy => {
-  const [v, setV] = createSignal(value)
-  let el: HTMLElement
-  
-  return {
-    el: (
-      <div class='h-full flex items-center' onPointerDown={() => el.focus()}>
-        <Checkbox
-          ref={el}
-          class='mx-3!'
-          value={v()}
-          onChange={setV}
-          on:pointerdown={e => e.stopPropagation()}
-          on:keydown={e => {
-            e.key == 'Enter' ? ok() : e.key == 'Escape' ? cancel() : void 0
-          }}
-          {...props}
-        />
-      </div>
-    ),
-    getValue: v,
-    focus: () => el.focus(),
-    destroy,
-  }
-})
+const checkbox = createEditor(o => (
+  <label ref={o.ref} class='h-full flex items-center'>
+    <Checkbox {...o} ref={() => {}} onInput={() => {}} class='mx-3!' />
+  </label>
+))
 
 export const editors = {
   text,

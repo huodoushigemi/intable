@@ -214,7 +214,6 @@ function BasePlugin(): Plugin {
       Thead: ({ Thead = thead }) => Thead,
       Table: ({ Table = table }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
-        Object.defineProperty(store, 'table', { get: () => el(), configurable: true })
         const { props } = useContext(Ctx)
         o = combineProps({
           ref: setEl,
@@ -243,7 +242,7 @@ function BasePlugin(): Plugin {
         const mProps = combineProps(
           o,
           () => ({ ref: setEl, class: o.col.class, style: o.col.style }),
-          { get style() { return { width: `${o.col.width}px` } } },
+          { get style() { return o.col.width ? { width: `${o.col.width}px` } : {} } },
           createMemo(() => props.cellProps?.(o) || {}, null, { equals: isEqual }),
           createMemo(() => props.thProps?.(o) || {}, null, { equals: isEqual }),
           createMemo(() => o.col.props?.(o) || {}, null, { equals: isEqual }),
@@ -335,9 +334,7 @@ export const ScrollPlugin: Plugin = {
         )
       })
       
-      const _o = combineProps(splitProps(o, ['class', 'style'])[1], { class: 'data-table--table' }, { get class() { return clazz() } })
-
-      o = combineProps(o, { ref: el => store.scroll_el = el, class: 'data-table--scroll-view' })
+      o = combineProps(o, { ref: el => store.scroll_el = el, class: 'data-table--scroll-view' }, { get class() { return clazz() } })
 
       const layers = mapArray(() => store.plugins.flatMap(e => e.layers ?? []), Layer => <Layer {...store} />)
       
@@ -346,7 +343,7 @@ export const ScrollPlugin: Plugin = {
           <div class='data-table__layers'>
             {layers()}
           </div>
-          <table {..._o} />
+          <table ref={el => store.table = el} class={`data-table--table`}>{o.children}</table>
         </div>
       )
     }

@@ -19,7 +19,7 @@ const root = document.getElementById('root')!
 const state = createMutable({ bool: true })
 
 const cols = createMutable(range(10).map(e => ({ name: 'col_' + e, id: 'col_' + e, width: 80 })))
-let data = createMutable(range(1000).map((e, i) => Object.fromEntries(cols.map(e => [e.id, i + 1]))))
+let data = createMutable(range(100).map((e, i) => Object.fromEntries(cols.map(e => [e.id, i + 1]))))
 render(() => <input type='checkbox' checked={state.bool} onChange={(e) => state.bool = e.currentTarget.checked} />, root)
 render(() => <button onClick={() => data[0].col_1 = 'xxx'}>xxx</button>, root)
 

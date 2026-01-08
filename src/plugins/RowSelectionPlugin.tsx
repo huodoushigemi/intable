@@ -17,7 +17,7 @@ declare module '../xxx' {
     }
   }
   interface TableStore {
-
+    rowSelectionCol: TableColumn
   }
   interface Commands {
     rowSelector: ReturnType<typeof useSelector>
@@ -31,6 +31,7 @@ export const RowSelectionPlugin: Plugin = {
       id: Symbol('row-selection'),
       fixed: 'left',
       class: 'row-selection',
+      width: 45,
       resizable: false,
       render: solidComponent((o) => (
         <label>

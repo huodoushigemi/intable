@@ -1,6 +1,5 @@
 import { createEffect, createMemo, useContext, mergeProps } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
-import { createScrollPosition } from '@solid-primitives/scroll'
 import { createVirtualizer, defaultRangeExtractor, Virtualizer } from '@tanstack/solid-virtual'
 import { useVirtualizer } from '@/hooks/useVirtualizer'
 import { defaultsDeep } from 'es-toolkit/compat'
@@ -75,12 +74,13 @@ export const VirtualScrollPlugin: Plugin = {
 
       o = combineProps({ ref: e => el = e, class: 'virtual' }, o)
 
-      return (
-        <Table {...o}>
-          {o.children}
-          <div style={`position: absolute; top: 0; width: ${store.virtualizerX.getTotalSize()}px; height: ${store.virtualizerY.getTotalSize()}px; z-index: -1`} />
-        </Table>
-      )
+      createEffect(() => {
+        if (!store.table) return
+        store.table.style.width = store.virtualizerX.getTotalSize() + 'px'
+        store.table.style.height = store.virtualizerY.getTotalSize() + 'px'
+      })
+
+      return <Table {...o} />
     },
     Td: ({ Td }, { store }) => (o) => {
       const ml = createMemo(() => store[$ML]()[o.x])
@@ -144,4 +144,3 @@ export const VirtualScrollPlugin: Plugin = {
     },
   }
 }
-
