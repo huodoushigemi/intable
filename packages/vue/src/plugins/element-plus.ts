@@ -1,9 +1,8 @@
-import type { Plugin } from '@/index'
-import type { Editor } from '@/plugins/EditablePlugin'
-import { resolveOptions } from '@/utils'
+import type { Plugin } from 'intable'
+import type { Editor } from 'intable/plugins/EditablePlugin'
+import { resolveOptions } from 'intable/utils'
 
 import { ElCheckbox, ElColorPicker, ElDatePicker, ElInput, ElInputNumber, ElRate, ElSelect, ElSwitch, ElTimePicker } from 'element-plus'
-import 'element-plus/dist/index.css'
 import { type Component, h, mergeProps, ref, render } from 'vue'
 
 export const ElementPlusPlugin: Plugin = {

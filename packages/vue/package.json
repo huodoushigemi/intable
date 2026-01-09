@@ -10,6 +10,10 @@
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "intable": "workspace:^",
+    "solid-js": "^1.9.9"
+  },
   "peerDependencies": {
     "vue": "^3"
   },

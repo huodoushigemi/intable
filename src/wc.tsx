@@ -13,7 +13,6 @@ const PROPS = {
 
 export const TableElement = customElement('wc-table', PROPS, (attrs, { element }) => {
   noShadowDOM()
-  // if (attrs.noShadow) noShadowDOM()
 
   const props = createMutable(attrs.options)
 
@@ -23,13 +22,7 @@ export const TableElement = customElement('wc-table', PROPS, (attrs, { element }
   })
   
   return (
-    <>
-      {/* <style>
-        {`${attrs.css} :host {display: block}`}
-        {`wc-table { display: block }`}
-      </style> */}
-      <Table {...props} />
-    </>
+    <Table {...props} />
   )
 })
 

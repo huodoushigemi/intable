@@ -1,11 +1,10 @@
 import { onCleanup, createRenderEffect } from 'solid-js'
-import { type Plugin, type TableProps } from '../../src'
-import '../../src/wc'
+import { type Plugin, type TableProps } from 'intable'
+import 'intable/wc'
 import './style.scss'
 
 import { h, normalizeStyle, normalizeClass, toRaw, render, type Component } from 'vue'
 import { mapValues } from 'es-toolkit'
-import { ElementPlusPlugin } from './plugins/element-plus'
 
 const VueTable: Component<TableProps> = (props) => (
   props = mapValues(props, v => toRaw(v)),
@@ -18,7 +17,6 @@ const VueTable: Component<TableProps> = (props) => (
       renderer: component,
       plugins: [
         VModelPlugin,
-        ElementPlusPlugin,
         ...props.plugins || []
       ]
     } as TableProps
@@ -31,12 +29,12 @@ const VModelPlugin: Plugin = {
       get value() { return store.props?.selected },
       ...rowSelection,
       onChange(selected) {
-        store.props['onUpdate:selected']?.(selected)
+        store.props!['onUpdate:selected']?.(selected)
         rowSelection?.onChange?.(...arguments)
       },
     }),
     onDataChange: ({ onDataChange }, { store }) => (data) => {
-      store.props['onUpdate:data']?.(data)
+      store.props!['onUpdate:data']?.(data)
       onDataChange?.(data)
     }
   }
