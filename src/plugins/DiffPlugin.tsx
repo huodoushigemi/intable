@@ -4,11 +4,11 @@ import { createLazyMemo } from '@solid-primitives/memo'
 import { v4 as uuid } from 'uuid'
 import { diffArrays } from 'diff'
 import { useTinykeys } from '@/hooks'
-import { type Plugin } from '../xxx'
+import { type Plugin } from '..'
 import { isEqual, keyBy } from 'es-toolkit'
 import { log } from '@/utils'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     diff?: {
       /** @default true */ added?: boolean

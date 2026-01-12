@@ -2,11 +2,11 @@ import { createEffect, createMemo, createRenderEffect, mergeProps, on } from 'so
 import { createMutable, reconcile } from 'solid-js/store'
 import { keyBy } from 'es-toolkit'
 import { defaultsDeep, isEqual } from 'es-toolkit/compat'
-import { type Commands, type Plugin, type TableColumn, type TableProps } from '../xxx'
+import { type Commands, type Plugin, type TableColumn, type TableProps } from '..'
 import { Checkbox } from './RenderPlugin/components'
 import { solidComponent } from '@/components/utils'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     rowSelection?: {
       enable?: boolean

@@ -3,9 +3,9 @@ import { unwrap } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
 import { useHistory, useTinykeys } from '@/hooks'
-import { type Plugin } from '../xxx'
+import { type Plugin } from '..'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
 
   }

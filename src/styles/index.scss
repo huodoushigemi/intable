@@ -17,7 +17,7 @@
   @apply relative text-[14px] c-[--table-c] b-[--table-b-c];
 
   &--table {
-    @apply w-max min-w-full table-fixed border-collapse b-0 outline-0 c-[--table-c];
+    @apply table-fixed w-max border-collapse b-0 outline-0 c-[--table-c];
     border-collapse: separate;
     border-spacing: 0;
   }
@@ -162,4 +162,11 @@ td.is-editing {
 
 .in-cell-edit-wrapper {
   @apply absolute inset-0;
+}
+
+.in-cell__resize-handle {
+  @apply size-full hover:after:bg-[--c-primary]/40 active:after:bg-[--c-primary];
+  &::after {
+    @apply content-[''];
+  }
 }

@@ -3,10 +3,12 @@ import { type Plugin, type TableProps } from 'intable'
 import 'intable/wc'
 import './style.scss'
 
+export type { TableProps } from 'intable'
+
 import { h, normalizeStyle, normalizeClass, toRaw, render, type Component } from 'vue'
 import { mapValues } from 'es-toolkit'
 
-const VueTable: Component<TableProps> = (props) => (
+const Intable: Component<TableProps> = (props) => (
   props = mapValues(props, v => toRaw(v)),
   h('wc-table', {
     style: 'display: contents',
@@ -40,7 +42,7 @@ const VModelPlugin: Plugin = {
   }
 }
 
-VueTable.inheritAttrs = false
+Intable.inheritAttrs = false
 
 const component = <T extends Record<string, any>>(Comp: Component<T>) => {
   return (props: T) => {
@@ -52,4 +54,4 @@ const component = <T extends Record<string, any>>(Comp: Component<T>) => {
   }
 }
 
-export default VueTable
+export default Intable

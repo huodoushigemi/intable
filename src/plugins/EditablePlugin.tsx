@@ -3,11 +3,11 @@ import { combineProps } from '@solid-primitives/props'
 import { createAsyncMemo } from '@solid-primitives/memo'
 import { delay, merge } from 'es-toolkit'
 import { chooseFile, log, resolveOptions } from '@/utils'
-import { Ctx, type Plugin, type TableColumn } from '../xxx'
+import { Ctx, type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
 import { createMutable } from 'solid-js/store'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
 
   }
@@ -112,7 +112,7 @@ export const EditablePlugin: Plugin = {
           {preEdit() &&
             <input
               style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events: none; opacity: 0'
-              ref={e => { input = e; delay(0).then(() => e.focus()) }}
+              ref={e => { input = e; delay(0).then(() => e.focus({ preventScroll: true })) }}
               onKeyDown={e => {
                 e.key == ' ' && e.preventDefault()
               }}

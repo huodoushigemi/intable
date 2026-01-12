@@ -1,13 +1,14 @@
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
 // import { createVirtualizer } from '@tanstack/solid-virtual'
-import { uniqBy } from 'es-toolkit'
-import { createComputed, createMemo, createRenderEffect, createSignal, mergeProps, untrack } from 'solid-js'
+import { inRange, keyBy, uniqBy } from 'es-toolkit'
+import { batch, createComputed, createEffect, createMemo, createRenderEffect, createSignal, mergeProps, untrack } from 'solid-js'
 import { createMutable } from 'solid-js/store'
 
 interface VirtualizerOptions {
   enable?: boolean
   overscan?: number
+  batch?: number
   getScrollElement: () => Element
   horizontal?: boolean
   count: number
@@ -15,7 +16,7 @@ interface VirtualizerOptions {
 }
 
 export function useVirtualizer(opt: VirtualizerOptions) {
-  opt = mergeProps({ overscan: 0, enable: true }, opt)
+  opt = mergeProps({ overscan: 0, batch: 0, enable: true }, opt)
   const size = createElementSize(opt.getScrollElement)
   const pos = createScrollPosition(opt.getScrollElement)
   const y = createMemo(() => opt.horizontal ? pos.x : pos.y)
@@ -43,18 +44,34 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     setItems(arr)
   })
 
-  const start = createMemo(() => {
-    const i = findClosestIndex(items(), e => e.start > y() ? -1 : e.end < y() ? 1 : 0)!
-    return Math.max(i - opt.overscan, 0)
-  })
-  const end = createMemo(() => {
-    const i = findClosestIndex(items(), e => e.start > y2() ? -1 : e.end < y2() ? 1 : 0)
-    return Math.min(i + opt.overscan, opt.count - 1)
-  })
+  const start = createMemo((prev: number) => {
+    const { batch, overscan = 0 } = opt
+    let i = findClosestIndex(items(), e => e.start > y() ? -1 : e.end < y() ? 1 : 0)!
+    i -= overscan
+    if (batch) {
+      if (i > prev) i = i <= prev + batch ? prev : (i > prev + batch * 2 ? i : prev + batch)
+      else i -= batch
+    }
+    return Math.max(i, 0)
+  }, 0)
+  const end = createMemo((prev: number) => {
+    const { batch, overscan = 0 } = opt
+    let i = findClosestIndex(items(), e => e.start > y2() ? -1 : e.end < y2() ? 1 : 0)
+    i += overscan
+    if (batch) {
+      if (i < prev) i = i >= prev - batch ? prev : (i < prev - batch * 2 ? i : prev - batch)
+      else i += batch
+    }
+    return Math.min(i, opt.count - 1)
+  }, 0)
   const items2 = createMemo(() => {
     if (!opt.enable) return items()
-    const arr = items().slice(start(), end() + 1).concat(opt.extras?.()?.map(i => items()[i]) || [])
-    return uniqBy(arr, e => e.index).sort((a, b) => a.index - b.index)
+    let arr = items().slice(start(), end() + 1)
+    if (opt.extras) {
+      arr.push(...opt.extras()?.map(i => items()[i]) || [])
+      arr = uniqBy(arr, e => e.index).sort((a, b) => a.index - b.index)
+    }
+    return arr
   })
 
   function findClosestIndex<T>(arr: T[], fn: (e: T) => any) {
@@ -85,6 +102,11 @@ export function useVirtualizer(opt: VirtualizerOptions) {
       }
       sizes[i] = size
     },
-    getVirtualItems: items2
+    getVirtualItems: items2,
+    // getVirtualIndexes: createMemo(() => items2().map(e => e.index))
+    getVirtualItem: (() => {
+      const keybyed = createMemo(() => keyBy(items2(), e => e.index))
+      return i => keybyed()[i]
+    })()
   }
 }

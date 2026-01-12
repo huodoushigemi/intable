@@ -2,10 +2,10 @@ import { batch, createMemo, useContext } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { type MaybeAccessor } from '@solid-primitives/utils'
-import { Ctx, type Plugin } from '../xxx'
+import { Ctx, type Plugin } from '..'
 import { usePointerDrag, useTinykeys } from '@/hooks'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     
   }
@@ -47,12 +47,10 @@ export const CellSelectionPlugin: Plugin = {
     },
     Td: ({ Td }, { store }) => (o) => {
       const clazz = createMemo(() => {
-        const { start, end } = store.selected
         let clazz = ''
-        const xs = [start[0], end[0]].sort((a, b) => a - b)
-        const ys  = [start[1], end[1]].sort((a, b) => a - b)
-        const inx = inrange(o.x, ...xs)
-        const iny = inrange(o.y, ...ys)
+        const { xs, ys } = store.cellSelectionRect()
+        const inx = inrange(o.x, xs[0], xs[1])
+        const iny = inrange(o.y, ys[0], ys[1])
         if (inx && iny) {
           clazz += 'range-selected '
           if (o.x == xs[0]) clazz += 'range-selected-l '
@@ -74,6 +72,13 @@ export const CellSelectionPlugin: Plugin = {
     },
     Table: ({ Table }, { store }) => (o) => {
       const { props } = useContext(Ctx)
+
+      store.cellSelectionRect ??= createMemo(() => {
+        const { start, end } = store.selected
+        const xs = [start[0], end[0]].sort((a, b) => a - b)
+        const ys = [start[1], end[1]].sort((a, b) => a - b)
+        return { xs, ys }
+      })
       
       usePointerDrag(() => store.table, {
         start(e, move, end) {

@@ -1,11 +1,10 @@
 import { groupBy, isEqual, remove, zipObject } from 'es-toolkit'
 import { findLast } from 'es-toolkit/compat'
-import { Ctx, type Plugin } from '../xxx'
+import { Ctx, type Plugin } from '..'
 import { batch, createMemo, useContext } from 'solid-js'
-import type { TableStore } from '../xxx'
-import { log } from '@/utils'
+import type { TableStore } from '..'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     rowGroup?: {
       fields?: string[]

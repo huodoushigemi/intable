@@ -1,12 +1,11 @@
 import { mergeProps, type JSX } from 'solid-js'
-import { combineProps } from '@solid-primitives/props'
 import { component } from 'undestructure-macros'
-import { type Plugin, type TD } from '../../xxx'
+import { type Plugin, type TD } from '../..'
 import { Checkbox, Files } from './components'
 import { resolveOptions } from '@/utils'
 import { renderComponent, solidComponent } from '@/components/utils'
 
-declare module '../../xxx' {
+declare module '../../index' {
   interface TableProps {
 
   }

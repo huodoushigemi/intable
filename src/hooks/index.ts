@@ -72,11 +72,11 @@ export function useDark() {
   return dark
 }
 
-export function useMemoAsync<T>(fn: () => Promise<T> | T, init?: Awaited<T>) {
+export function useMemoAsync<T>(fn: (prev?: T) => Promise<T> | T, init?: Awaited<T>) {
   const REJECT = Symbol()
   const [val, setVal] = createSignal(init)
   createComputed(async () => {
-    const ret = fn()
+    const ret = fn(val())
     const v = ret instanceof Promise ? await new Promise((resolve) => {
       ret.then(resolve)
       onCleanup(() => resolve(REJECT))

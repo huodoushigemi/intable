@@ -1,15 +1,14 @@
-import { createEffect, createMemo, useContext, mergeProps } from 'solid-js'
+import { createEffect, createMemo, useContext, mergeProps, batch } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
+import { createElementSize } from '@solid-primitives/resize-observer'
 import { createVirtualizer, defaultRangeExtractor, Virtualizer } from '@tanstack/solid-virtual'
 import { useVirtualizer } from '@/hooks/useVirtualizer'
 import { defaultsDeep } from 'es-toolkit/compat'
-import { Ctx, type Plugin } from '../xxx'
-import { log } from '@/utils'
+import { Ctx, type Plugin } from '..'
 
 const $ML = Symbol()
 
-// const aa: TableProps
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     virtual?: {
       x?: Partial<Parameters<typeof useVirtualizer>[0]>
@@ -27,8 +26,10 @@ declare module '../xxx' {
 export const VirtualScrollPlugin: Plugin = {
   rewriteProps: {
     virtual: ({ virtual }) => defaultsDeep(virtual, {
-      x: { overscan: 5 },
-      y: { overscan: 10 },
+      // x: { overscan: 5 },
+      // y: { overscan: 10 },
+      x: { batch: 3, overscan: 2 },
+      y: { batch: 5, overscan: 5 },
     }),
     Table: ({ Table }, { store }) => (o) => {
       let el: HTMLElement
@@ -75,12 +76,28 @@ export const VirtualScrollPlugin: Plugin = {
       o = combineProps({ ref: e => el = e, class: 'virtual' }, o)
 
       createEffect(() => {
-        if (!store.table) return
-        store.table.style.width = store.virtualizerX.getTotalSize() + 'px'
-        store.table.style.height = store.virtualizerY.getTotalSize() + 'px'
+        const { table, tbody } = store
+        table.style.width = store.virtualizerX.getTotalSize() + 'px'
+        table.style.height = store.virtualizerY.getTotalSize() + (store.thead?.offsetHeight || 0) + 'px'
       })
 
       return <Table {...o} />
+    },
+    Thead: ({ Thead }, { store }) => o => {
+      o = combineProps(({
+        get style() { return `transform: translate(${store.virtualizerX.getVirtualItems()[0]?.start}px, ${0}px);` }
+      }), o)
+      return <Thead {...o} />
+    },
+    Tbody: ({ Tbody }, { store }) => o => {
+      o = combineProps({
+        get style() { return `transform: translate(${store.virtualizerX.getVirtualItems()[0]?.start}px, ${store.virtualizerY.getVirtualItems()[0]?.start}px)` }
+      }, o)
+      return <Tbody {...o} />
+    },
+    Tr: ({ Tr }, { store }) => (o) => {
+      createEffect(() => store.trSizes[o.y] && store.virtualizerY.resizeItem(o.y, store.trSizes[o.y]!.height))
+      return <Tr {...o} />
     },
     Td: ({ Td }, { store }) => (o) => {
       const ml = createMemo(() => store[$ML]()[o.x])
@@ -88,40 +105,12 @@ export const VirtualScrollPlugin: Plugin = {
       return <Td {...mo} />
     },
     Th: ({ Th }, { store }) => (o) => {
-      createEffect(() => store.thSizes[o.x] && store.virtualizerX.resizeItem(o.y, store.thSizes[o.x]!.width))
+      createEffect(() => store.thSizes[o.x] && store.virtualizerX.resizeItem(o.x, store.thSizes[o.x]!.width))
       const ml = createMemo(() => store[$ML]?.()[o.x])
       const mo = combineProps(() => ({ style: `width: ${o.col.width || 80}px; margin-left: ${ml()?.offset ?? 0}px` }), o)
       return <Th {...mo} />
     },
-    Tr: ({ Tr }, { store }) => (o) => {
-      createEffect(() => store.trSizes[o.y] && store.virtualizerY.resizeItem(o.y, store.trSizes[o.y]!.height))
-      return <Tr {...o} />
-    },
-    Thead: ({ Thead }, { store }) => o => {
-      o = combineProps(() => ({
-        style: `transform: translate(${store.virtualizerX.getVirtualItems()[0]?.start}px, ${0}px);`
-      }), o)
-      return <Thead {...o} />
-    },
-    Tbody: ({ Tbody }, { store }) => o => {
-      o = combineProps(() => ({
-        style: `transform: translate(${store.virtualizerX.getVirtualItems()[0]?.start}px, ${store.virtualizerY.getVirtualItems()[0]?.start}px);`
-      }), o)
-      return <Tbody {...o} />
-    },
-    // tr: ({ tr }, { store }) => (o) => {
-    //   let el
-    //   o = combineProps({ ref: e => el = e }, o)
-    //   o = combineProps(() => ({ style: `transform: translate(0, ${store.virtualizerY.getOffsetForIndex(o.y, 'start')?.[0]}px); position: absolute` }), o)
-    //   onMount(() => store.virtualizerY.measureElement(el))
-    //   return <Dynamic component={tr} {...o} />
-    // },
-    // tbody: ({ tbody }, { store }) => o => {
-    //   o = combineProps(() => ({
-    //     style: `width: ${store.virtualizerX.getTotalSize()}px; height: ${store.virtualizerY.getTotalSize()}px`
-    //   }), o)
-    //   return <Dynamic component={tbody} {...o} />
-    // },
+    
     EachRows: ({ EachRows }, { store }) => (o) => {
       const list = createMemo(() => store.virtualizerY.getVirtualItems().map(e => o.each[e.index]))
       return (

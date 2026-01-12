@@ -3,10 +3,10 @@ import type { Component, JSX } from 'solid-js'
 import { unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { remove } from 'es-toolkit'
-import { Ctx, type Plugin, type TableStore } from '../xxx'
+import { Ctx, type Plugin, type TableStore } from '..'
 import { renderComponent, solidComponent } from '@/components/utils'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     expand?: {
       enable?: boolean // todo

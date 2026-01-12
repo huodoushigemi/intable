@@ -1,7 +1,7 @@
 import { batch, createComputed, createEffect, createMemo, createSignal, mapArray, on } from 'solid-js'
-import { type Commands, type Plugin } from '../xxx'
+import { type Commands, type Plugin } from '..'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     
   }

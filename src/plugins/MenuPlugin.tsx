@@ -5,10 +5,10 @@ import { range, remove } from 'es-toolkit'
 import { useMemoAsync, useTinykeys } from '@/hooks'
 import { Menu } from '@/components/Menu'
 import { autoPlacement, computePosition } from '@floating-ui/dom'
-import { type Plugin, type TableStore } from '../xxx'
+import { type Plugin, type TableStore } from '..'
 import { log } from '@/utils'
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     
   }
@@ -53,12 +53,12 @@ export const MenuPlugin: Plugin = {
         const mel = menuEl()
         if (!mel) return
         return computePosition({ getBoundingClientRect: () => DOMRect.fromRect(pos()) }, mel, {
-          strategy: 'absolute',
+          strategy: 'fixed',
           placement: 'top-start', 
           middleware: [autoPlacement({ boundary: document.body, alignment: 'start' })]
         })
         .then(({ x, y }) => ({
-          position: 'absolute',
+          position: 'fixed',
           transform: `translate(${x}px, ${y}px)`,
           top: 0,
           left: 0,

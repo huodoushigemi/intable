@@ -6,14 +6,15 @@ import { defaultsDeep } from 'es-toolkit/compat'
 import { toReactive, useMemo, usePointerDrag } from '@/hooks'
 import { useSplit } from '@/components/Split'
 
-import { Ctx, type Plugin, type TableColumn } from "@/xxx"
+import { Ctx, type Plugin, type TableColumn } from "@/index"
 
-declare module '../xxx' {
+declare module '../index' {
   interface TableProps {
     resizable?: {
       col: Partial<{ enable: boolean; min: number; max: number }>
       row: Partial<{ enable: boolean; min: number; max: number }>
     }
+    onColumnsChange?: (columns: TableColumn[]) => void
   }
   interface TableColumn {
     resizable?: boolean
@@ -41,7 +42,7 @@ export const ResizePlugin: Plugin = {
       const { props } = useContext(Ctx)
       const ths = createMemo(() => store.ths.filter(e => e != null))
       onMount(() => {
-        useSplit({ container: theadEl, cells: ths, size: 8, trailing: true, dir: 'x', handle: i => <Handle i={i} /> })
+        useSplit({ container: theadEl, cells: ths, size: 10, trailing: true, dir: 'x', handle: i => <Handle i={i} /> })
       })
       
       const Handle: Component = ({ i }) => {
@@ -53,12 +54,18 @@ export const ResizePlugin: Plugin = {
             const sw = th.offsetWidth
             move((e, o) => th.style.width = `${clamp(sw + o.ox, min, max)}px`)
             end(() => {
-              props.columns[i].width = th.offsetWidth
-              props.columns[i].onWidthChange?.(th.offsetWidth)
+              const col = props.columns[i]
+              const cols = [...store.rawProps.columns || []]
+              const index = cols?.findIndex(e => e.id == col.id)
+              if (index > -1) {
+                cols[index] = { ...cols[index], width: th.offsetWidth }
+                props.onColumnsChange?.(cols)
+              }
+              col.onWidthChange?.(th.offsetWidth)
             })
           },
         })
-        return <div ref={el} class="handle size-full cursor-w-resize hover:bg-gray active:bg-gray" />
+        return <div ref={el} class="in-cell__resize-handle flex justify-center after:w-1 cursor-w-resize" />
       }
       
       o = combineProps({ ref: e => theadEl = e }, o)
@@ -85,7 +92,7 @@ export const ResizePlugin: Plugin = {
             })
           },
         })
-        return <div ref={el} class="handle size-full cursor-s-resize hover:bg-gray active:bg-gray" />
+        return <div ref={el} class="in-cell__resize-handle flex flex-row items-center after:h-1 cursor-s-resize" />
       }
 
       o = combineProps({ ref: e => el = e }, o)

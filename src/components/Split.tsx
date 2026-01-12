@@ -1,5 +1,6 @@
+import { unFn } from '@/utils'
 import { createElementBounds } from '@solid-primitives/bounds'
-import { children, createEffect, createMemo, For, Index, mergeProps, onMount, splitProps, type JSXElement } from 'solid-js'
+import { children, createComputed, createEffect, createMemo, For, Index, mapArray, mergeProps, onMount, splitProps, type JSXElement } from 'solid-js'
 import { Portal } from 'solid-js/web'
 
 type SplitProps = {
@@ -31,8 +32,8 @@ export const useSplit = (props: SplitProps) => {
   props = mergeProps({ dir: 'x', size: 4 }, props) as SplitProps
 
   let el!: HTMLDivElement
-  const bound = createElementBounds(() => el)
-  const bounds = createMemo(() => props.cells().map(el => createElementBounds(el, { trackResize: true })))
+  // const bounds = createMemo(() => props.cells().map()
+  const bounds = mapArray(() => props.cells(), el => createElementBounds(el))
   const rect = createElementBounds(() => el)
   createEffect(() => el.style.position = 'absolute')
 
@@ -46,9 +47,9 @@ export const useSplit = (props: SplitProps) => {
 
   ; //
   <Portal ref={el} mount={props.container || document.body}>
-    <Index each={bounds().slice(0, -1)}>
-      {(e, i) => <Handle e={e()} bool={1} i={i} />}
-    </Index>
+    <For each={bounds().slice(0, -1)}>
+      {(e, i) => <Handle e={unFn(e)} bool={1} i={unFn(i)} />}
+    </For>
     {!!bounds().length && props.leading && <Handle e={bounds()[0]} i={-1} />}
     {!!bounds().length && props.trailing && <Handle e={bounds()[bounds().length - 1]} bool={1} i={bounds().length - 1} />}
   </Portal>
