@@ -14,9 +14,9 @@ export const ElementPlusPlugin: Plugin = {
     store.editors.checkbox = createEditor(ElCheckbox)
     store.editors.color = createEditor(ElColorPicker, {}, true)
     store.editors.select = createEditor(ElSelect, {}, true)
-    store.editors.date = createEditor(ElDatePicker, {}, true)
+    store.editors.date = createEditor(ElDatePicker, { valueFormat: 'YYYY-MM-DD' }, true)
     store.editors.time = createEditor(ElTimePicker, {}, true)
-    store.editors.datetime = createEditor(ElDatePicker, { type: 'datetime' }, true)
+    store.editors.datetime = createEditor(ElDatePicker, { type: 'datetime', valueFormat: 'YYYY-MM-DD HH:mm:ss' }, true)
   },
   rewriteProps: {
     class: ({ class: clazz }) => `element-plus ${clazz}`

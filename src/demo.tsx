@@ -28,7 +28,7 @@ render(() => <button onClick={() => data[0].col_1 = 'xxx'}>xxx</button>, root)
 cols[0].editor = 'select'
 cols[0].enum = { 1: 1, 2: 2, 3: 3 }
 // cols[0].render = 'file'
-cols.forEach(e => (e.editable = true, e.editOnInput = true))
+cols.forEach(e => (e.editable = true))
 
 cols.at(-3)!.width = undefined
 cols.at(-1)!.width = undefined

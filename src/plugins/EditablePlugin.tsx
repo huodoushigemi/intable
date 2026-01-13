@@ -1,8 +1,8 @@
 import { createComputed, createEffect, createMemo, createRoot, createSignal, on, onCleanup, useContext, type Component, type JSX } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { createAsyncMemo } from '@solid-primitives/memo'
-import { delay, merge } from 'es-toolkit'
-import { chooseFile, log, resolveOptions } from '@/utils'
+import { delay } from 'es-toolkit'
+import { chooseFile, resolveOptions } from '@/utils'
 import { Ctx, type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
 import { createMutable } from 'solid-js/store'
@@ -16,7 +16,6 @@ declare module '../index' {
     editor?: string | Editor
     editorProps?: any
     editorPopup?: boolean // todo
-    editOnInput?: boolean
   }
   interface TableStore {
     editors: { [key: string]: Editor }
@@ -55,7 +54,7 @@ export const EditablePlugin: Plugin = {
 
       const selected = createMemo(() => (([x, y]) => o.x == x && o.y == y)(store.selected.start || []))
 
-      const preEdit = createMemo(() => selected() && editable() && !editing() && o.col.editOnInput)
+      const preEdit = createMemo(() => selected() && editable() && !editing())
 
       const editorState = createAsyncMemo(async () => {
         if (editing()) {

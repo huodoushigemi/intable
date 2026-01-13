@@ -8,7 +8,7 @@ export type { TableProps } from 'intable'
 import { h, normalizeStyle, normalizeClass, toRaw, render, type Component } from 'vue'
 import { mapValues } from 'es-toolkit'
 
-const Intable: Component<TableProps> = (props) => (
+export const Intable: Component<TableProps> = (props) => (
   props = mapValues(props, v => toRaw(v)),
   h('wc-table', {
     style: 'display: contents',

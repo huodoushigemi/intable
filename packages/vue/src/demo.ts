@@ -31,7 +31,7 @@ createApp(() => [
     index: true,
     // size: 'small',
     columns: [
-      { name: 'Date', id: 'date', editable: true, editOnInput: true, enum: { a: 1 }, editor: 'date' },
+      { name: 'Date', id: 'date', editable: true, enum: { a: 1 }, editor: 'date' },
       { name: 'Name', id: 'name' },
       { name: 'Address', id: 'address', width: 250 },
       // todo re render

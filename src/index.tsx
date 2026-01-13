@@ -74,8 +74,8 @@ export interface TableProps {
   onDataChange?: (data: any[]) => void
 }
 
-type THProps = { x: number; col: TableColumn; children: JSX.Element }
-type TDProps = { x: number; y: number; data: any; col: TableColumn; children: JSX.Element }
+export type THProps = { x: number; col: TableColumn; children: JSX.Element }
+export type TDProps = { x: number; y: number; data: any; col: TableColumn; children: JSX.Element }
 export type TD = Component<{ x: number; y: number; data: any; col: TableColumn; children: JSX.Element }>
 
 type Obj = Record<string | symbol, any>

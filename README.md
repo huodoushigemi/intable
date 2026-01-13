@@ -127,6 +127,6 @@ const App = () => {
 | columns      | 展示列       | Column[]                        |        |
 | index        | 显示序号     | bool                            | false  |
 | border       | 显示纵向边框 | bool                            | false  |
-| stickyHeader       |  | bool                            | false  |
+| stickyHeader | 表头吸顶     | bool                            | false  |
 | size         | 尺寸         | 'large' \| 'default' \| 'small' | false  |
-| rowSelection | 启用行选择   | [@see]()                         | false  |
+| rowSelection | 启用行选择   | [@see]()                        | false  |
