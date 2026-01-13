@@ -1,10 +1,11 @@
 {
   "name": "intable",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:lib": "node scripts/build.js",
     "preview": "vite preview"
   },
   "files": [
@@ -67,5 +68,9 @@
     "overrides": {
       "vite": "npm:rolldown-vite@7.1.12"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

@@ -2,7 +2,7 @@ import { batch, createMemo } from 'solid-js'
 import { render } from 'solid-js/web'
 import { createMutable, createStore, produce, reconcile } from 'solid-js/store'
 import { range } from 'es-toolkit'
-import { Table } from './index.tsx'
+import { Intable } from './index.tsx'
 
 import './index.scss'
 import 'virtual:uno.css'
@@ -36,7 +36,7 @@ cols.at(-1)!.width = undefined
 data.forEach(e => e.g = e.col_0 % 10)
 data.forEach(e => e.n = e.col_0 % 3)
 
-render(() => <Table
+render(() => <Intable
   class='w-50vw! h-40vh of-auto'
   index={state.bool}
   stickyHeader={state.bool}

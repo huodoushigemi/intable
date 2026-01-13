@@ -107,7 +107,7 @@ export interface TableStore extends Obj {
   plugins: Plugin[]
 }
 
-export const Table = (props: TableProps) => {
+export const Intable = (props: TableProps) => {
   props = mergeProps({ rowKey: 'id' } as Partial<TableProps>, props)
   const plugins = createMemo(() => [
     ...defaultsPlugins,
@@ -185,6 +185,8 @@ const TBody = () => {
     </props.Tbody>
   )
 }
+
+export default Intable
 
 // process ===================================================================================================================================================================================================
 

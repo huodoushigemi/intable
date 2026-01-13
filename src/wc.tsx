@@ -2,7 +2,7 @@
 import { batch, createEffect, createMemo, createSignal, untrack } from 'solid-js'
 import { customElement, noShadowDOM } from 'solid-element'
 import { createMutable, reconcile } from 'solid-js/store'
-import { Table } from './'
+import { Intable } from './'
 
 const PROPS = {
   options: {},
@@ -22,7 +22,7 @@ export const TableElement = customElement('wc-table', PROPS, (attrs, { element }
   })
   
   return (
-    <Table {...props} />
+    <Intable {...props} />
   )
 })
 
