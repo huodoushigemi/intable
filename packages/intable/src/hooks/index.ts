@@ -1,4 +1,4 @@
-import { $PROXY, createComputed, createEffect, createMemo, createRenderEffect, createRoot, createSignal, mergeProps, on, onCleanup, type Signal } from 'solid-js'
+import { $PROXY, createComputed, createEffect, createMemo, createRenderEffect, createRoot, createSignal, mergeProps, on, onCleanup, untrack, type Signal } from 'solid-js'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { createPointerListeners } from '@solid-primitives/pointer'
 import { access, type Many, type MaybeAccessor } from '@solid-primitives/utils'
@@ -7,7 +7,7 @@ import { createMutationObserver } from '@solid-primitives/mutation-observer'
 import { isFunction, isPromise, mapValues } from 'es-toolkit'
 import { castArray } from 'es-toolkit/compat'
 import { createKeybindingsHandler } from 'tinykeys'
-import { log, unFn } from '@/utils'
+import { log, unFn } from '../utils'
 import { $RAW, createMutable } from 'solid-js/store'
 
 interface UseDragOptions {
@@ -76,7 +76,7 @@ export function useMemoAsync<T>(fn: (prev?: T) => Promise<T> | T, init?: Awaited
   const REJECT = Symbol()
   const [val, setVal] = createSignal(init)
   createComputed(async () => {
-    const ret = fn(val())
+    const ret = fn(untrack(val))
     const v = ret instanceof Promise ? await new Promise((resolve) => {
       ret.then(resolve)
       onCleanup(() => resolve(REJECT))

@@ -1,0 +1,202 @@
+:root {
+  --c-primary: #51a2ff;
+  --select-area-bg: #5292f71a;
+  --menu-bg: #fff;
+}
+
+.data-table {
+  --table-b: 1px solid var(--table-b-c);
+  --table-b-c: #ebeef5;
+  --table-c: #606266;
+  --table-bg: #fff;
+
+  --table-header-c: #909399;
+  --table-header-bg: var(--table-bg);
+  
+  --table-row-hover-bg: #f5f7fa;
+
+  @apply relative text-[14px] c-[--table-c] b-[--table-b-c];
+
+  &--table {
+    @apply table-fixed w-max border-collapse b-0 outline-0 c-[--table-c];
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  thead {
+    @apply c-[--table-header-c];
+  }
+
+  tr:hover {
+    & > td {
+      @apply bg-[--table-row-hover-bg];
+    }
+  }
+
+  th {
+    @apply bg-[--table-header-bg];
+  }
+
+  td {
+    @apply bg-[--table-bg];
+  }
+
+  td, th {
+    @apply px-2 py-.5 outline-0 b-(0 solid [--table-b-c]) b-b-0 box-border v-mid;
+    text-align: inherit;
+      background-image: linear-gradient(var(--table-b-c), var(--table-b-c));
+      background-repeat: no-repeat;
+      background-size: 100% 1px, 1px 100%;
+      background-position: 100% 100%, 100% 0;
+  }
+
+  td:empty::after {
+    content: 'ㅤ' !important;
+  }
+
+  &--border {
+    @apply b-1;
+
+    th, td {
+      background-image: linear-gradient(var(--table-b-c), var(--table-b-c)), linear-gradient(var(--table-b-c), var(--table-b-c));
+    }
+  }
+
+  &--scroll-view {
+    @apply of-auto;
+  }
+
+  &__layers {
+    @apply pointer-events-none absolute left-0 top-0 [&>*]:absolute z-1;
+  }
+}
+
+.range-selected {
+  @apply relative;
+  & > .area {
+    @apply absolute inset-0 bg-[--select-area-bg] b-(0px solid [--c-primary]) pointer-events-none;
+  }
+
+  &-l > .area { @apply b-l-(2px) }
+  &-r > .area { @apply b-r-(2px) }
+  &-t > .area { @apply b-t-(2px) }
+  &-b > .area { @apply b-b-(2px) }
+}
+
+.row-range-highlight, .col-range-highlight {
+  @apply relative;
+  & > .area {
+    @apply absolute inset-0 bg-[--c-primary]/10 b-(0 solid [--c-primary]) pointer-events-none;
+  }
+}
+
+.row-range-highlight > .area {
+  @apply b-r-1;
+}
+
+.col-range-highlight > .area {
+  @apply b-b-1;
+}
+
+.sticky-header {
+  @apply sticky top-0 bg-#fff z-9;
+  &::after {
+    @apply content-[''] absolute top-full w-full h-[10px] pointer-events-none;
+    box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, .15);
+  }
+}
+
+.fixed-left, .fixed-right {
+  @apply sticky! z-1 bg-#fff;
+  &::after {
+    @apply content-[''] absolute top-0 w-[10px] h-full pointer-events-none;
+  }
+}
+
+.is-scroll-right, .is-scroll-mid {
+  .fixed-left::after {
+    @apply left-full;
+    box-shadow: inset 10px 0 10px -10px rgba(0, 0, 0, .15);
+  }
+}
+
+.is-scroll-left, .is-scroll-mid {
+  .fixed-right::after {
+    @apply right-full;
+    box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, .15);
+  }
+}
+
+.copied .range-selected {
+  &::before { border-style: dashed; }
+}
+
+// 
+.data-table.virtual {
+  @apply block of-auto w-fit;
+
+  thead { @apply block w-fit [&>tr]-(flex) [&>tr>th]-(block flex-[0_0_auto]); }
+  tbody { @apply block w-fit [&>tr]-(flex) [&>tr>td]-(block flex-[0_0_auto]); }
+}
+
+.row-selection {
+  @apply w-10;
+  & > label {
+    @apply absolute inset-0 flex justify-center items-center w-full h-full;
+  }
+}
+
+.icon-clickable { 
+  @apply flex justify-center items-center p-.5 w-5 h-5 box-border rd-1 hover:bg-gray/30 [&>svg]:(w-full h-full);
+}
+
+input[type="checkbox"].you-checkbox {
+  @apply relative size-4 m-1 rd-1 c-#2196f3 b-(2 solid current) outline-offset--0 focus:outline-(4 solid #2196f3/40) cusor-pointer appearance-none checked:bg-current;
+  &.checked::after {
+    @apply content-["✓"] absolute top-50% left-50% translate--50% text-3 c-#fff z-1;
+  }
+}
+
+td.is-editing {
+  
+}
+
+.in-cell-edit-wrapper {
+  @apply absolute inset-0;
+}
+
+.in-cell__resize-handle {
+  @apply size-full hover:after:bg-[--c-primary]/40 active:after:bg-[--c-primary];
+  &::after {
+    @apply content-[''];
+  }
+}
+
+// 
+.li {
+  @apply relative cursor-pointer;
+  &:hover, &.hover {
+    @apply bg-gray/20;
+  }
+  &:active, &.selected, &.active {
+    &::before {
+      content: '';
+      @apply absolute inset-0 rd-inherit bg-gray/15;
+    }
+  }
+  &.disabled, &[disabled] {
+    opacity: .4;
+  }
+}
+
+.tt-menu {
+  @apply py-1 shadow-lg rd-2 space-y-.5 text-sm b-(1 solid gray/30) bg-[--menu-bg] cursor-default;
+}
+
+.tt-menu-x {
+  @apply px-1 shadow-lg rd-2 space-x-.5 text-sm b-(1 solid gray/30) bg-[--menu-bg] cursor-default;
+
+  & > .hr {
+    @apply w-[1px] my-1.5 bg-gray/30;
+  }
+}

@@ -1,7 +1,7 @@
 import { createEffect, useContext, type Component } from 'solid-js'
 import { Ctx, type Plugin } from '..'
 import { combineProps } from '@solid-primitives/props'
-import { useTinykeys } from '@/hooks'
+import { useTinykeys } from '../hooks'
 
 declare module '../index' {
   interface TableProps {

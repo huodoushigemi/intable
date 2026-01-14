@@ -3,7 +3,7 @@ import { combineProps } from '@solid-primitives/props'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { type MaybeAccessor } from '@solid-primitives/utils'
 import { Ctx, type Plugin } from '..'
-import { usePointerDrag, useTinykeys } from '@/hooks'
+import { usePointerDrag, useTinykeys } from '../hooks'
 
 declare module '../index' {
   interface TableProps {

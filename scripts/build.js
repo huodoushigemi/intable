@@ -1,6 +1,6 @@
 import { resolve, join, dirname, relative, extname } from 'path'
 import { fileURLToPath } from 'url'
-import { readFileSync, readdirSync, existsSync, rmSync, cpSync } from 'fs'
+import { readFileSync, readdirSync, existsSync, rmSync, cpSync, writeFileSync } from 'fs'
 import { build } from 'vite'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -11,12 +11,6 @@ const packagesDir = resolve(rootDir, 'packages')
 function getPackages() {
   const packages = []
   const dirs = readdirSync(packagesDir)
-
-  packages.push({
-    name: 'intable',
-    path: rootDir,
-    packageJson: JSON.parse(readFileSync(resolve(rootDir, 'package.json'), 'utf-8')),
-  })
 
   for (const dir of dirs) {
     const packagePath = join(packagesDir, dir)
@@ -54,6 +48,7 @@ async function buildPackage(pkg) {
             join('src', e)
           ])),
           formats: ['es'],
+          cssFileName: 'style',
         },
         rollupOptions: {
           external: id => {
@@ -83,14 +78,30 @@ async function buildPackage(pkg) {
         minify: false,
         emptyOutDir: true,
       },
+      plugins: [
+        (await import('vite-plugin-lib-inject-css')).libInjectCss()
+      ]
     })
 
-    // 复制 style.scss 文件
-    const stylePath = join(pkg.path, 'src/style.scss')
-    if (existsSync(stylePath)) {
-      cpSync(stylePath, join(distPath, 'style.scss'))
-      console.log('  ✓ Copied style.scss')
+    // // 复制 style.scss 文件
+    // const stylePath = join(pkg.path, 'src/style.scss')
+    // if (existsSync(stylePath)) {
+    //   cpSync(stylePath, join(distPath, 'style.scss'))
+    //   console.log('  ✓ Copied style.scss')
+    // }
+
+    if (existsSync(join(pkg.path, 'src/theme'))) {
+      cpSync(join(pkg.path, 'src/theme'), join(distPath, 'theme'), { recursive: true })
     }
+
+    // fix: unocss
+    if (existsSync(join(pkg.path, 'dist/__uno.css'))) {
+      const uno = readFileSync(join(pkg.path, 'dist/__uno.css'), { encoding: 'utf8' })
+      const rewrite = (path, fn) => writeFileSync(path, fn(readFileSync(path, { encoding: 'utf8' })))
+      rewrite(join(pkg.path, 'dist/style.css'), str => uno + '\n' + str)
+      rewrite(join(pkg.path, 'dist/index.js'), str => str.replace(`import './__uno.css'`, ''))
+    }
+
 
     console.log(`✅ ${pkg.name} built successfully!`)
 

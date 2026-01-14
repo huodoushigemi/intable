@@ -11,6 +11,76 @@ importers:
 
   .:
     dependencies:
+      es-toolkit:
+        specifier: ^1.39.10
+        version: 1.43.0
+      intable:
+        specifier: workspace:^
+        version: link:packages/intable
+      solid-js:
+        specifier: ^1.9.9
+        version: 1.9.10
+    devDependencies:
+      '@babel/plugin-syntax-typescript':
+        specifier: ^7.27.1
+        version: 7.27.1(@babel/core@7.28.5)
+      '@iconify-json/lucide':
+        specifier: ^1.2.63
+        version: 1.2.83
+      '@iconify-json/solar':
+        specifier: ^1.2.4
+        version: 1.2.5
+      '@iconify-json/vscode-icons':
+        specifier: ^1.2.29
+        version: 1.2.37
+      '@types/node':
+        specifier: ^25.0.8
+        version: 25.0.8
+      '@unocss/transformer-directives':
+        specifier: ^66.4.2
+        version: 66.5.12
+      babel-plugin-solid-undestructure:
+        specifier: ^1.1.0
+        version: 1.1.0(@babel/core@7.28.5)(@types/babel__core@7.20.5)(rollup@2.79.2)(solid-js@1.9.10)
+      rollup-plugin-visualizer:
+        specifier: ^6.0.3
+        version: 6.0.5(rolldown@1.0.0-beta.39)(rollup@2.79.2)
+      sass:
+        specifier: ^1.90.0
+        version: 1.97.2
+      tinyglobby:
+        specifier: ^0.2.15
+        version: 0.2.15
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      undestructure-macros:
+        specifier: ^0.0.1
+        version: 0.0.1
+      unocss:
+        specifier: ^66.4.2
+        version: 66.5.12(postcss@8.5.6)(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))
+      unplugin-auto-import:
+        specifier: ^19.3.0
+        version: 19.3.0(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))
+      unplugin-icons:
+        specifier: ^22.2.0
+        version: 22.5.0(@vue/compiler-sfc@3.5.26)
+      vite:
+        specifier: npm:rolldown-vite@7.1.12
+        version: rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)
+      vite-plugin-lib-inject-css:
+        specifier: ^2.2.2
+        version: 2.2.2(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))
+      vite-plugin-solid:
+        specifier: ^2.11.8
+        version: 2.11.10(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))(solid-js@1.9.10)
+      vue:
+        specifier: ^3.5.24
+        version: 3.5.26(typescript@5.8.3)
+
+  packages/intable:
+    dependencies:
       '@floating-ui/dom':
         specifier: ^1.7.4
         version: 1.7.4
@@ -59,9 +129,6 @@ importers:
       '@tanstack/solid-virtual':
         specifier: ^3.13.12
         version: 3.13.18(solid-js@1.9.10)
-      diff:
-        specifier: ^8.0.2
-        version: 8.0.2
       es-toolkit:
         specifier: ^1.39.10
         version: 1.43.0
@@ -81,63 +148,15 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0
     devDependencies:
-      '@babel/plugin-syntax-typescript':
-        specifier: ^7.27.1
-        version: 7.27.1(@babel/core@7.28.5)
-      '@iconify-json/lucide':
-        specifier: ^1.2.63
-        version: 1.2.83
-      '@iconify-json/solar':
-        specifier: ^1.2.4
-        version: 1.2.5
-      '@iconify-json/vscode-icons':
-        specifier: ^1.2.29
-        version: 1.2.37
-      '@unocss/transformer-directives':
-        specifier: ^66.4.2
-        version: 66.5.12
-      babel-plugin-solid-undestructure:
-        specifier: ^1.1.0
-        version: 1.1.0(@babel/core@7.28.5)(@types/babel__core@7.20.5)(rollup@2.79.2)(solid-js@1.9.10)
-      rollup-plugin-visualizer:
-        specifier: ^6.0.3
-        version: 6.0.5(rolldown@1.0.0-beta.39)(rollup@2.79.2)
-      sass:
-        specifier: ^1.90.0
-        version: 1.97.2
-      tinyglobby:
-        specifier: ^0.2.15
-        version: 0.2.15
-      typescript:
-        specifier: ~5.8.3
-        version: 5.8.3
-      undestructure-macros:
-        specifier: ^0.0.1
-        version: 0.0.1
-      unocss:
-        specifier: ^66.4.2
-        version: 66.5.12(postcss@8.5.6)(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))
-      unplugin-auto-import:
-        specifier: ^19.3.0
-        version: 19.3.0(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))
-      unplugin-icons:
-        specifier: ^22.2.0
-        version: 22.5.0(@vue/compiler-sfc@3.5.26)
-      vite:
-        specifier: npm:rolldown-vite@7.1.12
-        version: rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)
-      vite-plugin-solid:
-        specifier: ^2.11.8
-        version: 2.11.10(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))(solid-js@1.9.10)
-      vue:
-        specifier: ^3.5.24
-        version: 3.5.26(typescript@5.8.3)
+      diff:
+        specifier: ^8.0.2
+        version: 8.0.2
 
   packages/vue:
     dependencies:
       intable:
         specifier: workspace:^
-        version: link:../..
+        version: link:../intable
       solid-js:
         specifier: ^1.9.9
         version: 1.9.10
@@ -153,6 +172,64 @@ packages:
 
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
+
+  '@ast-grep/napi-darwin-arm64@0.36.3':
+    resolution: {integrity: sha512-uM0Hrm5gcHqaBL64ktmPBFMTorTlPKWsUfi0E2Cg09GJfeYWvZmicCqgd7qVtjURmQvFQdb4JSqHIkJvws6Uqw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@ast-grep/napi-darwin-x64@0.36.3':
+    resolution: {integrity: sha512-wEMeQw8lRL66puG2m8m0kDRQDtubygj59HA/cmut2V5SPx/13BN3wuEk6JPv97gqGUCUGhG2+5Z6UZ/Ll2q01Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@ast-grep/napi-linux-arm64-gnu@0.36.3':
+    resolution: {integrity: sha512-sMsTMaUjW7SM8KPbLviCSBuM4zgJcwvie1yZI92HKSlFzC7ABe7X7UvyUREB+JwqccDVEL5yOJAjqB8eFSCizw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@ast-grep/napi-linux-arm64-musl@0.36.3':
+    resolution: {integrity: sha512-2XRmNYuovZu0Pa4J3or4PKMkQZnXXfpVcCrPwWB/2ytX7XUo+TWLgYE8rPVnJOyw5zujkveFb0XUrro9mQgLzw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@ast-grep/napi-linux-x64-gnu@0.36.3':
+    resolution: {integrity: sha512-mTwPRbBi1feGqR2b5TWC5gkEDeRi8wfk4euF5sKNihfMGHj6pdfINHQ3QvLVO4C7z0r/wgWLAvditFA0b997dg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@ast-grep/napi-linux-x64-musl@0.36.3':
+    resolution: {integrity: sha512-tMGPrT+zuZzJK6n1cD1kOii7HYZE9gUXjwtVNE/uZqXEaWP6lmkfoTMbLjnxEe74VQbmaoDGh1/cjrDBnqC6Uw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@ast-grep/napi-win32-arm64-msvc@0.36.3':
+    resolution: {integrity: sha512-7pFyr9+dyV+4cBJJ1I57gg6PDXP3GBQeVAsEEitzEruxx4Hb4cyNro54gGtlsS+6ty+N0t004tPQxYO2VrsPIg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@ast-grep/napi-win32-ia32-msvc@0.36.3':
+    resolution: {integrity: sha512-MPAgccH9VscRaFuEBMzDGPS+3c4cKNVGIVJ7WSNa1nZtLQ0eFEaPJ7pyDnCezgVSxfNFVYBvKyyF/vcm7Qc9+A==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@ast-grep/napi-win32-x64-msvc@0.36.3':
+    resolution: {integrity: sha512-TIVtuSbXhty9kaSEfr4ULWx5PAuUeGgUkFaR60lmOs7sGTWgpig+suwKfTmevoAblFknCW/aMHOwziwJoUZA6A==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@ast-grep/napi@0.36.3':
+    resolution: {integrity: sha512-ExypohE8L7FvKBHxu7UpwcV9XVfyS+AqNZKyKIfxYwJyD9l7Gw6pmMYd7J2uopJsPEIUf44/emEFds6nFUx/dw==}
+    engines: {node: '>= 10'}
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -638,6 +715,9 @@ packages:
 
   '@types/lodash@4.17.21':
     resolution: {integrity: sha512-FOvQ0YPD5NOfPgMzJihoT+Za5pdkDJWcbpuj1DjaKZIr/gxodQjY/uWEFlTNqW2ugXHUiL8lRQgw63dzKHZdeQ==}
+
+  '@types/node@25.0.8':
+    resolution: {integrity: sha512-powIePYMmC3ibL0UJ2i2s0WIbq6cg6UyVFQxSCpaPxxzAaziRfimGivjdF943sSGV6RADVbk0Nvlm5P/FB44Zg==}
 
   '@types/web-bluetooth@0.0.20':
     resolution: {integrity: sha512-g9gZnnXVq7gM7v3tJCWV/qw7w+KeOlSHAhgF9RytFyifW6AF61hdT2ucrYhPq9hLs5JIryeupHV3qGk95dH9ow==}
@@ -1396,6 +1476,9 @@ packages:
   undestructure-macros@0.0.1:
     resolution: {integrity: sha512-TywdN8jzvXDauoauSem22U3zfgPyusXRBFfKkyoS3nwAD1PHkgagHOF6wwdpj29L3+A3ZJ1PImBuwd1XjRvhcw==}
 
+  undici-types@7.16.0:
+    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+
   unimport@4.2.0:
     resolution: {integrity: sha512-mYVtA0nmzrysnYnyb3ALMbByJ+Maosee2+WyE0puXl+Xm2bUwPorPaaeZt0ETfuroPOtG8jj1g/qeFZ6buFnag==}
     engines: {node: '>=18.12.0'}
@@ -1469,6 +1552,11 @@ packages:
     resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
     hasBin: true
 
+  vite-plugin-lib-inject-css@2.2.2:
+    resolution: {integrity: sha512-NF30p0GwtfSAmVlxo2NgPXM2rEdtgV7LFi4lkzajKD7P3Ru/ZAFmI533M0Z5qyMZpvNMxVGkewzpjD0HOWtbDQ==}
+    peerDependencies:
+      vite: npm:rolldown-vite@7.1.12
+
   vite-plugin-solid@2.11.10:
     resolution: {integrity: sha512-Yr1dQybmtDtDAHkii6hXuc1oVH9CPcS/Zb2jN/P36qqcrkNnVPsMTzQ06jyzFPFjj3U1IYKMVt/9ZqcwGCEbjw==}
     peerDependencies:
@@ -1537,6 +1625,45 @@ snapshots:
     dependencies:
       package-manager-detector: 1.6.0
       tinyexec: 1.0.2
+
+  '@ast-grep/napi-darwin-arm64@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-darwin-x64@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-linux-arm64-gnu@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-linux-arm64-musl@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-linux-x64-gnu@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-linux-x64-musl@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-win32-arm64-msvc@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-win32-ia32-msvc@0.36.3':
+    optional: true
+
+  '@ast-grep/napi-win32-x64-msvc@0.36.3':
+    optional: true
+
+  '@ast-grep/napi@0.36.3':
+    optionalDependencies:
+      '@ast-grep/napi-darwin-arm64': 0.36.3
+      '@ast-grep/napi-darwin-x64': 0.36.3
+      '@ast-grep/napi-linux-arm64-gnu': 0.36.3
+      '@ast-grep/napi-linux-arm64-musl': 0.36.3
+      '@ast-grep/napi-linux-x64-gnu': 0.36.3
+      '@ast-grep/napi-linux-x64-musl': 0.36.3
+      '@ast-grep/napi-win32-arm64-msvc': 0.36.3
+      '@ast-grep/napi-win32-ia32-msvc': 0.36.3
+      '@ast-grep/napi-win32-x64-msvc': 0.36.3
 
   '@babel/code-frame@7.27.1':
     dependencies:
@@ -2028,15 +2155,19 @@ snapshots:
 
   '@types/lodash@4.17.21': {}
 
+  '@types/node@25.0.8':
+    dependencies:
+      undici-types: 7.16.0
+
   '@types/web-bluetooth@0.0.20': {}
 
-  '@unocss/astro@66.5.12(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))':
+  '@unocss/astro@66.5.12(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))':
     dependencies:
       '@unocss/core': 66.5.12
       '@unocss/reset': 66.5.12
-      '@unocss/vite': 66.5.12(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))
+      '@unocss/vite': 66.5.12(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))
     optionalDependencies:
-      vite: rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)
+      vite: rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)
 
   '@unocss/cli@66.5.12':
     dependencies:
@@ -2164,7 +2295,7 @@ snapshots:
     dependencies:
       '@unocss/core': 66.5.12
 
-  '@unocss/vite@66.5.12(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))':
+  '@unocss/vite@66.5.12(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))':
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@unocss/config': 66.5.12
@@ -2175,7 +2306,7 @@ snapshots:
       pathe: 2.0.3
       tinyglobby: 0.2.15
       unplugin-utils: 0.3.1
-      vite: rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)
+      vite: rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)
 
   '@vue/compiler-core@3.5.26':
     dependencies:
@@ -2638,7 +2769,7 @@ snapshots:
 
   require-directory@2.1.1: {}
 
-  rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2):
+  rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2):
     dependencies:
       '@oxc-project/runtime': 0.90.0
       fdir: 6.5.0(picomatch@4.0.3)
@@ -2648,6 +2779,7 @@ snapshots:
       rolldown: 1.0.0-beta.39
       tinyglobby: 0.2.15
     optionalDependencies:
+      '@types/node': 25.0.8
       fsevents: 2.3.3
       jiti: 2.6.1
       sass: 1.97.2
@@ -2787,6 +2919,8 @@ snapshots:
 
   undestructure-macros@0.0.1: {}
 
+  undici-types@7.16.0: {}
+
   unimport@4.2.0:
     dependencies:
       acorn: 8.15.0
@@ -2804,9 +2938,9 @@ snapshots:
       unplugin: 2.3.11
       unplugin-utils: 0.2.5
 
-  unocss@66.5.12(postcss@8.5.6)(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)):
+  unocss@66.5.12(postcss@8.5.6)(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)):
     dependencies:
-      '@unocss/astro': 66.5.12(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))
+      '@unocss/astro': 66.5.12(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))
       '@unocss/cli': 66.5.12
       '@unocss/core': 66.5.12
       '@unocss/postcss': 66.5.12(postcss@8.5.6)
@@ -2824,9 +2958,9 @@ snapshots:
       '@unocss/transformer-compile-class': 66.5.12
       '@unocss/transformer-directives': 66.5.12
       '@unocss/transformer-variant-group': 66.5.12
-      '@unocss/vite': 66.5.12(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))
+      '@unocss/vite': 66.5.12(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))
     optionalDependencies:
-      vite: rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)
+      vite: rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)
     transitivePeerDependencies:
       - postcss
       - supports-color
@@ -2879,7 +3013,14 @@ snapshots:
 
   uuid@13.0.0: {}
 
-  vite-plugin-solid@2.11.10(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))(solid-js@1.9.10):
+  vite-plugin-lib-inject-css@2.2.2(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)):
+    dependencies:
+      '@ast-grep/napi': 0.36.3
+      magic-string: 0.30.21
+      picocolors: 1.1.1
+      vite: rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)
+
+  vite-plugin-solid@2.11.10(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))(solid-js@1.9.10):
     dependencies:
       '@babel/core': 7.28.5
       '@types/babel__core': 7.20.5
@@ -2887,14 +3028,14 @@ snapshots:
       merge-anything: 5.1.7
       solid-js: 1.9.10
       solid-refresh: 0.6.3(solid-js@1.9.10)
-      vite: rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)
-      vitefu: 1.1.1(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2))
+      vite: rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)
+      vitefu: 1.1.1(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2))
     transitivePeerDependencies:
       - supports-color
 
-  vitefu@1.1.1(rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)):
+  vitefu@1.1.1(rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)):
     optionalDependencies:
-      vite: rolldown-vite@7.1.12(jiti@2.6.1)(sass@1.97.2)
+      vite: rolldown-vite@7.1.12(@types/node@25.0.8)(jiti@2.6.1)(sass@1.97.2)
 
   vue-demi@0.14.10(vue@3.5.26(typescript@5.8.3)):
     dependencies:

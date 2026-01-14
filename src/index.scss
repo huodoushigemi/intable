@@ -103,31 +103,3 @@ mark {
     }
   }
 }
-
-.li {
-  @apply relative cursor-pointer;
-  &:hover, &.hover {
-    @apply bg-gray/20;
-  }
-  &:active, &.selected, &.active {
-    &::before {
-      content: '';
-      @apply absolute inset-0 rd-inherit bg-gray/15;
-    }
-  }
-  &.disabled, &[disabled] {
-    opacity: .4;
-  }
-}
-
-.tt-menu {
-  @apply py-1 shadow-lg rd-2 space-y-.5 text-sm b-(1 solid gray/30) bg-[--menu-bg] cursor-default;
-}
-
-.tt-menu-x {
-  @apply px-1 shadow-lg rd-2 space-x-.5 text-sm b-(1 solid gray/30) bg-[--menu-bg] cursor-default;
-
-  & > .hr {
-    @apply w-[1px] my-1.5 bg-gray/30;
-  }
-}

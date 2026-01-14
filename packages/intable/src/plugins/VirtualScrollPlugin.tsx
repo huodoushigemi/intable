@@ -2,8 +2,8 @@ import { createEffect, createMemo, useContext, mergeProps, batch } from 'solid-j
 import { combineProps } from '@solid-primitives/props'
 import { createElementSize } from '@solid-primitives/resize-observer'
 import { createVirtualizer, defaultRangeExtractor, Virtualizer } from '@tanstack/solid-virtual'
-import { useVirtualizer } from '@/hooks/useVirtualizer'
 import { defaultsDeep } from 'es-toolkit/compat'
+import { useVirtualizer } from '../hooks/useVirtualizer'
 import { Ctx, type Plugin } from '..'
 
 const $ML = Symbol()

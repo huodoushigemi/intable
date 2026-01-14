@@ -2,11 +2,11 @@ import { batch, createEffect, createMemo, createSignal, mapArray, on } from 'sol
 import { combineProps } from '@solid-primitives/props'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { range, remove } from 'es-toolkit'
-import { useMemoAsync, useTinykeys } from '@/hooks'
-import { Menu } from '@/components/Menu'
 import { autoPlacement, computePosition } from '@floating-ui/dom'
 import { type Plugin, type TableStore } from '..'
-import { log } from '@/utils'
+import { useMemoAsync, useTinykeys } from '../hooks'
+import { Menu } from '../components/Menu'
+import { log } from '../utils'
 
 declare module '../index' {
   interface TableProps {

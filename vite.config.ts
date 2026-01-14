@@ -19,11 +19,6 @@ export default defineConfig({
     solid(),
     
     (await import('unocss/vite')).default({
-      content: {
-        pipeline: {
-          include: ["src/**/*.{js,ts,tsx}"],
-        },
-      },
       presets: [
         // (await import('@ameinhardt/unocss-preset-daisy')).presetDaisy({ base: true, utils: true, logs: true, styled: true }),
         (await import('unocss/preset-wind4')).default({ dark: 'media' }),

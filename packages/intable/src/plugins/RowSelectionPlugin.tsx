@@ -4,7 +4,7 @@ import { keyBy } from 'es-toolkit'
 import { defaultsDeep, isEqual } from 'es-toolkit/compat'
 import { type Commands, type Plugin, type TableColumn, type TableProps } from '..'
 import { Checkbox } from './RenderPlugin/components'
-import { solidComponent } from '@/components/utils'
+import { solidComponent } from '../components/utils'
 
 declare module '../index' {
   interface TableProps {

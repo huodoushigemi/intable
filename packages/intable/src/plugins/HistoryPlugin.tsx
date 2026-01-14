@@ -2,7 +2,7 @@ import { $PROXY, batch, createMemo } from 'solid-js'
 import { unwrap } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
-import { useHistory, useTinykeys } from '@/hooks'
+import { useHistory, useTinykeys } from '../hooks'
 import { type Plugin } from '..'
 
 declare module '../index' {

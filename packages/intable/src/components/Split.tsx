@@ -1,4 +1,4 @@
-import { unFn } from '@/utils'
+import { unFn } from '../utils'
 import { createElementBounds } from '@solid-primitives/bounds'
 import { children, createComputed, createEffect, createMemo, For, Index, mapArray, mergeProps, onMount, splitProps, type JSXElement } from 'solid-js'
 import { Portal } from 'solid-js/web'

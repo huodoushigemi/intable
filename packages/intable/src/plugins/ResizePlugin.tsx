@@ -3,10 +3,10 @@ import { createMutable, createStore, unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { clamp, difference, identity, isEqual, mapValues, sumBy } from 'es-toolkit'
 import { defaultsDeep } from 'es-toolkit/compat'
-import { toReactive, useMemo, usePointerDrag } from '@/hooks'
-import { useSplit } from '@/components/Split'
+import { toReactive, useMemo, usePointerDrag } from '../hooks'
+import { useSplit } from '../components/Split'
 
-import { Ctx, type Plugin, type TableColumn } from "@/index"
+import { Ctx, type Plugin, type TableColumn } from "../index"
 
 declare module '../index' {
   interface TableProps {

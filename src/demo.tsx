@@ -2,17 +2,14 @@ import { batch, createMemo } from 'solid-js'
 import { render } from 'solid-js/web'
 import { createMutable, createStore, produce, reconcile } from 'solid-js/store'
 import { range } from 'es-toolkit'
-import { Intable } from './index.tsx'
 
-import './index.scss'
-import 'virtual:uno.css'
-import { log } from './utils.ts'
+import Intable from 'intable'
+import { log } from 'intable/utils'
+import { VirtualScrollPlugin } from 'intable/plugins/VirtualScrollPlugin'
 
-import { VirtualScrollPlugin } from './plugins/VirtualScrollPlugin.tsx'
-import { RowGroupPlugin } from './plugins/RowGroupPlugin.tsx'
-import { EditablePlugin } from './plugins/EditablePlugin.tsx'
-import { HistoryPlugin } from './plugins/HistoryPlugin.tsx'
-import { DiffPlugin } from '@/plugins/DiffPlugin.tsx'
+// import { Intable } from '../packages/intable/src'
+// import { log } from '../packages/intable/src/utils'
+// import { VirtualScrollPlugin } from '../packages/intable/src/plugins/VirtualScrollPlugin'
 
 const root = document.getElementById('root')!
 
@@ -36,8 +33,15 @@ cols.at(-1)!.width = undefined
 data.forEach(e => e.g = e.col_0 % 10)
 data.forEach(e => e.n = e.col_0 % 3)
 
+// render(() => (
+//   <Menu items={[
+//     { label: 'xx' }
+//   ]} />
+// ), root)
+
 render(() => <Intable
-  class='w-50vw! h-40vh of-auto'
+  // class='w-50vw! h-40vh of-auto'
+  style='width: 50vw; height: 40vh;'
   index={state.bool}
   stickyHeader={state.bool}
   columns={cols}

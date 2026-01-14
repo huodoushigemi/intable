@@ -3,11 +3,13 @@ import { createMutable, createStore, reconcile, unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { clamp, delay, difference, identity, isEqual, mapValues, merge, sumBy } from 'es-toolkit'
 import { defaultsDeep } from 'es-toolkit/compat'
-import { toReactive, useMemo, useMemoAsync, usePointerDrag } from '@/hooks'
-import { useSplit } from '@/components/Split'
+import { toReactive, useMemo, useMemoAsync, usePointerDrag } from './hooks'
+import { useSplit } from './components/Split'
 
-import './styles/index.scss'
-import { log, unFn } from '@/utils'
+import 'virtual:uno.css'
+import './style.scss'
+
+import { log, unFn } from './utils'
 import { createElementSize, getElementSize } from '@solid-primitives/resize-observer'
 import { CellSelectionPlugin } from './plugins/CellSelectionPlugin'
 import { ClipboardPlugin } from './plugins/CopyPastePlugin'
@@ -378,13 +380,13 @@ export const defaultsPlugins = [
   ScrollPlugin,
   BasePlugin(),
   CommandPlugin,
-  // MenuPlugin,
+  MenuPlugin,
   CellSelectionPlugin,
   RowSelectionPlugin,
   IndexPlugin,
   StickyHeaderPlugin,
   FixedColumnPlugin,
-  // ResizePlugin,
+  ResizePlugin,
   ClipboardPlugin,
   EditablePlugin,
   FitColWidthPlugin,

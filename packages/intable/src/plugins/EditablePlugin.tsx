@@ -2,10 +2,10 @@ import { createComputed, createEffect, createMemo, createRoot, createSignal, on,
 import { combineProps } from '@solid-primitives/props'
 import { createAsyncMemo } from '@solid-primitives/memo'
 import { delay } from 'es-toolkit'
-import { chooseFile, resolveOptions } from '@/utils'
+import { createMutable } from 'solid-js/store'
 import { Ctx, type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
-import { createMutable } from 'solid-js/store'
+import { chooseFile, resolveOptions } from '../utils'
 
 declare module '../index' {
   interface TableProps {
