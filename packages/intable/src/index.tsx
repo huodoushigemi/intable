@@ -1,8 +1,8 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, $PROXY, splitProps, on, createRenderEffect } from 'solid-js'
+import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, $PROXY, splitProps, on, createRenderEffect, untrack, batch } from 'solid-js'
 import { createMutable, createStore, reconcile, unwrap } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
-import { clamp, delay, difference, identity, isEqual, mapValues, merge, sumBy } from 'es-toolkit'
-import { defaultsDeep } from 'es-toolkit/compat'
+import { clamp, delay, difference, flow, identity, isEqual, mapValues, merge, sumBy } from 'es-toolkit'
+import { create, defaultsDeep } from 'es-toolkit/compat'
 import { toReactive, useMemo, useMemoAsync, usePointerDrag } from './hooks'
 import { useSplit } from './components/Split'
 
@@ -10,7 +10,8 @@ import 'virtual:uno.css'
 import './style.scss'
 
 import { log, unFn } from './utils'
-import { createElementSize, getElementSize } from '@solid-primitives/resize-observer'
+import { createElementSize, createResizeObserver, getElementSize } from '@solid-primitives/resize-observer'
+import { createScrollPosition } from '@solid-primitives/scroll'
 import { CellSelectionPlugin } from './plugins/CellSelectionPlugin'
 import { ClipboardPlugin } from './plugins/CopyPastePlugin'
 import { EditablePlugin } from './plugins/EditablePlugin'
@@ -19,11 +20,12 @@ import { MenuPlugin } from './plugins/MenuPlugin'
 import { CommandPlugin } from './plugins/CommandPlugin'
 import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
 import { ResizePlugin } from './plugins/ResizePlugin'
+import { DragPlugin } from './plugins/DragPlugin'
 import { solidComponent } from './components/utils'
-import { createScrollPosition } from '@solid-primitives/scroll'
 
 export const Ctx = createContext({
-  props: {} as TableProps2
+  props: {} as TableProps2,
+  store: {} as TableStore,
 })
 
 type Requireds<T, K extends keyof T> = Pri<Omit<T, K> & Required<Pick<T, K>>>
@@ -43,6 +45,7 @@ export interface Plugin {
   store?: (store: TableStore) => Partial<TableStore> | void
   rewriteProps?: ProcessProps
   layers?: Component<TableStore>[]
+  onMount?: (store: TableStore) => void
 }
 
 export interface TableProps {
@@ -66,8 +69,8 @@ export interface TableProps {
   EachRows?: typeof For
   EachCells?: typeof For<TableColumn[], JSX.Element>
   // 
-  cellClass?: ((props: Omit<TDProps, 'y'> & { y?:number }) => string) | string
-  cellStyle?: ((props: Omit<TDProps, 'y'> & { y?:number }) => string) | string
+  cellClass?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
+  cellStyle?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
   // 
   renderer?: (comp: (props) => JSX.Element) => ((props) => JSX.Element)
   // Plugin
@@ -104,6 +107,7 @@ export interface TableStore extends Obj {
   trs: Nullable<Element>[]
   trSizes: Nullable<{ width: number; height: number }>[]
   internal: symbol
+  raw: symbol
   props?: TableProps2
   rawProps: TableProps
   plugins: Plugin[]
@@ -143,7 +147,12 @@ export const Intable = (props: TableProps) => {
   const mProps = toReactive(() => pluginsProps()[pluginsProps().length - 1][0]()) as TableProps2
   store.props = mProps
 
-  const ctx = createMutable({ props: mProps })
+  // on mount
+  onMount(() => {
+    createEffect(mapArray(plugins, e => e.onMount?.(store)))
+  })
+  
+  const ctx = createMutable({ props: mProps, store })
 
   window.store = store
   window.ctx = ctx
@@ -211,7 +220,8 @@ function BasePlugin(): Plugin {
       trs: [],
       // trSizes: toReactive(mapArray(() => store.trs, el => el && createElementSize(el))),
       trSizes: [],
-      internal: Symbol('internal')
+      internal: Symbol('internal'),
+      raw: Symbol('raw'),
     }),
     rewriteProps: {
       data: ({ data = [] }) => data,
@@ -288,7 +298,7 @@ function BasePlugin(): Plugin {
 
 const IndexPlugin: Plugin = {
   store: (store) => ({
-    $index: { name: '', id: Symbol('index'), fixed: 'left', [store.internal]: 1, width: 40, style: 'text-align: center', class: 'index', render: solidComponent((o) => o.y + 1) } as TableColumn
+    $index: { name: '', id: Symbol('index'), fixed: 'left', [store.internal]: 1, width: 40, style: 'text-align: center', class: 'index', render: solidComponent((o) => <>{o.y + 1}</>) } as TableColumn
   }),
   rewriteProps: {
     columns: (props, { store }) => store.props?.index ? [store.$index, ...props.columns || []] : props.columns
@@ -318,23 +328,26 @@ const FixedColumnPlugin: Plugin = {
 }
 
 const FitColWidthPlugin: Plugin = {
+  priority: -Infinity,
   rewriteProps: {
     Table: (prev, { store }) => o => {
-      const size1 = createElementSize(() => store.scroll_el)
+      const size = createMutable({ width: 0 })
+      createResizeObserver(() => store.scroll_el!, (_, el, e) => size.width = e.contentBoxSize[0].inlineSize)
 
-      createEffect(on(() => [size1.width, prev.columns], async () => {
-        const w = store.scroll_el!.clientWidth
-        store._fit_col_width__cols_temp = null
+      createEffect(on(() => [size.width, prev.columns.map(e => e.width)], async () => {
+        if (!size.width) return
+        store.__fit_col_width__cols_temp = null
         await Promise.resolve()
-        const gap = (w - store.table.offsetWidth!) / store.props!.columns.filter(e => !e.width).length
-        const cols = prev.columns.map((e, i) => ({ width: e.width ?? Math.max((store.thSizes[i]?.width || 0) + gap, 80) }))
-        store._fit_col_width__cols_temp = cols
+        const gap = (size.width - store.table.getBoundingClientRect().width) / store.props!.columns.filter(e => !e.width).length
+        const cols = store.props!.columns.map((e, i) => (e.width ? null : { width: Math.max((store.ths[i]?.getBoundingClientRect().width || 0) + gap, 80) }))
+        store.__fit_col_width__cols_temp = cols
       }))
 
       return <prev.Table {...o} />
     },
     columns: ({ columns }, { store }) => (
-      reconcile(columns.map((e, i) => ({ ...e, ...store._fit_col_width__cols_temp?.[i] })))(store._fit_col_width__cols ??= [])
+      columns = columns.map((e, i) => ({ ...e, ...store.__fit_col_width__cols_temp?.[i], [store.raw]: e[store.raw] ?? e })),
+      untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__fit_col_width__cols ??= [])))
     )
   }
 }
@@ -387,6 +400,7 @@ export const defaultsPlugins = [
   StickyHeaderPlugin,
   FixedColumnPlugin,
   ResizePlugin,
+  DragPlugin,
   ClipboardPlugin,
   EditablePlugin,
   FitColWidthPlugin,

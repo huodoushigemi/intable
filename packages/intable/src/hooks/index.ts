@@ -1,5 +1,6 @@
 import { $PROXY, createComputed, createEffect, createMemo, createRenderEffect, createRoot, createSignal, mergeProps, on, onCleanup, untrack, type Signal } from 'solid-js'
-import { createEventListener } from '@solid-primitives/event-listener'
+import { $RAW, createMutable } from 'solid-js/store'
+import { createEventListener, createEventListenerMap } from '@solid-primitives/event-listener'
 import { createPointerListeners } from '@solid-primitives/pointer'
 import { access, type Many, type MaybeAccessor } from '@solid-primitives/utils'
 import { makePersisted, storageSync } from '@solid-primitives/storage'
@@ -7,10 +8,10 @@ import { createMutationObserver } from '@solid-primitives/mutation-observer'
 import { isFunction, isPromise, mapValues } from 'es-toolkit'
 import { castArray } from 'es-toolkit/compat'
 import { createKeybindingsHandler } from 'tinykeys'
-import { log, unFn } from '../utils'
-import { $RAW, createMutable } from 'solid-js/store'
+import { unFn } from '../utils'
 
-interface UseDragOptions {
+interface UseMoveOptions {
+  preventDefault?: boolean
   start?(
     e: PointerEvent,
     move: (cb: MoveCB) => void,
@@ -21,13 +22,14 @@ interface UseDragOptions {
 type MoveCB = (e: PointerEvent, o: { sx: number, sy: number, ox: number, oy: number }) => void
 type EndCb = (e: PointerEvent) => void
 
-export function usePointerDrag(el: MaybeAccessor<HTMLElement | undefined>, options: UseDragOptions) {
+export function usePointerDrag(el: MaybeAccessor<HTMLElement | undefined>, options: UseMoveOptions) {
+  options = mergeProps({ preventDefault: true } as UseMoveOptions, options)
+  
   createPointerListeners({
     target: el,
     passive: false,
     onDown(e) {
-      e.preventDefault()
-      // e.stopPropagation()
+      options.preventDefault && e.preventDefault()
       const [sx, sy] = [e.x, e.y]
 
       let move: MoveCB | void
@@ -47,6 +49,10 @@ export function usePointerDrag(el: MaybeAccessor<HTMLElement | undefined>, optio
             move = void 0
             end = void 0
           }
+        })
+        // fix: does't cb onUp when drop
+        createEventListenerMap(document, {
+          drop: dispose
         })
       })
     }

@@ -31,45 +31,6 @@ export const CellSelectionPlugin: Plugin = {
     }
   }),
   rewriteProps: {
-    Th: ({ Th }, { store }) => o => {
-      const clazz = createMemo(() => {
-        const { start, end } = store.selected
-        const inx = inrange(o.x, ...[start[0], end[0]].sort((a, b) => a - b))
-        return inx ? 'col-range-highlight' : ''
-      })
-      const mo = combineProps(o, { get class() { return clazz() } })
-      return (
-        <Th {...mo}>
-          {mo.children}
-          {clazz() && <div class='area' />}
-        </Th>
-      )
-    },
-    Td: ({ Td }, { store }) => (o) => {
-      const clazz = createMemo(() => {
-        let clazz = ''
-        const { xs, ys } = store.cellSelectionRect()
-        const inx = inrange(o.x, xs[0], xs[1])
-        const iny = inrange(o.y, ys[0], ys[1])
-        if (inx && iny) {
-          clazz += 'range-selected '
-          if (o.x == xs[0]) clazz += 'range-selected-l '
-          if (o.x == xs[1]) clazz += 'range-selected-r '
-          if (o.y == ys[0]) clazz += 'range-selected-t '
-          if (o.y == ys[1]) clazz += 'range-selected-b '
-        }
-        if (o.x == 0 && iny) clazz += 'row-range-highlight '
-        return clazz
-      })
-
-      const mo = combineProps(o, { get class() { return clazz() }, tabindex: -1 })
-      return (
-        <Td {...mo}>
-          {mo.children}
-          {clazz() && <div class='area' />}
-        </Td>
-      )
-    },
     Table: ({ Table }, { store }) => (o) => {
       const { props } = useContext(Ctx)
 
@@ -81,6 +42,7 @@ export const CellSelectionPlugin: Plugin = {
       })
       
       usePointerDrag(() => store.table, {
+        preventDefault: false,
         start(e, move, end) {
           batch(() => {
             const findCell = (e: PointerEvent) => e.composedPath().find((e) => e.tagName == 'TH' || e.tagName == 'TD') as Element
@@ -165,7 +127,47 @@ export const CellSelectionPlugin: Plugin = {
         cell?.focus()
       }
       
+      o = combineProps({ class: 'select-none' }, o)
       return <Table {...o} />
-    }
+    },
+    Th: ({ Th }, { store }) => o => {
+      const clazz = createMemo(() => {
+        const { start, end } = store.selected
+        const inx = inrange(o.x, ...[start[0], end[0]].sort((a, b) => a - b))
+        return inx ? 'col-range-highlight' : ''
+      })
+      const mo = combineProps(o, { get class() { return clazz() } })
+      return (
+        <Th {...mo}>
+          {mo.children}
+          {clazz() && <div class='area' />}
+        </Th>
+      )
+    },
+    Td: ({ Td }, { store }) => (o) => {
+      const clazz = createMemo(() => {
+        let clazz = ''
+        const { xs, ys } = store.cellSelectionRect()
+        const inx = inrange(o.x, xs[0], xs[1])
+        const iny = inrange(o.y, ys[0], ys[1])
+        if (inx && iny) {
+          clazz += 'range-selected '
+          if (o.x == xs[0]) clazz += 'range-selected-l '
+          if (o.x == xs[1]) clazz += 'range-selected-r '
+          if (o.y == ys[0]) clazz += 'range-selected-t '
+          if (o.y == ys[1]) clazz += 'range-selected-b '
+        }
+        if (o.x == 0 && iny) clazz += 'row-range-highlight '
+        return clazz
+      })
+
+      const mo = combineProps(o, { get class() { return clazz() }, tabindex: -1 })
+      return (
+        <Td {...mo}>
+          {mo.children}
+          {clazz() && <div class='area' />}
+        </Td>
+      )
+    },
   }
 }

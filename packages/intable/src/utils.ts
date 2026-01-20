@@ -85,6 +85,12 @@ export function emptyObject(o) {
   return o
 }
 
+export async function findAsync<T>(arr: T[], cb: (e: T, i: number) => Promise<boolean> | boolean) {
+  for (let i = 0; i < arr.length; i++) {
+    if (await cb(arr[i], i)) return arr[i]
+  }
+}
+
 type Fnable<T> = T | (() => T)
 type Awatable<T> = T | Promise<T>
 type BaseType = string | number | boolean | null

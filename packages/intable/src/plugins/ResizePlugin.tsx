@@ -1,18 +1,19 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, $PROXY } from 'solid-js'
-import { createMutable, createStore, unwrap } from 'solid-js/store'
+import { batch, untrack, useContext } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
-import { clamp, difference, identity, isEqual, mapValues, sumBy } from 'es-toolkit'
+import { clamp } from 'es-toolkit'
 import { defaultsDeep } from 'es-toolkit/compat'
-import { toReactive, useMemo, usePointerDrag } from '../hooks'
-import { useSplit } from '../components/Split'
+import { usePointerDrag } from '../hooks'
 
-import { Ctx, type Plugin, type TableColumn } from "../index"
+import { Ctx, type Plugin, type TableColumn, type TDProps, type THProps } from "../index"
+import { log, unFn } from '../utils'
+import { createEventListener } from '@solid-primitives/event-listener'
+import { reconcile } from 'solid-js/store'
 
 declare module '../index' {
   interface TableProps {
     resizable?: {
-      col: Partial<{ enable: boolean; min: number; max: number }>
-      row: Partial<{ enable: boolean; min: number; max: number }>
+      col?: Partial<{ enable: boolean; min: number; max: number }>
+      row?: Partial<{ enable: boolean; min: number; max: number }>
     }
     onColumnsChange?: (columns: TableColumn[]) => void
   }
@@ -28,75 +29,92 @@ declare module '../index' {
   }
 }
 
+const COL = Symbol('col_size')
+const ROW = Symbol('row_size')
+
+const ColHandle = (o: THProps) => {
+  const { props, store } = useContext(Ctx)
+  let el!: HTMLDivElement
+  usePointerDrag(() => el, {
+    start(e, move, end) {
+      e.stopPropagation()
+      const i = o.x
+      const { min, max }  = props.resizable!.col
+      const th = el.parentElement as HTMLTableColElement
+      const sw = th.offsetWidth
+      move((e, { ox }) => store[COL][o.x] = clamp(sw + ox, min, max))
+      end(() => {
+        const col = props.columns[i]
+        const cols = [...store.rawProps.columns || []]
+        const index = cols.indexOf(col[store.raw] ?? col)
+        if (index > -1) {
+          cols[index] = { ...cols[index], width: th.offsetWidth }
+          props.onColumnsChange?.(cols)
+        }
+        col.onWidthChange?.(th.offsetWidth)
+      })
+    },
+  })
+  return <div ref={el} class={`in-cell__resize-handle absolute top-0 right-0 flex justify-center w-10px! ${o.x == props.columns.length - 1 ? 'justify-end!' : 'w-10px! translate-x-1/2'} after:w-1 cursor-w-resize z-1`} />
+}
+
+const RowHandle = (o: TDProps) => {
+  const { props, store } = useContext(Ctx)
+  let el!: HTMLDivElement
+  usePointerDrag(() => el, {
+    start(e, move, end) {
+      e.stopPropagation()
+      const i = o.y
+      const { min, max }  = props.resizable!.row
+      const th = el.parentElement as HTMLTableColElement
+      const sh = th.offsetHeight
+      move((e, { oy }) => store[ROW][o.y] = clamp(sh + oy, min, max))
+      end(() => {
+        const row = props.data[i]
+        const data = [...store.rawProps.data || []]
+        const index = data.indexOf(row[store.raw] ?? row)
+        if (index > -1) {
+          // todo
+        }
+      })
+    },
+  })
+  createEventListener(() => el, 'dblclick', () => o.data[COL]= void 0)
+  return <div ref={el} class={`in-cell__resize-handle absolute bottom-0 left-0 flex flex-col justify-center h-1! ${o.y == props.data.length - 1 ? 'justify-end!' : ''} after:h-1 cursor-s-resize z-1`} />
+}
+
 export const ResizePlugin: Plugin = {
+  store: () => ({
+    [COL]: [],
+    [ROW]: []
+  }),
   rewriteProps: {
     resizable: ({ resizable }) => defaultsDeep(resizable, {
       col: { enable: true, min: 45, max: 800 },
       row: { enable: false, min: 20, max: 400 }
     }),
     columns: ({ columns }, { store }) => (
-      columns.map(e => defaultsDeep(e, { resizable: store.props?.resizable?.col.enable } as TableColumn))
+      columns = columns.map((e, i) => ({ ...e, [store.raw]: e[store.raw] ?? e })),
+      columns = columns.map(e => e.resizable === void 0 ? { ...e, resizable: store.props?.resizable?.col.enable, [store.raw]: e[store.raw] ?? e } : e),
+      columns = columns.map((e, i) => store[COL][i] ? { ...e, width: store[COL][i], [store.raw]: e[store.raw] ?? e } : e),
+      untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__resize__cols ??= [])))
     ),
-    Thead: ({ Thead }, { store }) => o => {
-      let theadEl: HTMLElement
-      const { props } = useContext(Ctx)
-      const ths = createMemo(() => store.ths.filter(e => e != null))
-      onMount(() => {
-        useSplit({ container: theadEl, cells: ths, size: 10, trailing: true, dir: 'x', handle: i => <Handle i={i} /> })
-      })
-      
-      const Handle: Component = ({ i }) => {
-        let el!: HTMLDivElement
-        usePointerDrag(() => el, {
-          start(e, move, end) {
-            const { min, max }  = props.resizable.col
-            const th = ths()[i] as HTMLTableColElement
-            const sw = th.offsetWidth
-            move((e, o) => th.style.width = `${clamp(sw + o.ox, min, max)}px`)
-            end(() => {
-              const col = props.columns[i]
-              const cols = [...store.rawProps.columns || []]
-              const index = cols?.findIndex(e => e.id == col.id)
-              if (index > -1) {
-                cols[index] = { ...cols[index], width: th.offsetWidth }
-                props.onColumnsChange?.(cols)
-              }
-              col.onWidthChange?.(th.offsetWidth)
-            })
-          },
-        })
-        return <div ref={el} class="in-cell__resize-handle flex justify-center after:w-1 cursor-w-resize" />
-      }
-      
-      o = combineProps({ ref: e => theadEl = e }, o)
-      return <Thead {...o} />
+    Th: ({ Th }, { store }) => o => {
+      o = combineProps({ class: 'relative' }, o)
+      return <Th {...o}>
+        {o.children}
+        {o.col.resizable && <ColHandle {...o} />}
+      </Th>
     },
-    Tbody: ({ Tbody }, { store }) => o => {
-      let el!: HTMLElement
-      const { props } = useContext(Ctx)
-      const tds = createMemo(() => store.trs.filter(e => e != null).map(e => e.firstElementChild!))
-      onMount(() => {
-        useSplit({ container: el, cells: tds, size: 8, trailing: true, dir: 'y', handle: i => <Handle i={i} /> })
-      })
-
-      const Handle: Component = ({ i }) => {
-        let el!: HTMLDivElement
-        usePointerDrag(() => el, {
-          start(e, move, end) {
-            const { min, max }  = props.resizable.row
-            const tr = tds()[i] as HTMLTableColElement
-            const sw = tr.offsetHeight
-            move((e, o) => tr.style.height = `${clamp(sw + o.oy, min, max)}px`)
-            end(() => {
-              // todo
-            })
-          },
-        })
-        return <div ref={el} class="in-cell__resize-handle flex flex-row items-center after:h-1 cursor-s-resize" />
-      }
-
-      o = combineProps({ ref: e => el = e }, o)
-      return <Tbody {...o}/>
+    Td: ({ Td }, { store }) => !store.props?.resizable?.row.enable ? Td : o => {
+      o = combineProps({ class: 'relative' }, o)
+      return <Td {...o}>
+        {o.children}
+        {o.x == 0 && store.props?.resizable?.row.enable && <RowHandle {...o} />}
+      </Td>
+    },
+    cellStyle: ({ cellStyle }, { store }) => o => {
+      return `${unFn(cellStyle, o)};` + (store[ROW][o.y] ? `height: ${store[ROW][o.y]}px` : '')
     }
   }
 }

@@ -166,7 +166,7 @@ td.is-editing {
 }
 
 .in-cell__resize-handle {
-  @apply size-full hover:after:bg-[--c-primary]/40 active:after:bg-[--c-primary];
+  @apply absolute size-full hover:after:bg-[--c-primary]/40 active:after:bg-[--c-primary];
   &::after {
     @apply content-[''];
   }
@@ -199,4 +199,13 @@ td.is-editing {
   & > .hr {
     @apply w-[1px] my-1.5 bg-gray/30;
   }
+}
+
+// drag
+.col__guide-line, .row__guide-line {
+  @apply fixed top-0 left-0 bg-[--c-primary] z-9 pointer-events-none;
+}
+
+th[draggable="true"], td[draggable="true"] {
+  @apply cursor-move;
 }
