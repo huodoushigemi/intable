@@ -25,5 +25,9 @@
   },
   "devDependencies": {
     "element-plus": "^2.13.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
