@@ -75,7 +75,7 @@ async function buildPackage(pkg) {
           },
         },
         sourcemap: false,
-        minify: false,
+        minify: true,
         emptyOutDir: true,
       },
       plugins: [
