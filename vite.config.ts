@@ -22,6 +22,15 @@ export default defineConfig({
       presets: [
         // (await import('@ameinhardt/unocss-preset-daisy')).presetDaisy({ base: true, utils: true, logs: true, styled: true }),
         (await import('unocss/preset-wind4')).default({ dark: 'media' }),
+        {
+          name: "@preset-rem-to-px",
+          postprocess: (util) => {
+            util.entries.forEach((i) => {
+              const value = i[1];
+              if (typeof value === "string" && value.includes('var(--spacing)')) i[1] = value.replaceAll('var(--spacing)', '4px')
+            });
+          }
+        }
       ],
       transformers: [
         (await import('@unocss/transformer-directives')).default(),

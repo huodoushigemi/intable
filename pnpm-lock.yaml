@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@intable/vue':
+        specifier: workspace:^
+        version: link:packages/vue
       es-toolkit:
         specifier: ^1.39.10
         version: 1.43.0

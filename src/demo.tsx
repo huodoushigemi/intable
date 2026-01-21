@@ -10,6 +10,8 @@ import { range } from 'es-toolkit'
 import { Intable } from '../packages/intable/src'
 import { log } from '../packages/intable/src/utils'
 import { VirtualScrollPlugin } from '../packages/intable/src/plugins/VirtualScrollPlugin'
+// import 'intable/theme/element-plus.scss'
+// import 'intable/dist/theme/element-plus.scss'
 
 const root = document.getElementById('root')!
 

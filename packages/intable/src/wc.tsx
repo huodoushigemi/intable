@@ -8,11 +8,11 @@ const PROPS = {
   options: {},
   css: { value: '', attribute: 'css', notify: true, reflect: false },
   theme: '',
-  // noShadow: false,
+  noShadow: true,
 }
 
 export const TableElement = customElement('wc-table', PROPS, (attrs, { element }) => {
-  noShadowDOM()
+  attrs.noShadow && noShadowDOM()
 
   const props = createMutable(attrs.options)
 

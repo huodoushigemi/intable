@@ -26,7 +26,7 @@ createApp(() => [
     style: '',
     class: 'w-100 m-4',
     data: data.value,
-    'onUpdate:data': v => data.value = v,
+    // 'onUpdate:data': v => data.value = v,
     border: true,
     index: true,
     // size: 'small',
@@ -38,7 +38,7 @@ createApp(() => [
       { name: '4', id: '4', render: o => h('div', { class: 'c-red' }, '111'), fixed: 'right' },
     ],
     selected: selected.value,
-    'onUpdate:selected': v => selected.value = v,
+    // 'onUpdate:selected': v => selected.value = v,
     rowSelection: { enable: true }
   }),
 ])

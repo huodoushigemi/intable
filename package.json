@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@intable/vue": "workspace:^",
     "es-toolkit": "^1.39.10",
     "intable": "workspace:^",
     "solid-js": "^1.9.9"

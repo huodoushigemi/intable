@@ -5,8 +5,8 @@ import { useSort } from '../hooks/useSort'
 
 declare module '../index' {
   interface TableProps {
-    colDrag: boolean
-    rowDrag: boolean
+    colDrag?: boolean
+    rowDrag?: boolean
   }
   interface TableColumn {
 
