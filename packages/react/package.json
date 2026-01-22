@@ -1,0 +1,30 @@
+{
+  "name": "@intable/react",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.scss": "./dist/style.scss"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "intable": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "antd": "^5.22.5"
+  }
+}
