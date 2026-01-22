@@ -12,13 +12,17 @@ document.body.append(container)
 
 const data = ref([{ 1: 'x1', id: 1, date: '2016-05-03' }])
 setTimeout(() => {
-  data.value = [{ id: 1, date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' }, {}, {}]
-  // data.value.push({})
+  data.value = [
+    { id: 1, date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
+    { id: 2, date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
+    { id: 3, date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
+  ]
 }, 1000);
 
 const selected = ref([])
 watchEffect(() => {
-  console.log(selected.value)
+  // console.log(selected.value)
+  console.log(data.value)
 })
 
 createApp(() => [
@@ -26,7 +30,7 @@ createApp(() => [
     style: '',
     class: 'w-100 m-4',
     data: data.value,
-    // 'onUpdate:data': v => data.value = v,
+    'onUpdate:data': v => data.value = v,
     border: true,
     index: true,
     // size: 'small',
@@ -38,7 +42,7 @@ createApp(() => [
       { name: '4', id: '4', render: o => h('div', { class: 'c-red' }, '111'), fixed: 'right' },
     ],
     selected: selected.value,
-    // 'onUpdate:selected': v => selected.value = v,
+    'onUpdate:selected': v => selected.value = v,
     rowSelection: { enable: true }
   }),
 ])
