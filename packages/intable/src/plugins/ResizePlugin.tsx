@@ -84,6 +84,7 @@ const RowHandle = (o: TDProps) => {
 }
 
 export const ResizePlugin: Plugin = {
+  name: 'resize',
   store: () => ({
     [COL]: [],
     [ROW]: []

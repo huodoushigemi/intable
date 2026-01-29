@@ -1,10 +1,13 @@
 :root {
-  --c-primary: #51a2ff;
-  --select-area-bg: #5292f71a;
-  --menu-bg: #fff;
 }
 
 .data-table {
+  --bg: #fff;
+  --c-primary: #51a2ff;
+  
+  --menu-bg: #fff;
+  --li-hover-bg: rgb(153, 161, 175, .2);
+  
   --table-b: 1px solid var(--table-b-c);
   --table-b-c: #ebeef5;
   --table-c: #606266;
@@ -14,6 +17,9 @@
   --table-header-bg: var(--table-bg);
   
   --table-row-hover-bg: #f5f7fa;
+  
+  --select-area-bg: #5292f71a;
+  
 
   @apply relative text-[14px] c-[--table-c] b-[--table-b-c];
 
@@ -90,7 +96,7 @@
   }
 }
 
-.row-range-highlight > .area {
+.row-range-highlight.index > .area {
   @apply b-r-1;
 }
 
@@ -140,7 +146,7 @@
 }
 
 .row-selection {
-  @apply w-10;
+  @apply relative w-10;
   & > label {
     @apply absolute inset-0 flex justify-center items-center w-full h-full;
   }
@@ -177,7 +183,7 @@ td.is-editing {
 .li {
   @apply relative cursor-pointer;
   &:hover, &.hover {
-    @apply bg-gray/20;
+    @apply bg-[--li-hover-bg];
   }
   &:active, &.selected, &.active {
     &::before {

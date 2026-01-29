@@ -1,10 +1,8 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, $PROXY, splitProps, on, createRenderEffect, untrack, batch } from 'solid-js'
-import { createMutable, createStore, reconcile, unwrap } from 'solid-js/store'
+import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY } from 'solid-js'
+import { createMutable, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
-import { clamp, delay, difference, flow, identity, isEqual, mapValues, merge, sumBy } from 'es-toolkit'
-import { create, defaultsDeep } from 'es-toolkit/compat'
-import { toReactive, useMemo, useMemoAsync, usePointerDrag } from './hooks'
-import { useSplit } from './components/Split'
+import { difference, mapValues, sumBy } from 'es-toolkit'
+import { toReactive, useMemo, useMemoState } from './hooks'
 
 import 'virtual:uno.css'
 import './style.scss'
@@ -22,6 +20,8 @@ import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
 import { ResizePlugin } from './plugins/ResizePlugin'
 import { DragPlugin } from './plugins/DragPlugin'
 import { solidComponent } from './components/utils'
+import { RowGroupPlugin } from './plugins/RowGroupPlugin'
+import { ExpandPlugin } from './plugins/ExpandPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -36,11 +36,14 @@ type TableProps2 = Requireds<TableProps, (
   'newRow'
 )>
 
+type Each<T = any> = (props: { each: T[]; children: (e: () => any, i: () => number) => JSX.Element }) => JSX.Element
+
 type ProcessProps = {
   [K in keyof TableProps]?: (prev: TableProps2, ctx: { store: TableStore }) => TableProps[K]
 }
 
 export interface Plugin {
+  name?: string
   priority?: number
   store?: (store: TableStore) => Partial<TableStore> | void
   rewriteProps?: ProcessProps
@@ -66,8 +69,8 @@ export interface TableProps {
   Td?: TD
   Th?: Component<THProps>
   Tr?: Component<{ y?: number; data?: any; children: JSX.Element }>
-  EachRows?: typeof For
-  EachCells?: typeof For<TableColumn[], JSX.Element>
+  EachRows?: Each
+  EachCells?: Each<TableColumn>
   // 
   cellClass?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
   cellStyle?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
@@ -108,7 +111,7 @@ export interface TableStore extends Obj {
   trSizes: Nullable<{ width: number; height: number }>[]
   internal: symbol
   raw: symbol
-  props?: TableProps2
+  props: TableProps2
   rawProps: TableProps
   plugins: Plugin[]
 }
@@ -137,22 +140,22 @@ export const Intable = (props: TableProps) => {
   }, [])
   
   // init processProps
-  const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>({}))
+  const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>())
+  store.props = toReactive(createMemo(() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
+  // store.props = useMemoState(createMemo(() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
+
   createComputed(mapArray(plugins, (e, i) => {
-    const prev = () => pluginsProps()[i() - 1]?.[0]() || props
+    const prev = createMemo(() => pluginsProps()[i() - 1]?.[0]() || props)
     const ret = mergeProps(prev, toReactive(mapValues(e.rewriteProps || {}, v => useMemo(() => v(prev(), { store })) )))
     pluginsProps()[i()][1](ret)
   }))
-  
-  const mProps = toReactive(() => pluginsProps()[pluginsProps().length - 1][0]()) as TableProps2
-  store.props = mProps
 
   // on mount
   onMount(() => {
     createEffect(mapArray(plugins, e => e.onMount?.(store)))
   })
   
-  const ctx = createMutable({ props: mProps, store })
+  const ctx = createMutable({ props: store.props, store })
 
   window.store = store
   window.ctx = ctx
@@ -173,7 +176,7 @@ const THead = () => {
     <props.Thead>
       <props.Tr>
         <props.EachCells each={props.columns || []}>
-          {(col, colIndex) => <props.Th col={col} x={colIndex()}>{col.name}</props.Th>}
+          {(col, colIndex) => <props.Th col={col()} x={colIndex()}>{col().name}</props.Th>}
         </props.EachCells>
       </props.Tr>
     </props.Thead>
@@ -185,10 +188,10 @@ const TBody = () => {
   return (
     <props.Tbody>
       <props.EachRows each={props.data}>{(row, rowIndex) => (
-        <props.Tr y={rowIndex()} data={row}>
+        <props.Tr y={rowIndex()} data={row()}>
           <props.EachCells each={props.columns}>{(col, colIndex) => (
-            <props.Td col={col} x={colIndex()} y={rowIndex()} data={row}>
-              {row[col.id]}
+            <props.Td col={col()} x={colIndex()} y={rowIndex()} data={row()}>
+              {row()[col().id]}
             </props.Td>
           )}</props.EachCells>
         </props.Tr>
@@ -212,6 +215,7 @@ function BasePlugin(): Plugin {
   const td = o => <td {...o} {...omits} /> as any
 
   return {
+    name: 'base',
     priority: Infinity,
     store: (store) => ({
       ths: [],
@@ -289,23 +293,28 @@ function BasePlugin(): Plugin {
         )
         return <Td {...mProps}>{o.children}</Td>
       },
-      EachRows: ({ EachRows }) => EachRows || For,
-      EachCells: ({ EachCells }) => EachCells || For,
+      EachRows: ({ EachRows }) => EachRows || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
+      EachCells: ({ EachCells }) => EachCells || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
+      // EachRows: ({ EachRows }) => EachRows || (o => <Index each={o.each}>{(e, i) => o.children(e, () => i)}</Index>),
+      // EachCells: ({ EachCells }) => EachCells || (o => <Index each={o.each}>{(e, i) => o.children(e, () => i)}</Index>),
       renderer: ({ renderer = a => a }) => renderer
     }
   }
 }
 
 const IndexPlugin: Plugin = {
+  name: 'index',
+  priority: -Infinity,
   store: (store) => ({
     $index: { name: '', id: Symbol('index'), fixed: 'left', [store.internal]: 1, width: 40, style: 'text-align: center', class: 'index', render: solidComponent((o) => <>{o.y + 1}</>) } as TableColumn
   }),
   rewriteProps: {
-    columns: (props, { store }) => store.props?.index ? [store.$index, ...props.columns || []] : props.columns
+    columns: ({ columns }, { store }) => store.props?.index ? [store.$index, ...columns || []] : columns
   }
 }
 
 const StickyHeaderPlugin: Plugin = {
+  name: 'sticky-header',
   rewriteProps: {
     Thead: ({ Thead }) => o => {
       const { props } = useContext(Ctx)
@@ -316,6 +325,7 @@ const StickyHeaderPlugin: Plugin = {
 }
 
 const FixedColumnPlugin: Plugin = {
+  name: 'fixed-column',
   rewriteProps: {
     columns: ({ columns }) => [
       ...columns?.filter(e => e.fixed == 'left') || [],
@@ -328,6 +338,7 @@ const FixedColumnPlugin: Plugin = {
 }
 
 const FitColWidthPlugin: Plugin = {
+  name: 'fit-col-width',
   priority: -Infinity,
   rewriteProps: {
     Table: (prev, { store }) => o => {
@@ -353,6 +364,7 @@ const FitColWidthPlugin: Plugin = {
 }
 
 export const ScrollPlugin: Plugin = {
+  name: 'scroll',
   priority: Infinity,
   rewriteProps: {
     Table: (prev, { store }) => o => {
@@ -395,13 +407,15 @@ export const defaultsPlugins = [
   CommandPlugin,
   MenuPlugin,
   CellSelectionPlugin,
-  RowSelectionPlugin,
-  IndexPlugin,
   StickyHeaderPlugin,
   FixedColumnPlugin,
   ResizePlugin,
   DragPlugin,
   ClipboardPlugin,
+  ExpandPlugin,
+  RowSelectionPlugin,
+  IndexPlugin,
   EditablePlugin,
   FitColWidthPlugin,
+  RowGroupPlugin,
 ]

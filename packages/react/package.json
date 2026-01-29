@@ -16,7 +16,8 @@
     "dist"
   ],
   "dependencies": {
-    "intable": "workspace:^"
+    "intable": "workspace:^",
+    "solid-js": "^1.9.9"
   },
   "peerDependencies": {
     "react": "^18",

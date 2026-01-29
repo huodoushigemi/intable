@@ -41,6 +41,7 @@ export interface EditorOpt {
 }
 
 export const EditablePlugin: Plugin = {
+  name: 'editable',
   store: () => ({
     editors: { ...editors }
   }),

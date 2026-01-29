@@ -5,15 +5,16 @@ import { defaultsDeep, isEqual } from 'es-toolkit/compat'
 import { type Commands, type Plugin, type TableColumn, type TableProps } from '..'
 import { Checkbox } from './RenderPlugin/components'
 import { solidComponent } from '../components/utils'
+import { useSelector } from '../hooks/useSelector'
 
 declare module '../index' {
   interface TableProps {
     rowSelection?: {
       enable?: boolean
       multiple?: boolean
-      value?: any[]
+      value?: any
       selectable?: (row) => boolean
-      onChange?: (selected: any[]) => void
+      onChange?: (selected) => void
     }
   }
   interface TableStore {
@@ -25,6 +26,8 @@ declare module '../index' {
 }
 
 export const RowSelectionPlugin: Plugin = {
+  name: 'row-selection',
+  priority: -Infinity,
   store: (store) => ({
     rowSelectionCol: {
       [store.internal]: 1,
@@ -37,8 +40,8 @@ export const RowSelectionPlugin: Plugin = {
         <label>
           <Checkbox
             style='position: absolute'
-            value={store.commands.rowSelector.isSelected(o.data)}
-            onChange={v => store.commands.rowSelector.select(o.data, v)}
+            value={store.commands.rowSelector.has(o.data)}
+            onChange={v => v ? store.commands.rowSelector.add(o.data) : store.commands.rowSelector.del(o.data)}
             disabled={!store.props?.rowSelection?.selectable?.(o.data)}
           />
         </label>
@@ -46,7 +49,7 @@ export const RowSelectionPlugin: Plugin = {
     } as TableColumn,
   }),
   commands: (store) => ({
-    rowSelector: useSelector(mergeProps(() => ({ rowKey: store.props?.rowKey, ...store.props?.rowSelection })))
+    rowSelector: useSelector(mergeProps(() => ({ ...store.props?.rowSelection })))
   }),
   rewriteProps: {
     rowSelection: ({ rowSelection }) => defaultsDeep(rowSelection, {
@@ -59,34 +62,4 @@ export const RowSelectionPlugin: Plugin = {
       ? [store.rowSelectionCol, ...columns]
       : columns
   }
-}
-
-function useSelector(opt: Partial<{ value, rowKey, multiple, selectable, onChange }>) {
-  const map = createMutable({})
-  const selected = createMemo(() => [...opt.value || []])
-  
-  const isSelected = (data) => !!map[id(data)]
-
-  const select = (data, bool = true) => {
-    if (!opt.selectable(data)) return
-    if (opt.multiple) {
-      map[id(data)] = bool ? data : void 0
-    } else {
-      reconcile({ [id(data)]: bool ? data : void 0 })(map)
-    }
-    set(Object.values(map))
-  }
-
-  const clear = () => opt.onChange?.([])
-
-  const set = (rows = []) => opt.onChange?.(rows)
-
-  const id = data => data[opt.rowKey]
-
-  createRenderEffect(on(selected, () => {
-    const keyed = keyBy(selected(), id)
-    reconcile(keyed)(map)
-  }))
-
-  return { isSelected, select, clear, set }
 }

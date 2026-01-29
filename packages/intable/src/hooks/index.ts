@@ -1,8 +1,8 @@
-import { $PROXY, createComputed, createEffect, createMemo, createRenderEffect, createRoot, createSignal, mergeProps, on, onCleanup, untrack, type Signal } from 'solid-js'
+import { $PROXY, batch, createComputed, createEffect, createMemo, createRenderEffect, createRoot, createSignal, mergeProps, on, onCleanup, untrack, type Signal } from 'solid-js'
 import { $RAW, createMutable } from 'solid-js/store'
 import { createEventListener, createEventListenerMap } from '@solid-primitives/event-listener'
 import { createPointerListeners } from '@solid-primitives/pointer'
-import { access, type Many, type MaybeAccessor } from '@solid-primitives/utils'
+import { access, type Many, type MaybeAccessor, } from '@solid-primitives/utils'
 import { makePersisted, storageSync } from '@solid-primitives/storage'
 import { createMutationObserver } from '@solid-primitives/mutation-observer'
 import { isFunction, isPromise, mapValues } from 'es-toolkit'
@@ -185,4 +185,16 @@ export function useHistory([val, setVal]) {
     state.history[++state.index] = ret
   }))
   return { undo, redo, clear, get index() { return state.index }, get history() { return state.history } }
+}
+
+export function useMemoState(fn) {
+  const state = createMutable({})
+  createComputed(() => {
+    const val = fn()
+    untrack(() => batch(() => {
+      for (const k in state) k in val || (delete state[k])
+      Object.assign(state, val)
+    }))
+  })
+  return state
 }

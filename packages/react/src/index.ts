@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { flushSync } from 'react-dom'
 import { type TableProps } from 'intable'
 import 'intable/wc'
-import './style.scss'
+// import './style.scss'
 
 import { AntdPlugin } from './plugins/antd'
 import { onCleanup } from 'solid-js'

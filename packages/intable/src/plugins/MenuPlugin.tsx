@@ -1,7 +1,7 @@
 import { batch, createEffect, createMemo, createSignal, mapArray, on } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { createEventListener } from '@solid-primitives/event-listener'
-import { range, remove } from 'es-toolkit'
+import { delay, range, remove } from 'es-toolkit'
 import { autoPlacement, computePosition } from '@floating-ui/dom'
 import { type Plugin, type TableStore } from '..'
 import { useMemoAsync, useTinykeys } from '../hooks'
@@ -29,6 +29,8 @@ declare module '../index' {
 }
 
 export const MenuPlugin: Plugin = {
+  name: 'menu',
+  priority: Infinity,
   store: (store) => ({
     
   }),
@@ -69,14 +71,14 @@ export const MenuPlugin: Plugin = {
       o = combineProps({ tabindex: -1, onContextMenu }, o)
       return (
         <Table {...o}>
-          {pos() && <Menu ref={setMenuEl} style={style() || 'position: absolute'} items={menus()} onAction={() => setPos()} />}
+          {pos() && <Menu ref={setMenuEl} style={style() || 'position: fixed'} items={menus()} onAction={() => setPos()} />}
           {o.children}
         </Table>
       )
     },
   },
   menus: (store) => [
-    { label: '新增行 ↑', disabled: () => true, cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])]) },
+    { label: '新增行 ↑', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])]) },
     { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])], false) },
     { label: '删除行', cb: () => store.commands.deleteRows(range( ...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number] )) },
   ],

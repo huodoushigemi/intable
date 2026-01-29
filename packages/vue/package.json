@@ -17,6 +17,7 @@
     "dist"
   ],
   "dependencies": {
+    "@vue/shared": "^3.5.27",
     "intable": "workspace:^",
     "solid-js": "^1.9.9"
   },

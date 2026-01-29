@@ -20,6 +20,7 @@ declare module '../index' {
 }
 
 export const ClipboardPlugin: Plugin = {
+  name: 'clipboard',
   rewriteProps: {
     Table: ({ Table }, { store }) => o => {
       let el: HTMLElement

@@ -3,19 +3,22 @@ import { type Plugin, type TableProps } from 'intable'
 import 'intable/wc'
 import './style.scss'
 
+// import '../../intable/src/wc'
+
 export type { TableProps } from 'intable'
 
-import { h, normalizeStyle, normalizeClass, toRaw, render, type Component } from 'vue'
+import { h, normalizeClass, toRaw, render, type Component, type FunctionalComponent, type App } from 'vue'
+import { stringifyStyle } from '@vue/shared'
 import { mapValues } from 'es-toolkit'
 
-export const Intable: Component<TableProps> = (props) => (
+export const Intable: FunctionalComponent<TableProps> = ((props) => (
   props = mapValues(props, v => toRaw(v)),
   h('wc-table', {
     style: 'display: contents',
     '.options': {
       ...props,
       class: normalizeClass(props.class),
-      style: normalizeStyle([props.style]),
+      style: stringifyStyle(props.style),
       renderer: component,
       plugins: [
         VModelPlugin,
@@ -23,9 +26,14 @@ export const Intable: Component<TableProps> = (props) => (
       ]
     } as TableProps
   })
-)
+))
+
+Intable.inheritAttrs = false
+Intable.__name = 'intable'
+Intable.install = app => app.component(Intable.__name, Intable)
 
 const VModelPlugin: Plugin = {
+  name: 'v-model',
   rewriteProps: {
     rowSelection: ({ rowSelection }, { store }) => ({
       get value() { return store.props?.selected },
@@ -41,8 +49,6 @@ const VModelPlugin: Plugin = {
     }
   }
 }
-
-Intable.inheritAttrs = false
 
 const component = <T extends Record<string, any>>(Comp: Component<T>) => {
   return (props: T) => {

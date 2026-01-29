@@ -1,8 +1,9 @@
 /* @refresh reload */
 import { batch, createEffect, createMemo, createSignal, untrack } from 'solid-js'
 import { customElement, noShadowDOM } from 'solid-element'
-import { createMutable, reconcile } from 'solid-js/store'
+import { createMutable } from 'solid-js/store'
 import { Intable } from './'
+import { useMemoState } from './hooks'
 
 const PROPS = {
   options: {},
@@ -14,12 +15,7 @@ const PROPS = {
 export const TableElement = customElement('wc-table', PROPS, (attrs, { element }) => {
   attrs.noShadow && noShadowDOM()
 
-  const props = createMutable(attrs.options)
-
-  createEffect(() => {
-    const { options } = attrs
-    untrack(() => batch(() => reconcile(options)(props)))
-  })
+  const props = useMemoState(() => attrs.options)
   
   return (
     <Intable {...props} />

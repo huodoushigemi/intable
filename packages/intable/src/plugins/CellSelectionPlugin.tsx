@@ -1,4 +1,4 @@
-import { batch, createMemo, useContext } from 'solid-js'
+import { batch, createEffect, createMemo, useContext } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { type MaybeAccessor } from '@solid-primitives/utils'
@@ -20,6 +20,7 @@ declare module '../index' {
 const inrange = (v, min, max) => v <= max && v >= min
 
 export const CellSelectionPlugin: Plugin = {
+  name: 'cell-selection',
   store: () => ({
     selected: { start: [], end: [] }
   }),
@@ -157,7 +158,8 @@ export const CellSelectionPlugin: Plugin = {
           if (o.y == ys[0]) clazz += 'range-selected-t '
           if (o.y == ys[1]) clazz += 'range-selected-b '
         }
-        if (o.x == 0 && iny) clazz += 'row-range-highlight '
+        // if (o.x == 0 && iny) clazz += 'row-range-highlight '
+        if (o.col.id == store.$index.id && iny) clazz += 'row-range-highlight '
         return clazz
       })
 

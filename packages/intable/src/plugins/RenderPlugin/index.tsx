@@ -23,6 +23,7 @@ export type RenderProps = Parameters<TD>[0] & { onChange: (v) => void }
 export type Render = (props: RenderProps) => JSX.Element | any
 
 export const RenderPlugin: Plugin = {
+  name: 'render',
   priority: -Infinity,
   store: () => ({
     renders: { ...renders }

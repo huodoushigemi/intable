@@ -1,4 +1,9 @@
 .data-table {
+  --bg: var(--el-bg-color, #fff);
+
+  --menu-bg: var(--el-bg-color-overlay, #fff);
+  --li-hover-bg: var(--el-fill-color-light, #f5f7fa);
+
   --table-b: 1px solid var(--table-b-c);
   --table-b-c: var(--el-table-border-color, #ebeef5);
   --table-c: var(--el-table-text-color, #606266);

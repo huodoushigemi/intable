@@ -1,4 +1,4 @@
-import { batch, createMemo } from 'solid-js'
+import { batch, createComputed, createMemo } from 'solid-js'
 import { render } from 'solid-js/web'
 import { createMutable, createStore, produce, reconcile } from 'solid-js/store'
 import { range } from 'es-toolkit'
@@ -8,12 +8,14 @@ import { range } from 'es-toolkit'
 // import { VirtualScrollPlugin } from 'intable/plugins/VirtualScrollPlugin'
 
 import { Intable } from '../packages/intable/src'
+// import '../packages/intable/src/theme/element-plus.scss'
 import { log } from '../packages/intable/src/utils'
 import { VirtualScrollPlugin } from '../packages/intable/src/plugins/VirtualScrollPlugin'
+import { useSelector } from '../packages/intable/src/hooks/useSelector'
 // import 'intable/theme/element-plus.scss'
 // import 'intable/dist/theme/element-plus.scss'
 
-const root = document.getElementById('root')!
+const root = document.body.appendChild(document.createElement('div'))
 
 const state = createMutable({ bool: true })
 
@@ -52,6 +54,7 @@ render(() => <Intable
   // style='width: 50vw; height: 40vh;'
   rowDrag
   colDrag
+  size='small'
   index={state.bool}
   stickyHeader={state.bool}
   columns={cols}
@@ -62,11 +65,10 @@ render(() => <Intable
   resizable={{ row: { enable: true } }}
   plugins={[
     VirtualScrollPlugin,
-    // RowGroupPlugin,
     // HistoryPlugin,
     // DiffPlugin,
   ]}
-  expand={{ render: ({ data }) => <div class='p-6'>{JSON.stringify(data)}</div> }}
+  expand={{ enable: true, render: ({ data }) => <div class='p-2 c-red'>{JSON.stringify(data)}</div> }}
   // rowGroup={{ fields: ['g', 'n'] }}
   // rowGroup={{ fields: ['g'] }}
   diff={{
