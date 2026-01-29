@@ -9,17 +9,25 @@
 
   --table-row-hover-bg: var(--ant-table-row-hover-bg, #fafafa);
 
-  @apply text-[14px];
+  font-size: 14px;
   
   &:not(&--border) thead th {
-    @apply relative;
+    position: relative;
     &:not(:last-child)::before {
-      @apply content-[''] absolute top-1/2 right-0 h-[1.6em] w-[1px] bg-[--table-b-c] translate-y-[-50%];
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      height: 1.6em;
+      width: 1px;
+      background-color: var(--table-b-c);
+      transform: translateY(-50%);
     }
   }
 
   th, td {
-    @apply px-2 py-3 lh-[22px];
+    padding: 12px 8px;
+    line-height: 22px;
   }
 
   .row-selection {
@@ -28,7 +36,8 @@
 
   &--small {
     th, td {
-      @apply px-2;
+      padding-left: 8px;
+      padding-right: 8px;
     }
   }
 }

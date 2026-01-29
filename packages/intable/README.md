@@ -58,7 +58,7 @@ render(() => <App />)
 **安装**
 
 ```sh
-pnpm add @intable/react
+pnpm add @intable/vue
 ```
 
 **使用**
@@ -99,7 +99,7 @@ pnpm add @intable/react
 **使用**
 
 ```jsx
-import Intable from 'intable'
+import Intable from '@intable/react'
 
 const App = () => {
   const columns = [

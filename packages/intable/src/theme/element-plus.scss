@@ -14,14 +14,15 @@
   
   --table-row-hover-bg: var(--el-table-row-hover-bg-color, #f5f7fa);
 
-  @apply lh-[23px] text-[14px];
+  line-height: 23px;
+  font-size: 14px;
   
   thead th {
-    @apply font-600;
+    font-weight: 600;
   }
 
   th, td {
-    @apply px-3 py-2;
+    padding: 8px 12px;
   }
 
   .row-selection {
@@ -29,10 +30,10 @@
   }
 
   &--small {
-    @apply text-3;
+    font-size: 12px;
 
     th, td {
-      @apply px-2 py-1;
+      padding: 4px 8px;
     }
   }
 }
