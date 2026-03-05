@@ -1,0 +1,12 @@
+.antd {
+  .is-editing {
+    & > .area { @apply hidden; }
+  }
+  .in-cell-edit-wrapper {
+    @apply flex items-center p-1;
+
+    > .ant-input-affix-wrapper > .ant-input-prefix {
+      @apply hidden;
+    }
+  }
+}
