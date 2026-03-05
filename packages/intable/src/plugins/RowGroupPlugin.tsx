@@ -1,4 +1,4 @@
-import { groupBy, isEqual, remove, zipObject } from 'es-toolkit'
+import { groupBy, zipObject } from 'es-toolkit'
 import { findLast } from 'es-toolkit/compat'
 import { Ctx, type Plugin } from '..'
 import { batch, createMemo, useContext } from 'solid-js'
@@ -12,7 +12,8 @@ declare module '../index' {
   }
   interface TableStore {
     rowGroup: {
-      expands: string[][]
+      /** Plain-object map used as Set<string>; property access is tracked by createMutable */
+      expandKeys: Record<string, true | undefined>
       isExpand: (data) => boolean
       expand: (data, r?) => void
       toggleExpand: (data) => void
@@ -20,14 +21,26 @@ declare module '../index' {
   }
 }
 
+/** Serialize a group path to a plain string key for O(1) Set-style lookup */
+const pathKey = (path: any[]): string => path.join('\0')
+
 export const RowGroupPlugin: Plugin = {
   priority: -Infinity,
   store: (store) => ({
     rowGroup: {
-      expands: [],
-      isExpand: data => store.rowGroup.expands.some(e => isEqual(e, data[GROUP].path)),
-      expand: (data, r) => batch(() => r ? data[GROUP].path2.forEach(e => store.rowGroup.isExpand(e) || store.rowGroup.expands.push(e[GROUP].path)) : (store.rowGroup.isExpand(data) || store.rowGroup.expands.push(data[GROUP].path))),
-      toggleExpand: data => store.rowGroup.isExpand(data) ? remove(store.rowGroup.expands, e => isEqual(e, data[GROUP].path)) : store.rowGroup.expand(data)
+      // Plain object acts as a reactive Map<string, true> inside createMutable.
+      // Property reads are tracked by SolidJS; O(1) vs previous O(n) isEqual scan.
+      expandKeys: {} as Record<string, true | undefined>,
+      isExpand: data => !!store.rowGroup.expandKeys[pathKey(data[GROUP].path)],
+      expand: (data, r) => batch(() =>
+        r
+          ? data[GROUP].path2.forEach(e => { store.rowGroup.expandKeys[pathKey(e[GROUP].path)] = true })
+          : (store.rowGroup.expandKeys[pathKey(data[GROUP].path)] = true)
+      ),
+      toggleExpand: data => {
+        const k = pathKey(data[GROUP].path)
+        store.rowGroup.expandKeys[k] ? delete store.rowGroup.expandKeys[k] : (store.rowGroup.expandKeys[k] = true)
+      }
     }
   }),
   commands: (store, { addRows }) => ({

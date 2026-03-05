@@ -1,14 +1,14 @@
 import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY } from 'solid-js'
 import { createMutable, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
-import { difference, mapValues, sumBy } from 'es-toolkit'
+import { difference, mapValues, memoize, sumBy } from 'es-toolkit'
 import { toReactive, useMemo, useMemoState } from './hooks'
 
 import 'virtual:uno.css'
 import './style.scss'
 
 import { log, unFn } from './utils'
-import { createElementSize, createResizeObserver, getElementSize } from '@solid-primitives/resize-observer'
+import { createElementSize, createResizeObserver } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { CellSelectionPlugin } from './plugins/CellSelectionPlugin'
 import { ClipboardPlugin } from './plugins/CopyPastePlugin'
@@ -22,6 +22,7 @@ import { DragPlugin } from './plugins/DragPlugin'
 import { solidComponent } from './components/utils'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
+import { createLazyMemo } from '@solid-primitives/memo'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -51,6 +52,8 @@ export interface Plugin {
   onMount?: (store: TableStore) => void
 }
 
+export type Plugin$0 = Plugin | ((store: TableStore) => Plugin)
+
 export interface TableProps {
   columns?: TableColumn[]
   data?: any[]
@@ -77,7 +80,7 @@ export interface TableProps {
   // 
   renderer?: (comp: (props) => JSX.Element) => ((props) => JSX.Element)
   // Plugin
-  plugins?: Plugin[]
+  plugins?: Plugin$0[]
 
   onDataChange?: (data: any[]) => void
 }
@@ -118,19 +121,22 @@ export interface TableStore extends Obj {
 
 export const Intable = (props: TableProps) => {
   props = mergeProps({ rowKey: 'id' } as Partial<TableProps>, props)
-  const plugins = createMemo(() => [
-    ...defaultsPlugins,
-    ...props.plugins || [],
-    RenderPlugin
-  ].sort((a, b) => (b.priority || 0) - (a.priority || 0)))
-  
+  const owner = getOwner()!
+
   const store = createMutable({
     get rawProps() { return props },
     get plugins() { return plugins() }
   } as TableStore)
+
+  const unplugin = memoize((e: Plugin$0) => runWithOwner(owner, () => unFn(e, store)) as Plugin)
+
+  const plugins = createMemo(() => [
+    ...defaultsPlugins,
+    ...props.plugins || [],
+    RenderPlugin
+  ].map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0)))
   
   // init store
-  const owner = getOwner()!
   createComputed((old: Plugin[]) => {
     const added = difference(plugins(), old)
     runWithOwner(owner, () => {
@@ -204,7 +210,7 @@ export default Intable
 
 // process ===================================================================================================================================================================================================
 
-function BasePlugin(): Plugin {
+function BasePlugin(): Plugin$0 {
   const omits = { col: null, data: null }
 
   const table = o => <table {...o} /> as any
@@ -217,16 +223,34 @@ function BasePlugin(): Plugin {
   return {
     name: 'base',
     priority: Infinity,
-    store: (store) => ({
-      ths: [],
-      // thSizes: toReactive(mapArray(() => store.ths, el => el && createElementSize(el))),
-      thSizes: [],
-      trs: [],
-      // trSizes: toReactive(mapArray(() => store.trs, el => el && createElementSize(el))),
-      trSizes: [],
-      internal: Symbol('internal'),
-      raw: Symbol('raw'),
-    }),
+    store: (store) => {
+      // 共享一个 ResizeObserver 观察所有 th，回调按 index 分发，替代每列独立 createElementSize
+      createResizeObserver(
+        () => store.ths?.filter(Boolean) as Element[] || [],
+        (_, el, e) => {
+          const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
+          const x = store.ths?.indexOf(el as HTMLElement)
+          if (x >= 0) store.thSizes[x] = { width, height }
+        }
+      )
+      // 共享一个 ResizeObserver 观察所有 tr，回调按 index 分发，替代每行独立 createElementSize
+      createResizeObserver(
+        () => store.trs?.filter(Boolean) as Element[] || [],
+        (_, el, e) => {
+          const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
+          const y = store.trs?.indexOf(el as HTMLElement)
+          if (y >= 0) store.trSizes[y] = { width, height }
+        }
+      )
+      return {
+        ths: [],
+        thSizes: [],
+        trs: [],
+        trSizes: [],
+        internal: Symbol('internal'),
+        raw: Symbol('raw'),
+      }
+    },
     rewriteProps: {
       data: ({ data = [] }) => data,
       columns: ({ columns = [] }) => columns,
@@ -256,8 +280,7 @@ function BasePlugin(): Plugin {
         createEffect(() => {
           const { y } = o
           store.trs[y] = el()
-          store.trSizes[y] = createElementSize(el())
-          onCleanup(() => store.trSizes[y] = store.trs[y] = void 0)
+          onCleanup(() => { store.trSizes[y] = store.trs[y] = void 0 })
         })
 
         return <Tr {...o} />
@@ -277,8 +300,7 @@ function BasePlugin(): Plugin {
         createEffect(() => {
           const { x } = o
           store.ths[x] = el()
-          store.thSizes[x] = createElementSize(el())
-          onCleanup(() => store.thSizes[x] = store.ths[x] = void 0)
+          onCleanup(() => { store.thSizes[x] = store.ths[x] = void 0 })
         })
         
         return <Th {...mProps}>{o.children}</Th>
@@ -290,6 +312,8 @@ function BasePlugin(): Plugin {
           { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
           { get class() { return o.col.class }, get style() { return o.col.style } },
           { get style() { return o.col.width ? `width: ${o.col.width}px` : '' } },
+          // todo
+          () => store.props.tdProps?.(o) || {}
         )
         return <Td {...mProps}>{o.children}</Td>
       },
@@ -324,42 +348,51 @@ const StickyHeaderPlugin: Plugin = {
   }
 }
 
-const FixedColumnPlugin: Plugin = {
-  name: 'fixed-column',
-  rewriteProps: {
-    columns: ({ columns }) => [
-      ...columns?.filter(e => e.fixed == 'left') || [],
-      ...columns?.filter(e => !e.fixed) || [],
-      ...columns?.filter(e => e.fixed == 'right') || [],
-    ],
-    cellClass: ({ cellClass }) => o => (unFn(cellClass, o) || '') + (o.col.fixed ? ` fixed-${o.col.fixed}` : ''),
-    cellStyle: ({ cellStyle }, { store }) => o => (unFn(cellStyle, o) || '') + (o.col.fixed ? `; ${o.col.fixed}: ${sumBy(store.thSizes.slice(o.col.fixed == 'left' ? 0 : o.x + 1, o.col.fixed == 'left' ? o.x : Infinity), size => size?.width || 0)}px` : '')
+const FixedColumnPlugin: Plugin$0 = store => {
+  const fixedOffsets = createLazyMemo(() => {
+    const offsets = {}
+    for (const [i, col] of store.props.columns.entries()) {
+      if (col.fixed === 'left') offsets[i] = sumBy(store.thSizes.slice(0, i), s => s?.width || 0)
+      if (col.fixed === 'right') offsets[i] = sumBy(store.thSizes.slice(i + 1), s => s?.width || 0)
+    }
+    return offsets
+  })
+  return {
+    name: 'fixed-column',
+    rewriteProps: {
+      columns: ({ columns }) => [
+        ...columns?.filter(e => e.fixed == 'left') || [],
+        ...columns?.filter(e => !e.fixed) || [],
+        ...columns?.filter(e => e.fixed == 'right') || [],
+      ],
+      cellClass: ({ cellClass }) => o => (unFn(cellClass, o) || '') + (o.col.fixed ? ` fixed-${o.col.fixed}` : ''),
+      cellStyle: ({ cellStyle }) => o => (unFn(cellStyle, o) || '') + (o.col.fixed ? `; ${o.col.fixed}: ${fixedOffsets()[o.x]}px` : '')
+    }
   }
 }
 
-const FitColWidthPlugin: Plugin = {
-  name: 'fit-col-width',
-  priority: -Infinity,
-  rewriteProps: {
-    Table: (prev, { store }) => o => {
-      const size = createMutable({ width: 0 })
-      createResizeObserver(() => store.scroll_el!, (_, el, e) => size.width = e.contentBoxSize[0].inlineSize)
+const FitColWidthPlugin: Plugin$0 = store => {
+  const size = createMutable({ width: 0 })
+  createResizeObserver(() => store.scroll_el!, (_, el, e) => size.width = e.contentBoxSize[0].inlineSize)
+  const __fit_col_width__cols_temp = createMutable([] as any[])
 
-      createEffect(on(() => [size.width, prev.columns.map(e => e.width)], async () => {
-        if (!size.width) return
-        store.__fit_col_width__cols_temp = null
-        await Promise.resolve()
-        const gap = (size.width - store.table.getBoundingClientRect().width) / store.props!.columns.filter(e => !e.width).length
-        const cols = store.props!.columns.map((e, i) => (e.width ? null : { width: Math.max((store.ths[i]?.getBoundingClientRect().width || 0) + gap, 80) }))
-        store.__fit_col_width__cols_temp = cols
-      }))
-
-      return <prev.Table {...o} />
-    },
-    columns: ({ columns }, { store }) => (
-      columns = columns.map((e, i) => ({ ...e, ...store.__fit_col_width__cols_temp?.[i], [store.raw]: e[store.raw] ?? e })),
-      untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__fit_col_width__cols ??= [])))
-    )
+  createEffect(on(() => [size.width, store.props.columns.map(e => e.width)], async () => {
+    if (!size.width) return
+    __fit_col_width__cols_temp.length = 0
+    await Promise.resolve()
+    const gap = (size.width - store.table.getBoundingClientRect().width) / store.props!.columns.filter(e => !e.width).length
+    const cols = store.props!.columns.map((e, i) => (e.width ? null : { width: Math.max((store.ths[i]?.getBoundingClientRect().width || 0) + gap, 80) }))
+    __fit_col_width__cols_temp.push(...cols)
+  }))
+  return {
+    name: 'fit-col-width',
+    priority: -Infinity,
+    rewriteProps: {
+      columns: ({ columns }, { store }) => (
+        columns = columns.map((e, i) => ({ ...e, ...__fit_col_width__cols_temp?.[i], [store.raw]: e[store.raw] ?? e })),
+        untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__fit_col_width__cols ??= [])))
+      )
+    }
   }
 }
 
@@ -403,7 +436,7 @@ export const ScrollPlugin: Plugin = {
 
 export const defaultsPlugins = [
   ScrollPlugin,
-  BasePlugin(),
+  BasePlugin,
   CommandPlugin,
   MenuPlugin,
   CellSelectionPlugin,

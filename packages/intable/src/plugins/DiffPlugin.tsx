@@ -68,7 +68,20 @@ export const DiffPlugin: Plugin = {
     }),
     data: ({ data }, { store }) => {
       const { rowKey, diff } = store.props || {}
-      const diffArr = diffArrays(store.diffData || [], data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
+      const diffData = store.diffData || []
+
+      // Fast path: same number of rows, same keys in same order (edit-only, no add/delete/move).
+      // Skips the O(n²) diffArrays call which is the common case when only cell values changae.
+      if (data.length === diffData.length && data.length > 0) {
+        let sameOrder = true
+        for (let i = 0; i < data.length; i++) {
+          if (data[i]?.[rowKey] !== diffData[i]?.[rowKey]) { sameOrder = false; break }
+        }
+        if (sameOrder) return data
+      }
+
+      // Structural change (add / delete / move) — fall back to diff library
+      const diffArr = diffArrays(diffData, data, { comparator: (a, b) => a[rowKey] == b[rowKey] })
       return diffArr.flatMap(e => (
         // e.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) :
         e.added ? e.value.map(e => (e[NEW] = 1, e)) :
@@ -89,10 +102,10 @@ export const DiffPlugin: Plugin = {
         const { diff } = store.props || {}
         const id = unwrap(o.data)[store.props!.rowKey]
         return [
-          o.data[NEW] ? diff?.added ? 'bg-#dafaea' : '' :
-          o.data[DEL] ? 'bg-#ffe8e8' :
+          o.data[NEW] ? diff?.added ? 'bg-#dafaea!' : '' :
+          o.data[DEL] ? 'bg-#ffe8e8!' :
           o.data[store.internal] ? '' :
-          diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id][o.col.id] ? 'bg-#dafaea' : ''
+          diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id][o.col.id] ? 'bg-#dafaea!' : ''
         ].join(' ')
       }
     }),
