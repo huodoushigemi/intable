@@ -50,6 +50,12 @@ export interface Plugin {
   rewriteProps?: ProcessProps
   layers?: Component<TableStore>[]
   onMount?: (store: TableStore) => void
+  /**
+   * Declare keyboard shortcuts for this plugin.
+   * Collected and registered as a **single** keydown listener by CommandPlugin.
+   * Keys use tinykeys syntax, e.g. `'Control+Z'`, `'$mod+Shift+K'`.
+   */
+  keybindings?: (store: TableStore) => Record<string, (e?: KeyboardEvent) => void>
 }
 
 export type Plugin$0 = Plugin | ((store: TableStore) => Plugin)
@@ -81,6 +87,12 @@ export interface TableProps {
   renderer?: (comp: (props) => JSX.Element) => ((props) => JSX.Element)
   // Plugin
   plugins?: Plugin$0[]
+  /**
+   * Override or disable individual plugin keybindings.
+   * - Override: `{ 'Control+Z': (e) => myUndo() }`
+   * - Disable:  `{ 'Control+Z': false }`
+   */
+  keybindings?: Record<string, ((e?: KeyboardEvent) => void) | false>
 
   onDataChange?: (data: any[]) => void
 }
@@ -423,7 +435,7 @@ export const ScrollPlugin: Plugin = {
       const layers = mapArray(() => store.plugins.flatMap(e => e.layers ?? []), Layer => <Layer {...store} />)
       
       return (
-        <div {...o}>
+        <div tabindex={-1} {...o}>
           <div class='data-table__layers'>
             {layers()}
           </div>

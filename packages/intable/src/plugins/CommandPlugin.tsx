@@ -1,4 +1,7 @@
-import { createMemo, getOwner, runWithOwner } from 'solid-js'
+import { createEffect, createMemo, getOwner, runWithOwner } from 'solid-js'
+import { createEventListener } from '@solid-primitives/event-listener'
+import { combineProps } from '@solid-primitives/props'
+import { createKeybindingsHandler } from 'tinykeys'
 import { type Commands, type Plugin } from '..'
 
 declare module '../index' {
@@ -28,6 +31,44 @@ export const CommandPlugin: Plugin = {
     ))
     return {
       get commands() { return commands() }
+    }
+  },
+  rewriteProps: {
+    Table: ({ Table }, { store }) => o => {
+      const owner = getOwner()
+
+      // Merge keybindings from all plugins in priority order (later index = lower priority = outer wrapper).
+      // createMemo re-creates the tinykeys handler whenever plugins or user overrides change.
+      const handler = createMemo(() => {
+        const merged: Record<string, (e: KeyboardEvent) => void> = {}
+        for (const p of store.plugins) {
+          const bindings = runWithOwner(owner, () => p.keybindings?.(store))
+          if (bindings) Object.assign(merged, bindings)
+        }
+        // Apply user overrides: false = disable, function = replace
+        const overrides = store.props?.keybindings
+        if (overrides) {
+          for (const [key, val] of Object.entries(overrides)) {
+            if (val === false) delete merged[key]
+            else if (typeof val === 'function') merged[key] = val
+          }
+        }
+        // Wrap each handler: preventDefault + call
+        return createKeybindingsHandler(
+          Object.fromEntries(
+            Object.entries(merged).map(([k, fn]) => [k, (e: KeyboardEvent) => {
+              e.preventDefault()
+              fn(e)
+            }])
+          )
+        )
+      })
+
+      // Single keydown listener that proxies to the current merged handler
+      createEventListener(() => store.scroll_el, 'keydown', (e: KeyboardEvent) => handler()(e))
+
+      o = combineProps({ tabindex: -1 }, o)
+      return <Table {...o} />
     }
   },
 }

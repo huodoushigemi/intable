@@ -1,9 +1,7 @@
-import { batch, createEffect, createMemo, useContext } from 'solid-js'
+import { batch, createMemo } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
-import { createEventListener } from '@solid-primitives/event-listener'
-import { type MaybeAccessor } from '@solid-primitives/utils'
-import { Ctx, type Plugin } from '..'
-import { usePointerDrag, useTinykeys } from '../hooks'
+import { type Plugin } from '..'
+import { usePointerDrag } from '../hooks'
 
 declare module '../index' {
   interface TableProps {
@@ -33,8 +31,6 @@ export const CellSelectionPlugin: Plugin = {
   }),
   rewriteProps: {
     Table: ({ Table }, { store }) => (o) => {
-      const { props } = useContext(Ctx)
-
       store.cellSelectionRect ??= createMemo(() => {
         const { start, end } = store.selected
         const xs = [start[0], end[0]].sort((a, b) => a - b)
@@ -95,39 +91,6 @@ export const CellSelectionPlugin: Plugin = {
         },
       })
 
-      useTinykeys(() => store.table, {
-        'ArrowLeft': () => {
-          const { start, end } = store.selected
-          start[0] = end[0] = Math.max(start[0] - 1, 0)
-          end[1] = start[1]
-          scrollIntoView()
-        },
-        'ArrowRight': () => {
-          const { start, end } = store.selected
-          start[0] = end[0] = Math.min(start[0] + 1, props.columns!.length - 1)
-          end[1] = start[1]
-          scrollIntoView()
-        },
-        'ArrowUp': () => {
-          const { start, end } = store.selected
-          start[1] = end[1] = Math.max(start[1] - 1, 0)
-          end[0] = start[0]
-          scrollIntoView()
-        },
-        'ArrowDown': () => {
-          const { start, end } = store.selected
-          start[1] = end[1] = Math.min(start[1] + 1, props.data!.length - 1)
-          end[0] = start[0]
-          scrollIntoView()
-        }
-      })
-
-      const scrollIntoView = () => {
-        const cell = store.table.querySelector(`td[x="${store.selected.start[0]}"][y="${store.selected.start[1]}"]`)
-        cell?.scrollIntoViewIfNeeded(false)
-        cell?.focus()
-      }
-      
       o = combineProps({ class: 'select-none' }, o)
       return <Table {...o} />
     },
@@ -171,5 +134,42 @@ export const CellSelectionPlugin: Plugin = {
         </Td>
       )
     },
-  }
+  },
+  keybindings: (store) => {
+    const scrollIntoView = () => {
+      const cell = store.table?.querySelector(`td[x="${store.selected.start[0]}"][y="${store.selected.start[1]}"]`)
+      ;(cell as HTMLElement | null)?.scrollIntoViewIfNeeded(false)
+      ;(cell as HTMLElement | null)?.focus()
+    }
+    return {
+      'ArrowLeft': () => {
+        const { start, end } = store.selected
+        if (!start.length) return
+        start[0] = end[0] = Math.max(start[0] - 1, 0)
+        end[1] = start[1]
+        scrollIntoView()
+      },
+      'ArrowRight': () => {
+        const { start, end } = store.selected
+        if (!start.length) return
+        start[0] = end[0] = Math.min(start[0] + 1, store.props!.columns!.length - 1)
+        end[1] = start[1]
+        scrollIntoView()
+      },
+      'ArrowUp': () => {
+        const { start, end } = store.selected
+        if (!start.length) return
+        start[1] = end[1] = Math.max(start[1] - 1, 0)
+        end[0] = start[0]
+        scrollIntoView()
+      },
+      'ArrowDown': () => {
+        const { start, end } = store.selected
+        if (!start.length) return
+        start[1] = end[1] = Math.min(start[1] + 1, store.props!.data!.length - 1)
+        end[0] = start[0]
+        scrollIntoView()
+      },
+    }
+  },
 }

@@ -1,7 +1,5 @@
-import { createEffect, useContext, type Component } from 'solid-js'
+import { createEffect } from 'solid-js'
 import { Ctx, type Plugin } from '..'
-import { combineProps } from '@solid-primitives/props'
-import { useTinykeys } from '../hooks'
 
 declare module '../index' {
   interface TableProps {
@@ -21,23 +19,16 @@ declare module '../index' {
 
 export const ClipboardPlugin: Plugin = {
   name: 'clipboard',
-  rewriteProps: {
-    Table: ({ Table }, { store }) => o => {
-      let el: HTMLElement
-
-      useTinykeys(() => el, {
-        'Control+C': () => { store.commands.copy(); el.classList.add('copied') },
-        'Control+V': () => store.commands.paste(),
-      })
-      
-      createEffect(() => {
-        JSON.stringify(store.selected)
-        el.classList.remove('copied')
-      })
-
-      o = combineProps({ ref: e => el = e, tabindex: -1 }, o)
-      return <Table {...o} />
-    }
+  keybindings: (store) => ({
+    'Control+C': () => { store.commands.copy(); store.scroll_el?.classList.add('copied') },
+    'Control+V': () => store.commands.paste(),
+  }),
+  onMount: (store) => {
+    // Remove the 'copied' CSS indicator whenever the selection changes
+    createEffect(() => {
+      JSON.stringify(store.selected)
+      store.scroll_el?.classList.remove('copied')
+    })
   },
   menus: (store) => [
     // { label: '复制', onClick: () => store.commands.copy() },
@@ -65,7 +56,7 @@ export const ClipboardPlugin: Plugin = {
         row = Object.fromEntries(cols.map((col, x) => [col.id, row[x]]))
         data[start[1] + y] = { ...data![start[1] + y], ...row }
       })
-      store.selected.end = [start[0] + cols.length - 1, Math.min(start[1] + arr2.length - 1, ctx.props.data!.length - 1)]
+      store.selected.end = [start[0] + cols.length - 1, Math.min(start[1] + arr2.length - 1, store.props.data!.length - 1)]
       store.props!.onDataChange?.(data)
     },
   })

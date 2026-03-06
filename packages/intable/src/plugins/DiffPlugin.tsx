@@ -4,7 +4,6 @@ import { createLazyMemo } from '@solid-primitives/memo'
 import { v4 as uuid } from 'uuid'
 import { diffArrays } from 'diff'
 import { isEqual, keyBy } from 'es-toolkit'
-import { useTinykeys } from '../hooks'
 import { type Plugin } from '..'
 import { log } from '../utils'
 
@@ -89,14 +88,6 @@ export const DiffPlugin: Plugin = {
         e.value
       ))
     },
-    Table: ({ Table }, { store }) => o => {
-      useTinykeys(() => store.table, {
-        'Control+S': () => store.commands.diffCommit()
-      })
-
-      o = combineProps({ tabindex: -1 }, o)
-      return <Table {...o} />
-    },
     tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
       get class() {
         const { diff } = store.props || {}
@@ -110,4 +101,7 @@ export const DiffPlugin: Plugin = {
       }
     }),
   },
+  keybindings: (store) => ({
+    'Control+S': () => store.commands.diffCommit(),
+  }),
 }

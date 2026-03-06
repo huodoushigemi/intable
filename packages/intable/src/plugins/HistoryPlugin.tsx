@@ -1,8 +1,8 @@
-import { $PROXY, batch, createMemo } from 'solid-js'
+import { createMemo } from 'solid-js'
 import { unwrap } from 'solid-js/store'
 import { captureStoreUpdates } from '@solid-primitives/deep'
 import { combineProps } from '@solid-primitives/props'
-import { useHistory, useTinykeys } from '../hooks'
+import { useHistory } from '../hooks'
 import { type Plugin } from '..'
 
 declare module '../index' {
@@ -37,16 +37,11 @@ export const HistoryPlugin: Plugin = {
       }, v => store.props!.onDataChange?.(v)])
     })
   },
+  keybindings: (store) => ({
+    'Control+Z': () => store.history.undo(),
+    'Control+Y': () => store.history.redo(),
+  }),
   rewriteProps: {
-    Table: ({ Table }, { store }) => o => {
-      useTinykeys(() => store.table, {
-        'Control+Z': () => store.history.undo(),
-        'Control+Y': () => store.history.redo(),
-      })
-
-      o = combineProps({ tabindex: -1 }, o)
-      return <Table {...o} />
-    },
     tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
       // get style() { return o.data[o.col.id] != store.unsaveData[o.y]?.[o.col.id] ? `background: #80808030` : `` }
     })
