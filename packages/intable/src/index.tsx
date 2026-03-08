@@ -454,7 +454,6 @@ export const defaultsPlugins = [
   CellSelectionPlugin,
   StickyHeaderPlugin,
   FixedColumnPlugin,
-  ResizePlugin,
   DragPlugin,
   ClipboardPlugin,
   ExpandPlugin,
@@ -463,4 +462,5 @@ export const defaultsPlugins = [
   EditablePlugin,
   FitColWidthPlugin,
   RowGroupPlugin,
+  ResizePlugin,
 ]

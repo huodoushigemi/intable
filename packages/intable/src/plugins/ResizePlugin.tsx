@@ -85,6 +85,7 @@ const RowHandle = (o: TDProps) => {
 
 export const ResizePlugin: Plugin = {
   name: 'resize',
+  priority: -Infinity,
   store: () => ({
     [COL]: [],
     [ROW]: []

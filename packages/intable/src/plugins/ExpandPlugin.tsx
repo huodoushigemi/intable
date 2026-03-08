@@ -59,7 +59,7 @@ export const ExpandPlugin: Plugin = {
 
     Td: ({ Td }, { store }) => o => {
       o = combineProps(o, { onClick: () => o.col.id == store.expandCol.id && store.commands.expand.toggle(o.data) })
-      return<Td {...o} />
+      return <Td {...o} />
     },
     
     data: ({ data }, { store }) => (

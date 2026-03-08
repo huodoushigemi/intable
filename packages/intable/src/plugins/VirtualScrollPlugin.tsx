@@ -26,10 +26,10 @@ declare module '../index' {
 export const VirtualScrollPlugin: Plugin = {
   rewriteProps: {
     virtual: ({ virtual }) => defaultsDeep(virtual, {
-      // x: { overscan: 5 },
-      // y: { overscan: 10 },
-      x: { batch: 3, overscan: 2 },
-      y: { batch: 5, overscan: 5 },
+      x: { overscan: 5 },
+      y: { overscan: 10 },
+      // x: { batch: 3, overscan: 2 },
+      // y: { batch: 5, overscan: 5 },
     }),
     Table: ({ Table }, { store }) => (o) => {
       let el: HTMLElement
