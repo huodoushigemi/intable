@@ -1,7 +1,6 @@
-import { createEffect, createMemo, useContext, mergeProps, batch } from 'solid-js'
+import { createEffect, createMemo, useContext, mergeProps } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
-import { createElementSize } from '@solid-primitives/resize-observer'
-import { createVirtualizer, defaultRangeExtractor, Virtualizer } from '@tanstack/solid-virtual'
+import { defaultRangeExtractor } from '@tanstack/solid-virtual'
 import { defaultsDeep } from 'es-toolkit/compat'
 import { useVirtualizer } from '../hooks/useVirtualizer'
 import { Ctx, type Plugin } from '..'
@@ -24,6 +23,7 @@ declare module '../index' {
 }
 
 export const VirtualScrollPlugin: Plugin = {
+  name: 'virtual-scroll',
   rewriteProps: {
     virtual: ({ virtual }) => defaultsDeep(virtual, {
       x: { overscan: 5 },
@@ -41,6 +41,22 @@ export const VirtualScrollPlugin: Plugin = {
         get count() { return props.data?.length || 0 },
         estimateSize: () => 32,
         indexAttribute: 'y',
+        extras: (yStart, yEnd) => {
+          const mergeMap = store._mergeMap?.()
+          if (!mergeMap?.spans.size) return []
+          const vx = store.virtualizerX
+          const xStart = vx ? vx.startIdx() : 0
+          const xEnd = vx ? vx.endIdx() : Infinity
+          const extras: number[] = []
+          for (const [key, span] of mergeMap.spans) {
+            if (span.rowspan <= 1) continue
+            const [ay, ax] = key.split(',').map(Number)
+            if (ay > yEnd || ay + span.rowspan - 1 < yStart) continue
+            if (ax > xEnd || ax + span.colspan - 1 < xStart) continue
+            for (let dy = 0; dy < span.rowspan; dy++) extras.push(ay + dy)
+          }
+          return extras
+        },
       }))
 
       const virtualizerX = useVirtualizer(mergeProps(() => props.virtual?.x, {
@@ -57,7 +73,22 @@ export const VirtualScrollPlugin: Plugin = {
             ])
           ]
         },
-        extras: () => props.columns?.map((e, i) => e.fixed ? i : void 0).filter(e => e != null) || []
+        extras: (xStart, xEnd) => {
+          const fixed = props.columns?.map((e, i) => e.fixed ? i : void 0).filter(e => e != null) || []
+          const headerAnchors = store._headerGroupAnchors?.(xStart, xEnd) || []
+          const base = new Set<number>([...fixed, ...headerAnchors])
+          const mergeMap = store._mergeMap?.()
+          if (!mergeMap?.spans.size) return [...base]
+          const yStart = virtualizerY.startIdx(), yEnd = virtualizerY.endIdx()
+          for (const [key, span] of mergeMap.spans) {
+            if (span.colspan <= 1) continue
+            const [ay, ax] = key.split(',').map(Number)
+            if (ay > yEnd || ay + span.rowspan - 1 < yStart) continue
+            if (ax > xEnd || ax + span.colspan - 1 < xStart) continue
+            for (let dx = 0; dx < span.colspan; dx++) base.add(ax + dx)
+          }
+          return [...base]
+        },
       }))
 
       store.virtualizerY = virtualizerY
@@ -76,7 +107,7 @@ export const VirtualScrollPlugin: Plugin = {
       o = combineProps({ ref: e => el = e, class: 'virtual' }, o)
 
       createEffect(() => {
-        const { table, tbody } = store
+        const { table } = store
         table.style.width = store.virtualizerX.getTotalSize() + 'px'
         table.style.height = store.virtualizerY.getTotalSize() + (store.thead?.offsetHeight || 0) + 'px'
       })
@@ -96,18 +127,32 @@ export const VirtualScrollPlugin: Plugin = {
       return <Tbody {...o} />
     },
     Tr: ({ Tr }, { store }) => (o) => {
-      createEffect(() => store.trSizes[o.y] && store.virtualizerY.resizeItem(o.y, store.trSizes[o.y]!.height))
+      createEffect(() => o.y != null && store.trSizes[o.y] && store.virtualizerY.resizeItem(o.y!, store.trSizes[o.y!]!.height))
       return <Tr {...o} />
     },
     Td: ({ Td }, { store }) => (o) => {
       const ml = createMemo(() => store[$ML]()[o.x])
-      const mo = combineProps({ get style() { return `width: ${o.col.width || 80}px; margin-left: ${ml()?.offset ?? 0}px` } }, o)
+      const mo = combineProps({ get style() {
+        const cs = o.colspan ?? 1
+        const w = cs > 1
+          ? Array.from({ length: cs }, (_, dx) => store.props.columns?.[o.x + dx]?.width ?? 80).reduce((a, b) => a + b, 0)
+          : (o.col.width || 80)
+        return `width: ${w}px; margin-left: ${o.col.fixed ? 0 : ml()?.offset ?? 0}px`
+      } }, o)
       return <Td {...mo} />
     },
     Th: ({ Th }, { store }) => (o) => {
-      createEffect(() => store.thSizes[o.x] && store.virtualizerX.resizeItem(o.x, store.thSizes[o.x]!.width))
+      // Only resize the virtualizer for single-column cells; colspan cells would report
+      // their combined width which shouldn't override individual column sizes.
+      createEffect(() => (o.colspan ?? 1) === 1 && store.thSizes[o.x] && store.virtualizerX.resizeItem(o.x, store.thSizes[o.x]!.width))
       const ml = createMemo(() => store[$ML]?.()[o.x])
-      const mo = combineProps(() => ({ style: `width: ${o.col.width || 80}px; margin-left: ${ml()?.offset ?? 0}px` }), o)
+      const mo = combineProps({ get style() {
+        const cs = o.colspan ?? 1
+        const w = cs > 1
+          ? Array.from({ length: cs }, (_, dx) => store.props.columns?.[o.x + dx]?.width ?? 80).reduce((a, b) => a + b, 0)
+          : (o.col.width || 80)
+        return `width: ${w}px; margin-left: ${o.col.fixed ? 0 : ml()?.offset ?? 0}px`
+      } }, o)
       return <Th {...mo} />
     },
     
@@ -122,6 +167,11 @@ export const VirtualScrollPlugin: Plugin = {
       )
     },
     EachCells: ({ EachCells }, { store }) => (o) => {
+      // Skip X virtualization when the array doesn't match the column virtualizer count
+      // (e.g. header group rows have fewer entries than leaf columns)
+      if (o.each?.length !== store.virtualizerX?.options?.count) {
+        return <EachCells {...o} />
+      }
       const list = createMemo(() => store.virtualizerX.getVirtualItems().map(e => o.each[e.index]))
       return (
         <EachCells {...o} each={list()}>

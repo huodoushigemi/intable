@@ -1,6 +1,8 @@
 import { delay, isFunction, isPlainObject, isPromise } from "es-toolkit"
 import { useMemoAsync } from "./hooks"
 
+export * as tree from './tree'
+
 export function file2base64(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
@@ -70,6 +72,8 @@ export function getStyles(el = document as ParentNode) {
 export const unFn = (fn, ...args) => typeof fn == 'function' ? fn(...args) : fn
 
 export const log = (...args) => (console.log(...args), args[0])
+
+export const toArr = v => Array.isArray(v) ? v : v != null ? [v] : []
 
 export const parseStyle = s => s ? s.split(';').reduce((o, e) => ((([k, v]) => o[k.trim()] = v.trim())(e.split(':')), o), {}) : {}
 

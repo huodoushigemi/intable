@@ -6,14 +6,14 @@ import { autoPlacement, computePosition } from '@floating-ui/dom'
 import { type Plugin, type TableStore } from '..'
 import { useMemoAsync, useTinykeys } from '../hooks'
 import { Menu } from '../components/Menu'
-import { log } from '../utils'
+import { tree } from '../utils'
 
 declare module '../index' {
   interface TableProps {
-    
+
   }
   interface TableStore {
-    
+
   }
   interface Plugin {
     menus?: (store: TableStore) => any[]
@@ -25,6 +25,7 @@ declare module '../index' {
     // 
     addRows: (i: number, rows: any[], before?: boolean) => void
     deleteRows: (i: number[]) => void
+    moveRows: (ii: number[], to: number) => void
   }
 }
 
@@ -32,7 +33,7 @@ export const MenuPlugin: Plugin = {
   name: 'menu',
   priority: Infinity,
   store: (store) => ({
-    
+
   }),
   rewriteProps: {
     Table: ({ Table }, { store }) => o => {
@@ -56,16 +57,16 @@ export const MenuPlugin: Plugin = {
         if (!mel) return
         return computePosition({ getBoundingClientRect: () => DOMRect.fromRect(pos()) }, mel, {
           strategy: 'fixed',
-          placement: 'top-start', 
+          placement: 'top-start',
           middleware: [autoPlacement({ boundary: document.body, alignment: 'start' })]
         })
-        .then(({ x, y }) => ({
-          position: 'fixed',
-          transform: `translate(${x}px, ${y}px)`,
-          top: 0,
-          left: 0,
-          'z-index': 10
-        }))
+          .then(({ x, y }) => ({
+            position: 'fixed',
+            transform: `translate(${x}px, ${y}px)`,
+            top: 0,
+            left: 0,
+            'z-index': 10
+          }))
       })
 
       o = combineProps({ tabindex: -1, onContextMenu }, o)
@@ -80,7 +81,7 @@ export const MenuPlugin: Plugin = {
   menus: (store) => [
     { label: '新增行 ↑', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])]) },
     { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])], false) },
-    { label: '删除行', cb: () => store.commands.deleteRows(range( ...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number] )) },
+    { label: '删除行', cb: () => store.commands.deleteRows(range(...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number])) },
   ],
   commands: (store) => ({
     rowEquals(a, b) {
@@ -109,9 +110,57 @@ export const MenuPlugin: Plugin = {
       // const ids = new Set(data.filter((e, i) => ii.includes(i)).map(e => e[rowKey]))
       // remove(val, e => ids.has(e[rowKey]))
       const ids = new Set(ii.map(i => data[i]))
-      log([...ids])
       remove(val, e => ids.has(e))
       store.props?.onDataChange?.(val)
+    },
+    moveRows(ii, to) {
+      const { data: flatData } = store.props!
+
+      // Collect the actual row objects, skipping internal/system rows
+      const rows = ii.map(i => flatData[i]).filter(r => r && !r?.[store.internal])
+      if (!rows.length) return
+
+      // Destination row — undefined means "append to end"
+      const destRow = to >= 0 && to < flatData.length ? flatData[to] : null
+
+      const { rowKey } = store.props
+      const childrenField = store.props.tree?.children || Symbol()
+      const movedKeys = new Set(rows.map((r: any) => r[rowKey]))
+
+      // 1. Remove moved nodes from wherever they live in the nested tree, preserving their original objects (no clone) so children are kept.
+      const removed: any[] = []
+      function removeNodes(nodes: any[]): any[] {
+        return nodes.reduce((acc: any[], node: any) => {
+          if (movedKeys.has(node[rowKey])) {
+            removed.push(node)
+            return acc
+          }
+          if (Array.isArray(node[childrenField]) && node[childrenField].length) {
+            const newChildren = removeNodes(node[childrenField])
+            node = newChildren.length !== node[childrenField].length
+              ? { ...node, [childrenField]: newChildren }
+              : node
+          }
+          acc.push(node)
+          return acc
+        }, [])
+      }
+      const rawData = removeNodes([...(store.rawProps.data || [])])
+
+      // 2. Insert removed nodes just before the destination node in the tree.
+      const list = tree.findParent(rawData, e => e[rowKey] === destRow?.[rowKey])?.children ?? rawData
+      const index = destRow ? list.findIndex(e => e[rowKey] === destRow[rowKey]) : -1
+      if (index > -1) list.splice(index, 0, removed)
+      else list.push(...removed)
+
+      // 3. Update selection to the new flat position (best-effort: use to - ii.length)
+      if (store.selected) {
+        const newIdx = Math.max(0, to - rows.length)
+        store.selected.start = [0, newIdx]
+        store.selected.end = [Infinity, newIdx + removed.length - 1]
+      }
+
+      store.props?.onDataChange?.(rawData)
     }
   })
 }
@@ -120,12 +169,12 @@ function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
   const { data } = store.props!
   const prev = i => {
     before = false
-    while (--i >= 0 && data[i]?.[store.internal]) {}
+    while (--i >= 0 && data[i]?.[store.internal]) { }
     return i >= 0 ? data[i] : null
   }
   const next = i => {
     before = true
-    while (++i < data.length && data[i]?.[store.internal]) {}
+    while (++i < data.length && data[i]?.[store.internal]) { }
     return i < data.length ? data[i] : null
   }
   const anchor = !data[i]?.[store.internal] ? data[i] : before ? prev(i) || next(i) : next(i) || prev(i)
@@ -137,7 +186,7 @@ function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
       store.selected.end = [Infinity, i + rows.length - 1 + (before ? 0 : 1)]
     })
   }
-  ;(() => {
+  ; (() => {
     const data = [...store.rawProps.data || []]
     const i = anchor ? store.commands.rowIndexOf(data, anchor) + (before ? 0 : 1) : data.length
     data.splice(i, 0, ...rows)

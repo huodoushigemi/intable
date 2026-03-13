@@ -111,20 +111,20 @@
 
 .fixed-left, .fixed-right {
   @apply sticky! z-1 bg-#fff;
-  &::after {
+  &.is-first::after, &.is-last::after {
     @apply content-[''] absolute top-0 w-[10px] h-full pointer-events-none;
   }
 }
 
 .is-scroll-right, .is-scroll-mid {
-  .fixed-left::after {
+  .fixed-left.is-last::after {
     @apply left-full;
     box-shadow: inset 10px 0 10px -10px rgba(0, 0, 0, .15);
   }
 }
 
 .is-scroll-left, .is-scroll-mid {
-  .fixed-right::after {
+  .fixed-right.is-first::after {
     @apply right-full;
     box-shadow: inset -10px 0 10px -10px rgba(0, 0, 0, .15);
   }

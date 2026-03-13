@@ -1,15 +1,16 @@
 import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY } from 'solid-js'
 import { createMutable, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
+import { createLazyMemo } from '@solid-primitives/memo'
+import { createElementSize, createResizeObserver } from '@solid-primitives/resize-observer'
+import { createScrollPosition } from '@solid-primitives/scroll'
 import { difference, mapValues, memoize, sumBy } from 'es-toolkit'
 import { toReactive, useMemo, useMemoState } from './hooks'
+import { log, unFn } from './utils'
 
 import 'virtual:uno.css'
 import './style.scss'
 
-import { log, unFn } from './utils'
-import { createElementSize, createResizeObserver } from '@solid-primitives/resize-observer'
-import { createScrollPosition } from '@solid-primitives/scroll'
 import { CellSelectionPlugin } from './plugins/CellSelectionPlugin'
 import { ClipboardPlugin } from './plugins/CopyPastePlugin'
 import { EditablePlugin } from './plugins/EditablePlugin'
@@ -22,7 +23,9 @@ import { DragPlugin } from './plugins/DragPlugin'
 import { solidComponent } from './components/utils'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
-import { createLazyMemo } from '@solid-primitives/memo'
+import { CellMergePlugin } from './plugins/CellMergePlugin'
+import { TreePlugin } from './plugins/TreePlugin'
+import { HeaderGroupPlugin } from './plugins/HeaderGroup'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -44,7 +47,7 @@ type ProcessProps = {
 }
 
 export interface Plugin {
-  name?: string
+  name: string
   priority?: number
   store?: (store: TableStore) => Partial<TableStore> | void
   rewriteProps?: ProcessProps
@@ -77,7 +80,7 @@ export interface TableProps {
   Tbody?: Component<any>
   Td?: TD
   Th?: Component<THProps>
-  Tr?: Component<{ y?: number; data?: any; children: JSX.Element }>
+  Tr?: Component<{ y?: number; data?: any; style?: any; children: JSX.Element }>
   EachRows?: Each
   EachCells?: Each<TableColumn>
   // 
@@ -97,9 +100,9 @@ export interface TableProps {
   onDataChange?: (data: any[]) => void
 }
 
-export type THProps = { x: number; col: TableColumn; children: JSX.Element }
-export type TDProps = { x: number; y: number; data: any; col: TableColumn; children: JSX.Element }
-export type TD = Component<{ x: number; y: number; data: any; col: TableColumn; children: JSX.Element }>
+export type THProps = { x: number; col: TableColumn; children: JSX.Element; rowspan?: number; colspan?: number; style?: any }
+export type TDProps = { x: number; y: number; data: any; col: TableColumn; children: JSX.Element; rowspan?: number; colspan?: number }
+export type TD = Component<TDProps>
 
 type Obj = Record<string | symbol, any>
 
@@ -291,6 +294,7 @@ function BasePlugin(): Plugin$0 {
 
         createEffect(() => {
           const { y } = o
+          if (y == null) return
           store.trs[y] = el()
           onCleanup(() => { store.trSizes[y] = store.trs[y] = void 0 })
         })
@@ -369,6 +373,8 @@ const FixedColumnPlugin: Plugin$0 = store => {
     }
     return offsets
   })
+  const last = createLazyMemo(() => store.props.columns.filter(e => e.fixed == 'left').length - 1)
+  const first = createLazyMemo(() => store.props.columns.length - store.props.columns.filter(e => e.fixed == 'right').length)
   return {
     name: 'fixed-column',
     rewriteProps: {
@@ -377,7 +383,7 @@ const FixedColumnPlugin: Plugin$0 = store => {
         ...columns?.filter(e => !e.fixed) || [],
         ...columns?.filter(e => e.fixed == 'right') || [],
       ],
-      cellClass: ({ cellClass }) => o => (unFn(cellClass, o) || '') + (o.col.fixed ? ` fixed-${o.col.fixed}` : ''),
+      cellClass: ({ cellClass }) => o => (unFn(cellClass, o) || '') + (o.col.fixed ? ` fixed-${o.col.fixed} ${o.x == last() ? 'is-last' : ''} ${o.x == first() ? 'is-first' : ''}` : ''),
       cellStyle: ({ cellStyle }) => o => (unFn(cellStyle, o) || '') + (o.col.fixed ? `; ${o.col.fixed}: ${fixedOffsets()[o.x]}px` : '')
     }
   }
@@ -388,13 +394,17 @@ const FitColWidthPlugin: Plugin$0 = store => {
   createResizeObserver(() => store.scroll_el!, (_, el, e) => size.width = e.contentBoxSize[0].inlineSize)
   const __fit_col_width__cols_temp = createMutable([] as any[])
 
+  let lock = false
   createEffect(on(() => [size.width, store.props.columns.map(e => e.width)], async () => {
     if (!size.width) return
+    if (lock) return
     __fit_col_width__cols_temp.length = 0
+    lock = true
     await Promise.resolve()
     const gap = (size.width - store.table.getBoundingClientRect().width) / store.props!.columns.filter(e => !e.width).length
     const cols = store.props!.columns.map((e, i) => (e.width ? null : { width: Math.max((store.ths[i]?.getBoundingClientRect().width || 0) + gap, 80) }))
     __fit_col_width__cols_temp.push(...cols)
+    lock = false
   }))
   return {
     name: 'fit-col-width',
@@ -453,6 +463,7 @@ export const defaultsPlugins = [
   MenuPlugin,
   CellSelectionPlugin,
   StickyHeaderPlugin,
+  HeaderGroupPlugin,
   FixedColumnPlugin,
   DragPlugin,
   ClipboardPlugin,
@@ -460,6 +471,8 @@ export const defaultsPlugins = [
   RowSelectionPlugin,
   IndexPlugin,
   EditablePlugin,
+  // CellMergePlugin,
+  // TreePlugin,
   FitColWidthPlugin,
   RowGroupPlugin,
   ResizePlugin,

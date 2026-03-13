@@ -64,7 +64,7 @@ interface VirtualizerOptions {
   horizontal?: boolean
   count: number
   estimateSize: (i: number) => number
-  extras?: () => number[]
+  extras?: (startIdx: number, endIdx: number) => number[]
   indexAttribute?: string
   rangeExtractor?: (range: any) => number[]
 }
@@ -138,7 +138,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     let arr: Item[] = []
     for (let i = startIdx(); i <= endIdx(); i++) arr.push(getItem(i))
     if (opt.extras) {
-      arr.push(...(opt.extras()?.map(i => getItem(i)) || []))
+      arr.push(...(opt.extras(startIdx(), endIdx())?.map(i => getItem(i)) || []))
       arr = uniqBy(arr, e => e.index).sort((a, b) => a.index - b.index)
     }
     return arr
@@ -146,6 +146,8 @@ export function useVirtualizer(opt: VirtualizerOptions) {
 
   return {
     options: opt,
+    startIdx,
+    endIdx,
     getTotalSize: () => (v(), tree.total()),
     resizeItem: (i: number, newSize: number) => {
       const old = sizes[i] ?? 0
