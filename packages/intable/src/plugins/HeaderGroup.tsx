@@ -176,7 +176,6 @@ export const HeaderGroupPlugin: Plugin$0 = {
       }
 
       walk(rawCols)
-      console.log(anchors)
       return anchors
     },
   }),
@@ -272,6 +271,7 @@ export const HeaderGroupPlugin: Plugin$0 = {
                           colspan={isAnchor() && cell()!.colspan > 1 ? cell()!.colspan : undefined}
                           rowspan={isAnchor() && cell()!.rowspan > 1 ? cell()!.rowspan : undefined}
                           style={style()}
+                          covered={!isAnchor()}
                         >
                           {isAnchor() ? cell()!.anchorCol.name : ''}
                         </props.Th>

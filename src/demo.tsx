@@ -35,7 +35,7 @@ const cols = createMutable([
   ...range(20).map(e => ({ name: 'col_' + (e + 5), id: 'col_' + (e + 5), width: 80, editable: true })),
 ] as any[])
 const leafColIds = range(20).map(e => 'col_' + e)
-let data = createMutable(range(100).map((e, i) => Object.fromEntries(leafColIds.map(id => [id, id + '_' + i + 1]))))
+let data = createMutable(range(500).map((e, i) => Object.fromEntries(leafColIds.map(id => [id, id + '_' + i + 1]))))
 
 // render(() => <input type='checkbox' checked={state.bool} onChange={(e) => state.bool = e.currentTarget.checked} />, root)
 // render(() => <button onClick={() => data[0].col_1 = 'xxx'}>xxx</button>, root)
@@ -56,9 +56,9 @@ let data = createMutable(range(100).map((e, i) => Object.fromEntries(leafColIds.
 
 cols.unshift({ name: 'qwe' })
 
-// cols[0].fixed = 'left'
-// cols.at(-2)!.fixed = 'right'
-// cols.at(-1)!.fixed = 'right'
+cols[0].fixed = 'left'
+cols.at(-2)!.fixed = 'right'
+cols.at(-1)!.fixed = 'right'
 
 data.forEach(e => e.g = e.col_0 % 10)
 data.forEach(e => e.n = e.col_0 % 3)
@@ -76,7 +76,7 @@ render(() => <Intable
   rowDrag
   colDrag
   size='small'
-  // index={state.bool}
+  index={state.bool}
   stickyHeader={state.bool}
   columns={cols}
   onColumnsChange={v => batch(() => (cols.length = 0, cols.push(...v)))}
@@ -89,14 +89,14 @@ render(() => <Intable
     // HistoryPlugin,
     // DiffPlugin,
   ]}
-  // expand={{ enable: true, render: ({ data }) => <div class='p-2 c-red'>{JSON.stringify(data)}</div> }}
+  expand={{ enable: true, render: ({ data }) => <div class='p-2 c-red'>{JSON.stringify(data)}</div> }}
   // rowGroup={{ fields: ['g', 'n'] }}
   // rowGroup={{ fields: ['g'] }}
   diff={{
     onCommit: (...arg) => log(arg)
   }}
   virtual={{
-    x: { enable: true, overscan: 0 },
+    // x: { enable: true, overscan: 0 },
     // y: { enable: false },
   }}
   rowSelection={{

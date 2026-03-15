@@ -82,7 +82,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
   let tree = new FenwickTree(0)
 
   // Version signal: bumped by resizeItem; triggers start/end/items recompute.
-  const [v, bumpV] = createSignal(0, { equals: false })
+  const [v, bumpV] = createSignal(undefined, { equals: false })
 
   // Grow when count increases; shrink when it decreases.
   createComputed(() => {
@@ -96,7 +96,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
       }
       // O(n) rebuild of Fenwick tree preserving measured sizes
       tree = FenwickTree.build(sizes.slice(0, count))
-      bumpV(0)
+      bumpV()
     })
   })
 
@@ -114,7 +114,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     let i = tree.findByOffset(scrollPos()) - overscan
     if (batchSize) {
       if (i > prev) i = i <= prev + batchSize ? prev : (i > prev + batchSize * 2 ? i : prev + batchSize)
-      else i -= batchSize
+        else i -= batchSize
     }
     return Math.max(i, 0)
   }, 0)

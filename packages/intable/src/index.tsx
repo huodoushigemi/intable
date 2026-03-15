@@ -314,6 +314,8 @@ function BasePlugin(): Plugin$0 {
         )
 
         createEffect(() => {
+          if (o.covered) return
+          if ((o.colspan ?? 1) != 1) return
           const { x } = o
           store.ths[x] = el()
           onCleanup(() => { store.thSizes[x] = store.ths[x] = void 0 })
