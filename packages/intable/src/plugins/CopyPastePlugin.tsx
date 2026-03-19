@@ -20,8 +20,8 @@ declare module '../index' {
 export const ClipboardPlugin: Plugin = {
   name: 'clipboard',
   keybindings: (store) => ({
-    'Control+C': () => { store.commands.copy(); store.scroll_el?.classList.add('copied') },
-    'Control+V': () => store.commands.paste(),
+    '$mod+c': () => { store.commands.copy(); store.scroll_el?.classList.add('copied') },
+    '$mod+v': () => store.commands.paste(),
   }),
   onMount: (store) => {
     // Remove the 'copied' CSS indicator whenever the selection changes

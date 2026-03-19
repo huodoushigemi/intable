@@ -38,8 +38,8 @@ export const HistoryPlugin: Plugin = {
     })
   },
   keybindings: (store) => ({
-    'Control+Z': () => store.history.undo(),
-    'Control+Y': () => store.history.redo(),
+    '$mod+Z': () => store.history.undo(),
+    '$mod+Y': () => store.history.redo(),
   }),
   rewriteProps: {
     tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {

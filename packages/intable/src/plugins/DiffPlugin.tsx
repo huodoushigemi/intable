@@ -102,6 +102,6 @@ export const DiffPlugin: Plugin = {
     }),
   },
   keybindings: (store) => ({
-    'Control+S': () => store.commands.diffCommit(),
+    '$mod+S': () => store.commands.diffCommit(),
   }),
 }
