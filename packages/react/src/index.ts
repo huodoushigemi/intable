@@ -5,11 +5,10 @@ import { type TableProps } from 'intable'
 import 'intable/wc'
 // import './style.scss'
 
-import { AntdPlugin } from './plugins/antd'
 import { onCleanup } from 'solid-js'
 
 
-const Intable: FC<TableProps> = (props) => {
+export const Intable: FC<TableProps> = (props) => {
   const ref = useRef<any>(null)
 
   useEffect(() => {
@@ -18,7 +17,6 @@ const Intable: FC<TableProps> = (props) => {
         ...props,
         renderer: component,
         plugins: [
-          AntdPlugin,
           ...(props.plugins || [])
         ],
       } as TableProps
@@ -29,9 +27,10 @@ const Intable: FC<TableProps> = (props) => {
 }
 
 
-const component = <T extends Record<string, any>>(Comp: FC<T>) => {
+export const component = <T extends Record<string, any>>(Comp: FC<T>) => {
   return (props: T) => {
-    const el = document.createDocumentFragment()
+    // const el = document.createDocumentFragment()
+    const el = document.createElement('div')
     el.remove ??= () => {}
 
     const root = createRoot(el)

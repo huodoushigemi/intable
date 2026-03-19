@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, createElement as h, type FC } from 'react'
 import { createRoot } from 'react-dom/client'
 
 export const AntdPlugin: Plugin = {
+  name: 'antd',
   store(store) {
     store.editors.text = editor(Input)
     store.editors.number = editor(InputNumber)
