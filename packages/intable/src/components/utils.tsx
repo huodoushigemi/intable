@@ -6,6 +6,7 @@ export function solidComponent<T extends (...arg) => JSX.Element>(comp: T) {
 }
 
 export function renderComponent(Comp: any, props: any, renderer: any) {
+  if (!Comp) return null
   if (!Comp.__solid) Comp = renderer(Comp)
   return <Comp {...props} />
 }

@@ -20,6 +20,8 @@ declare module '../index' {
 }
 
 export const ExpandPlugin: Plugin = {
+  name: 'expand',
+
   store: (store) => ({
     expandCol: {
       id: Symbol('expand'),
@@ -46,12 +48,11 @@ export const ExpandPlugin: Plugin = {
       : columns,
       
     Tr: ({ Tr }, { store }) => store.props.expand?.enable ? o => {
-      const { props } = useContext(Ctx)
       return (
         <Tr {...o}>{
           !o.data?.[store.expandCol.id] ? o.children :
-          <td colspan={props.columns?.length} style='width: 100%'>
-            {props.expand?.render && renderComponent(props.expand.render, o, props.renderer)}
+          <td colspan={store.props.columns?.length} style='width: 100%'>
+            {renderComponent(store.props.expand?.render, { ...o, data: o.data[store.expandCol.id] }, store.props.renderer)}
           </td>
         }</Tr>
       )
@@ -64,7 +65,7 @@ export const ExpandPlugin: Plugin = {
     
     data: ({ data }, { store }) => (
       store.commands.expand.value.length
-        ? data?.flatMap(e => store.commands.expand.has(e) ? [e, { [store.expandCol.id]: 1 }] : e)
+        ? data?.flatMap(e => store.commands.expand.has(e) ? [e, { [store.expandCol.id]: e }] : e)
         : data
     )
   }
