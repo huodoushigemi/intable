@@ -9,13 +9,14 @@ import { chooseFile, resolveOptions } from '../utils'
 
 declare module '../index' {
   interface TableProps {
-
+    validator?: (value: any, data: any, col: TableColumn) => string | boolean | Promise<string | boolean>
   }
   interface TableColumn {
     editable?: boolean
     editor?: string | Editor
     editorProps?: any
     editorPopup?: boolean // todo
+    validator?: (value: any, rowData: any, col: TableColumn) => boolean | string | Promise<boolean | string>
   }
   interface TableStore {
     editors: { [key: string]: Editor }
@@ -35,6 +36,7 @@ export interface EditorOpt {
   data: any
   value: any
   eventKey?: string
+  onChange?: (value: any) => void
   ok: () => void
   cancel: () => void
   props?: any
@@ -57,6 +59,10 @@ export const EditablePlugin: Plugin = {
 
       const preEdit = createMemo(() => selected() && editable() && !editing())
 
+      const [validationError, setValidationError] = createSignal<string | null>(null)
+      const [validating, setValidating] = createSignal(false)
+      createEffect(() => { if (!editing()) { setValidationError(null); setValidating(false) } })
+
       const editorState = createAsyncMemo(async () => {
         if (editing()) {
           let canceled = false
@@ -67,8 +73,12 @@ export const EditablePlugin: Plugin = {
             eventKey,
             data: o.data,
             value: o.data[o.col.id],
-            ok: () => setEditing(false),
-            cancel: () => (canceled = true, setEditing(false))
+            ok: async () => {
+              await validate(ret.getValue())
+              setEditing(false)
+            },
+            cancel: () => (canceled = true, setValidationError(null), setEditing(false)),
+            onChange: v => validate(v).catch(() => {}) // Validate on each change but ignore errors until final submission
           }
           const ret = editor(opt)
           onCleanup(() => {
@@ -77,11 +87,40 @@ export const EditablePlugin: Plugin = {
               arr[o.y] = { ...arr[o.y], [o.col.id]: ret.getValue() }
               props.onDataChange?.(arr)
             }
+            if (!canceled) {
+              validate(ret.getValue())
+            }
             ret.destroy()
           })
           return [opt, ret] as const
         }
       })
+
+      async function validate(value) {
+        if (props.validator || o.col.validator) {
+          try {
+            setValidating(true)
+            const result = await (async () => {
+              for (const v of [props.validator, o.col.validator]) {
+                if (!v) continue
+                const r = await v(value, o.data, o.col)
+                if (r !== true) return r
+              }
+              return true
+            })()
+            setValidating(false)
+            if (result !== true) {
+              setValidationError(typeof result === 'string' ? result : 'Error')
+            } else {
+              setValidationError(null)
+            }
+          } catch (e) {
+            setValidating(false)
+            setValidationError((e as Error).message || 'Error')
+          }
+          if (validationError() != null) throw new Error(validationError() || 'Error')
+        }
+      }
 
       createEffect(() => {
         editorState()?.[1]?.focus?.()
@@ -100,7 +139,7 @@ export const EditablePlugin: Plugin = {
       
       o = combineProps(o, {
         ref: v => el = v,
-        get class() { return editing() ? 'is-editing' : '' },
+        get class() { return [editing() ? 'is-editing' : '', validationError() !== null ? 'is-invalid' : ''].filter(Boolean).join(' ') },
         get style() { return editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '' },
         onClick: () => input?.focus?.(),
         onDblClick: () => setEditing(editable()),
@@ -126,8 +165,16 @@ export const EditablePlugin: Plugin = {
             />
           }
           {editorState()?.[1]?.el
-            ? <div class='in-cell-edit-wrapper'>{editorState()?.[1]?.el}</div>
+            ? <div class='in-cell-edit-wrapper'>
+                {editorState()?.[1]?.el}
+                {validating() && <span class='cell-validating' />}
+              </div>
             : o.children
+          }
+          {validationError() !== null &&
+            <div class='cell-validation-error'>
+              {validationError()}
+            </div>
           }
         </Td>
       )
@@ -136,15 +183,15 @@ export const EditablePlugin: Plugin = {
 }
 
 const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
-  ({ eventKey, value, col, ok, cancel, props }) => createRoot(destroy => {
+  ({ eventKey, value, col, ok, cancel, props, onChange }) => createRoot(destroy => {
     const [v, setV] = createSignal(eventKey || value)
     let el!: HTMLElement
     ;(<Comp
       ref={e => el = e}
       class='relative block px-2 size-full z-9 box-border resize-none outline-0'
       value={v()}
-      onInput={e => setV(e instanceof Event ? e.target.value : e)}
-      onChange={e => (setV(e instanceof Event ? e.target.value : e), isSelector && ok())}
+      onInput={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()))}
+      onChange={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()), isSelector && ok())}
       on:pointerdown={e => e.stopPropagation()}
       on:keydown={e => {
         e.stopPropagation()
