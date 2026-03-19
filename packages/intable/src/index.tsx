@@ -56,7 +56,7 @@ export interface Plugin {
   /**
    * Declare keyboard shortcuts for this plugin.
    * Collected and registered as a **single** keydown listener by CommandPlugin.
-   * Keys use tinykeys syntax, e.g. `'Control+Z'`, `'$mod+Shift+K'`.
+   * Keys use tinykeys syntax, e.g. `'$mod+Z'`, `'$mod+Shift+K'`.
    */
   keybindings?: (store: TableStore) => Record<string, (e?: KeyboardEvent) => void>
 }
@@ -92,8 +92,8 @@ export interface TableProps {
   plugins?: Plugin$0[]
   /**
    * Override or disable individual plugin keybindings.
-   * - Override: `{ 'Control+Z': (e) => myUndo() }`
-   * - Disable:  `{ 'Control+Z': false }`
+   * - Override: `{ '$mod+Z': (e) => myUndo() }`
+   * - Disable:  `{ '$mod+Z': false }`
    */
   keybindings?: Record<string, ((e?: KeyboardEvent) => void) | false>
 
@@ -245,7 +245,7 @@ function BasePlugin(): Plugin$0 {
         (_, el, e) => {
           const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
           const x = store.ths?.indexOf(el as HTMLElement)
-          if (x >= 0) store.thSizes[x] = { width, height }
+          if (x >= 0 && el.parentElement) store.thSizes[x] = { width, height }
         }
       )
       // 共享一个 ResizeObserver 观察所有 tr，回调按 index 分发，替代每行独立 createElementSize
@@ -254,7 +254,7 @@ function BasePlugin(): Plugin$0 {
         (_, el, e) => {
           const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
           const y = store.trs?.indexOf(el as HTMLElement)
-          if (y >= 0) store.trSizes[y] = { width, height }
+          if (y >= 0 && el.parentElement) store.trSizes[y] = { width, height }
         }
       )
       return {
@@ -473,8 +473,8 @@ export const defaultsPlugins = [
   RowSelectionPlugin,
   IndexPlugin,
   EditablePlugin,
-  // CellMergePlugin,
-  // TreePlugin,
+  CellMergePlugin,
+  TreePlugin,
   FitColWidthPlugin,
   RowGroupPlugin,
   ResizePlugin,

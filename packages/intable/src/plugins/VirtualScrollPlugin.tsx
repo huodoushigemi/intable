@@ -3,6 +3,7 @@ import { combineProps } from '@solid-primitives/props'
 import { defaultRangeExtractor } from '@tanstack/solid-virtual'
 import { defaultsDeep } from 'es-toolkit/compat'
 import { useVirtualizer } from '../hooks/useVirtualizer'
+import { RecycleList } from '../components/RecycleList'
 import { Ctx, type Plugin } from '..'
 
 const $ML = Symbol()
@@ -157,6 +158,8 @@ export const VirtualScrollPlugin: Plugin = {
     },
     
     EachRows: ({ EachRows }, { store }) => (o) => {
+      // use recycle-list
+      EachRows = RecycleList
       const list = createMemo(() => store.virtualizerY.getVirtualItems().map(e => o.each[e.index]))
       return (
         <EachRows {...o} each={list()}>
@@ -167,6 +170,8 @@ export const VirtualScrollPlugin: Plugin = {
       )
     },
     EachCells: ({ EachCells }, { store }) => (o) => {
+      // use recycle-list
+      EachCells = RecycleList
       // Skip X virtualization when the array doesn't match the column virtualizer count
       // (e.g. header group rows have fewer entries than leaf columns)
       if (o.each?.length !== store.virtualizerX?.options?.count) {
