@@ -1,0 +1,37 @@
+/* intable official website — supplemental styles
+ * These override the component's default light-theme CSS variables
+ * so the live demo section matches the OLED dark aesthetic.
+ */
+
+/* ── Live demo: dark-theme table overrides ─────────────────────────────────── */
+.wt-live-demo {
+  /* Override the .data-table's own CSS variable declarations */
+  .data-table {
+    --bg: #0a0a12;
+    --c-primary: #6366f1;
+    --menu-bg: #1e1e2e;
+    --li-hover-bg: rgba(255, 255, 255, .06);
+    --table-b-c: rgba(255, 255, 255, .07);
+    --table-c: #cbd5e1;
+    --table-bg: #0a0a12;
+    --table-header-c: #64748b;
+    --table-header-bg: #0f0f1a;
+    --table-row-hover-bg: rgba(255, 255, 255, .04);
+    --select-area-bg: rgba(99, 102, 241, .15);
+    color-scheme: dark;
+
+    background: #0a0a12;
+
+    th, td {
+      border-color: rgba(255, 255, 255, .07);
+    }
+
+    thead th {
+      background: #0f0f1a;
+    }
+
+    tr:hover > td {
+      background: rgba(255, 255, 255, .04);
+    }
+  }
+}

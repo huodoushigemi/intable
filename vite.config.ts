@@ -17,6 +17,13 @@ export default defineConfig({
     { load: (id) => id.includes('undestructure-macros') ? '' : null },
 
     solid(),
+
+    (await import('vite-plugin-pages')).default({
+      resolver: 'solid',
+      dirs: 'src/pages',
+      extendRoute: (route: any) => route,
+      generate: { dts: 'src/types/pages.d.ts' },
+    }),
     
     (await import('unocss/vite')).default({
       presets: [
