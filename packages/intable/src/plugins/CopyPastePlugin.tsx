@@ -1,5 +1,5 @@
 import { createEffect } from 'solid-js'
-import { Ctx, type Plugin } from '..'
+import { type Plugin } from '..'
 
 declare module '../index' {
   interface TableProps {
@@ -37,26 +37,62 @@ export const ClipboardPlugin: Plugin = {
   commands: store => ({
     copy: () => {
       const { start, end } = store.selected
-      if (start.length == 0) return
+      if (!start?.length) return
       const [x1, x2] = [start[0], end[0]].sort((a, b) => a - b)
       const [y1, y2] = [start[1], end[1]].sort((a, b) => a - b)
-      const cols = store.props!.columns!.slice(x1, x2 + 1)
-      const data = store.props!.data!.slice(y1, y2 + 1).map(row => cols.map(col => row[col.id]))
-      const text = data.map(row => row.join('\t')).join('\n')
+      // Skip internal columns (index, row-selection, etc.)
+      const cols = store.props!.columns!.slice(x1, x2 + 1).filter(col => !col[store.internal])
+      const rows = store.props!.data!.slice(y1, y2 + 1)
+      const text = rows.map(row =>
+        cols.map(col => {
+          const val = row[col.id as string] ?? ''
+          // Escape in-cell tabs/newlines so TSV structure is preserved
+          return String(val).replace(/[\t\r\n]/g, ' ')
+        }).join('\t')
+      ).join('\n')
       navigator.clipboard.writeText(text)
     },
     paste: async () => {
       const { start, end } = store.selected
-      if (start.length == 0) return
+      if (!start?.length) return
       const text = await navigator.clipboard.readText()
-      const arr2 = text.split('\n').map(row => row.split('\t'))
-      const cols = store.props!.columns!.slice(start[0], start[0] + arr2[0].length)
+      // Normalise CRLF (Excel) and CR (old Mac) line endings; trim trailing newline
+      const arr2 = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n$/, '').split('\n').map(r => r.split('\t'))
+      const clipH = arr2.length
+      const clipW = arr2[0].length
+
+      const [x1, x2] = [start[0], end[0]].sort((a, b) => a - b)
+      const [y1, y2] = [start[1], end[1]].sort((a, b) => a - b)
+      const selH = y2 - y1 + 1
+      const selW = x2 - x1 + 1
+      // Tile clipboard to fill the selection when it is an exact multiple
+      const pasteH = selH > clipH && selH % clipH === 0 ? selH : clipH
+      const pasteW = selW > clipW && selW % clipW === 0 ? selW : clipW
+
+      // Collect target user columns starting from x1 (skip internals), up to pasteW
+      const allCols = store.props!.columns!
+      const targetCols: typeof allCols = []
+      for (let i = x1; i < allCols.length && targetCols.length < pasteW; i++) {
+        if (!allCols[i][store.internal]) targetCols.push(allCols[i])
+      }
+
       const data = store.props!.data!.slice()
-      arr2.forEach((row, y) => {
-        row = Object.fromEntries(cols.map((col, x) => [col.id, row[x]]))
-        data[start[1] + y] = { ...data![start[1] + y], ...row }
-      })
-      store.selected.end = [start[0] + cols.length - 1, Math.min(start[1] + arr2.length - 1, store.props.data!.length - 1)]
+      const maxY = Math.min(y1 + pasteH - 1, data.length - 1)
+      for (let dy = 0; dy <= maxY - y1; dy++) {
+        const patch: Record<string, any> = {}
+        targetCols.forEach((col, dx) => {
+          patch[col.id as string] = arr2[dy % clipH][dx % clipW]
+        })
+        data[y1 + dy] = { ...data[y1 + dy], ...patch }
+      }
+
+      // Expand selection to cover the pasted region
+      let endX = x1
+      let userCount = 0
+      for (let i = x1; i < allCols.length && userCount < targetCols.length; i++) {
+        if (!allCols[i][store.internal]) { endX = i; userCount++ }
+      }
+      store.selected.end = [endX, maxY]
       store.props!.onDataChange?.(data)
     },
   })

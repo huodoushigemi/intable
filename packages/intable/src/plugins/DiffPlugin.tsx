@@ -10,9 +10,15 @@ import { log } from '../utils'
 declare module '../index' {
   interface TableProps {
     diff?: {
-      /** @default true */ added?: boolean
-      /** @default true */ removed?: boolean
-      /** @default true */ changed?: boolean
+      /** @default false */
+      enable?: boolean
+      data?: any[]
+      /** @default true */
+      added?: boolean
+      /** @default true */
+      removed?: boolean
+      /** @default true */
+      changed?: boolean
       onCommit?: (data: any, opt: { added: any[], removed: any[], changed: any[] }) => any
     }
   }
@@ -35,7 +41,8 @@ export const DiffPlugin: Plugin = {
     data.forEach(row => unwrap(row)[store.rawProps.rowKey] ??= uuid())
     return {
       diffData: structuredClone(unwrap(data || [])),
-      diffDataKeyed: createLazyMemo(() => keyBy(store.diffData, e => e[store.props!.rowKey]))
+      diffData2: () => store.props.diff?.data ?? store.diffData,
+      diffDataKeyed: createLazyMemo(() => keyBy(store.diffData2(), e => e[store.props!.rowKey]))
     }
   },
   commands: store => ({
@@ -50,7 +57,7 @@ export const DiffPlugin: Plugin = {
         if (!old) added.push(e)
         else if (!isEqual(e, old)) changed.push(e)
       }
-      for (const e of store.diffData) {
+      for (const e of store.diffData2()) {
         !keyed[e[rowKey]] && removed.push(e)
       }
       await store.props!.diff?.onCommit?.(data, { added, removed, changed })
@@ -60,14 +67,17 @@ export const DiffPlugin: Plugin = {
   }),
   rewriteProps: {
     diff: ({ diff }) => ({
+      enable: false,
       added: true,
       removed: true,
       changed: true,
       ...diff
     }),
     data: ({ data }, { store }) => {
+      if (!store.props.diff?.enable) return data
+      
       const { rowKey, diff } = store.props || {}
-      const diffData = store.diffData || []
+      const diffData = store.diffData2() || []
 
       // Fast path: same number of rows, same keys in same order (edit-only, no add/delete/move).
       // Skips the O(n²) diffArrays call which is the common case when only cell values changae.
@@ -88,18 +98,21 @@ export const DiffPlugin: Plugin = {
         e.value
       ))
     },
-    tdProps: ({ tdProps }, { store }) => o => combineProps(tdProps?.(o) || {}, {
-      get class() {
-        const { diff } = store.props || {}
-        const id = unwrap(o.data)[store.props!.rowKey]
-        return [
-          o.data[NEW] ? diff?.added ? 'bg-#dafaea!' : '' :
-          o.data[DEL] ? 'bg-#ffe8e8!' :
-          o.data[store.internal] ? '' :
-          diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id][o.col.id] ? 'bg-#dafaea!' : ''
-        ].join(' ')
-      }
-    }),
+    Td: ({ Td }, { store }) => !store.props.diff?.enable ? Td : o => {
+      o = combineProps(o, {
+        get class() {
+          const { diff } = store.props
+          const id = o.data[store.props!.rowKey]
+          return [
+            o.data[NEW] ? 'bg-#dafaea!' :
+            o.data[DEL] ? 'bg-#ffe8e8!' :
+            o.data[store.internal] ? '' :
+            diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id]?.[o.col.id] ? 'bg-#dafaea!' : ''
+          ].join(' ')
+        }
+      })
+      return <Td {...o} />
+    },
   },
   keybindings: (store) => ({
     '$mod+S': () => store.commands.diffCommit(),
