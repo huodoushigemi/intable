@@ -1,0 +1,73 @@
+/**
+ * intable — Material Design 3 Theme
+ * Google Material You / M3 surface tones and typography
+ * Best for: Android-style web apps, admin panels, data management UIs
+ */
+
+.data-table {
+  --bg: #fffbfe;
+  --c-primary: #6750a4;
+
+  --menu-bg: #ece6f0;
+  --li-hover-bg: rgba(103, 80, 164, 0.08);
+
+  --table-b: 1px solid var(--table-b-c);
+  --table-b-c: #cac4d0;
+  --table-c: #1c1b1f;
+  --table-bg: #fffbfe;
+
+  --table-header-c: #49454f;
+  --table-header-bg: #fffbfe;
+
+  --table-row-hover-bg: rgba(103, 80, 164, 0.08);
+
+  --select-area-bg: rgba(103, 80, 164, 0.12);
+
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+
+  th, td {
+    padding: 10px 16px;
+    line-height: 20px;
+  }
+
+  thead th {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  tr:not(:last-child) td {
+    border-bottom: 1px solid var(--table-b-c);
+  }
+
+  &--small {
+    font-size: 12px;
+
+    th, td {
+      padding: 6px 12px;
+    }
+  }
+
+  // Dark variant (M3 dark)
+  &.dark, [data-theme="dark"] & {
+    --bg: #1c1b1f;
+    --c-primary: #d0bcff;
+
+    --menu-bg: #2b2930;
+    --li-hover-bg: rgba(208, 188, 255, 0.08);
+
+    --table-b-c: #49454f;
+    --table-c: #e6e1e5;
+    --table-bg: #1c1b1f;
+
+    --table-header-c: #cac4d0;
+    --table-header-bg: #1c1b1f;
+
+    --table-row-hover-bg: rgba(208, 188, 255, 0.08);
+
+    --select-area-bg: rgba(208, 188, 255, 0.12);
+
+    color-scheme: dark;
+  }
+}

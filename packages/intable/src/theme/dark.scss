@@ -1,0 +1,46 @@
+/**
+ * intable — Dark (OLED) Theme
+ * Deep black background, high contrast, WCAG AAA compliant
+ * Best for: developer tools, night mode, coding platforms
+ */
+
+.data-table {
+  --bg: #0d1117;
+  --c-primary: #388bfd;
+
+  --menu-bg: #161b22;
+  --li-hover-bg: rgba(177, 186, 196, 0.12);
+
+  --table-b: 1px solid var(--table-b-c);
+  --table-b-c: #30363d;
+  --table-c: #e6edf3;
+  --table-bg: #0d1117;
+
+  --table-header-c: #8b949e;
+  --table-header-bg: #161b22;
+
+  --table-row-hover-bg: #161b22;
+
+  --select-area-bg: #388bfd1f;
+
+  color-scheme: dark;
+  font-size: 13px;
+
+  th, td {
+    padding: 8px 12px;
+    line-height: 20px;
+  }
+
+  &--small {
+    font-size: 12px;
+
+    th, td {
+      padding: 4px 8px;
+    }
+  }
+
+  thead th {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+}

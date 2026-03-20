@@ -1,0 +1,80 @@
+/**
+ * intable — GitHub Theme
+ * Matches GitHub's Primer design system — light & dark surfaces
+ * Best for: developer tools, docs sites, code-adjacent UIs
+ */
+
+.data-table {
+  --bg: #ffffff;
+  --c-primary: #0969da;
+
+  --menu-bg: #ffffff;
+  --li-hover-bg: #f3f4f6;
+
+  --table-b: 1px solid var(--table-b-c);
+  --table-b-c: #d0d7de;
+  --table-c: #1f2328;
+  --table-bg: #ffffff;
+
+  --table-header-c: #636c76;
+  --table-header-bg: #f6f8fa;
+
+  --table-row-hover-bg: #f6f8fa;
+
+  --select-area-bg: #0969da1a;
+
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+
+  th, td {
+    padding: 8px 12px;
+    line-height: 1.5;
+  }
+
+  thead th {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr:nth-child(even) td {
+    background-color: #f6f8fa;
+  }
+
+  tbody tr:nth-child(even):hover td {
+    background-color: var(--table-row-hover-bg);
+  }
+
+  &--small {
+    font-size: 12px;
+
+    th, td {
+      padding: 4px 8px;
+    }
+  }
+
+  // Dark (GitHub Dark Default)
+  &.dark, [data-theme="dark"] & {
+    --bg: #0d1117;
+    --c-primary: #388bfd;
+
+    --menu-bg: #161b22;
+    --li-hover-bg: rgba(177, 186, 196, 0.12);
+
+    --table-b-c: #30363d;
+    --table-c: #e6edf3;
+    --table-bg: #0d1117;
+
+    --table-header-c: #8b949e;
+    --table-header-bg: #161b22;
+
+    --table-row-hover-bg: #161b22;
+
+    --select-area-bg: #388bfd1f;
+
+    color-scheme: dark;
+
+    tbody tr:nth-child(even) td {
+      background-color: #161b22;
+    }
+  }
+}

@@ -1,0 +1,66 @@
+/**
+ * intable — Shadcn/Zinc Theme
+ * Neutral zinc/slate tones, clean minimal, matches shadcn/ui palette
+ * Best for: modern SaaS dashboards, admin panels, clean productivity tools
+ */
+
+.data-table {
+  --bg: #ffffff;
+  --c-primary: #18181b;
+
+  --menu-bg: #ffffff;
+  --li-hover-bg: #f4f4f5;
+
+  --table-b: 1px solid var(--table-b-c);
+  --table-b-c: #e4e4e7;
+  --table-c: #09090b;
+  --table-bg: #ffffff;
+
+  --table-header-c: #71717a;
+  --table-header-bg: #ffffff;
+
+  --table-row-hover-bg: #fafafa;
+
+  --select-area-bg: #18181b14;
+
+  font-size: 14px;
+
+  th, td {
+    padding: 10px 12px;
+    line-height: 20px;
+  }
+
+  thead th {
+    font-weight: 500;
+  }
+
+  &--small {
+    font-size: 13px;
+
+    th, td {
+      padding: 6px 10px;
+    }
+  }
+
+  // Dark mode variant
+  &.dark, [data-theme="dark"] & {
+    --bg: #09090b;
+    --c-primary: #fafafa;
+
+    --menu-bg: #09090b;
+    --li-hover-bg: #27272a;
+
+    --table-b-c: #27272a;
+    --table-c: #fafafa;
+    --table-bg: #09090b;
+
+    --table-header-c: #71717a;
+    --table-header-bg: #09090b;
+
+    --table-row-hover-bg: #18181b;
+
+    --select-area-bg: #ffffff14;
+
+    color-scheme: dark;
+  }
+}
