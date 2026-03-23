@@ -2,10 +2,10 @@ import { createContext, createMemo, createSignal, For, useContext, createEffect,
 import { createMutable, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
-import { createElementSize, createResizeObserver } from '@solid-primitives/resize-observer'
+import { createElementSize, createResizeObserver, makeResizeObserver } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { difference, mapValues, memoize, sumBy } from 'es-toolkit'
-import { toReactive, useMemo, useMemoState } from './hooks'
+import { toReactive, useMemo } from './hooks'
 import { log, unFn } from './utils'
 
 import 'virtual:uno.css'
@@ -240,24 +240,26 @@ function BasePlugin(): Plugin$0 {
     priority: Infinity,
     store: (store) => {
       // 共享一个 ResizeObserver 观察所有 th，回调按 index 分发，替代每列独立 createElementSize
-      createResizeObserver(
-        () => store.ths?.filter(Boolean) as Element[] || [],
-        (_, el, e) => {
+      const thObs = makeResizeObserver((es) => {
+        for (const e of es) {
+          const el = e.target
           const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
-          const x = store.ths?.indexOf(el as HTMLElement)
-          if (x >= 0 && el.parentElement) store.thSizes[x] = { width, height }
+          const h = store.ths.indexOf(el)
+          if (h >= 0 && el.parentElement) store.thSizes[h] = { width, height }
         }
-      )
+      })
       // 共享一个 ResizeObserver 观察所有 tr，回调按 index 分发，替代每行独立 createElementSize
-      createResizeObserver(
-        () => store.trs?.filter(Boolean) as Element[] || [],
-        (_, el, e) => {
+      const trObs = makeResizeObserver((es) => {
+        for (const e of es) {
+          const el = e.target
           const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
-          const y = store.trs?.indexOf(el as HTMLElement)
+          const y = store.trs.indexOf(el)
           if (y >= 0 && el.parentElement) store.trSizes[y] = { width, height }
         }
-      )
+      })
       return {
+        thObs,
+        trObs,
         ths: [],
         thSizes: [],
         trs: [],
@@ -296,7 +298,11 @@ function BasePlugin(): Plugin$0 {
           const { y } = o
           if (y == null) return
           store.trs[y] = el()
-          onCleanup(() => { store.trSizes[y] = store.trs[y] = void 0 })
+          store.trObs.observe(el())
+          onCleanup(() => {
+            store.trSizes[y] = store.trs[y] = void 0
+            store.trObs.unobserve(el())
+          })
         })
 
         return <Tr {...o} />
@@ -318,7 +324,11 @@ function BasePlugin(): Plugin$0 {
           if ((o.colspan ?? 1) != 1) return
           const { x } = o
           store.ths[x] = el()
-          onCleanup(() => { store.thSizes[x] = store.ths[x] = void 0 })
+          store.thObs.observe(el())
+          onCleanup(() => {
+            store.thSizes[x] = store.ths[x] = void 0
+            store.thObs.unobserve(el())
+          })
         })
         
         return <Th {...mProps}>{o.children}</Th>
