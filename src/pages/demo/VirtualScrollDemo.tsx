@@ -3,7 +3,7 @@ import { VirtualScrollPlugin } from '../../../packages/intable/src/plugins/Virtu
 import { makeCols, makeData, replaceArray } from './helpers'
 
 const cols = makeCols(50, { width: 80 })
-const data = makeData(10000, 50)
+const data = makeData(1000, 50)
 
 export const VirtualScrollDemo = () => (
   <Intable

@@ -1,11 +1,11 @@
-import { Router } from '@solidjs/router'
 import { render, Suspense } from 'solid-js/web'
+import { HashRouter } from '@solidjs/router'
 import routes from '~solid-pages'
 
 render(
   () => {
     return (
-      <Router
+      <HashRouter
         root={props => (
           <Suspense>
             {props.children}
@@ -13,7 +13,7 @@ render(
         )}
       >
         {routes}
-      </Router>
+      </HashRouter>
     )
   },
   document.getElementById('root') as HTMLElement,

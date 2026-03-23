@@ -2,7 +2,8 @@
  * Plugin test demo index — renders a list of demo sections,
  * one per plugin, to visually verify each feature.
  */
-import { createSignal, createEffect, onCleanup, For, Show } from 'solid-js'
+import { createSignal, createEffect, onCleanup, For, Show, mergeProps } from 'solid-js'
+import { useSearchParams } from '@solidjs/router'
 
 import { BasicDemo } from './BasicDemo'
 import { VirtualScrollDemo } from './VirtualScrollDemo'
@@ -125,11 +126,11 @@ const demos = [
 ]
 
 export const DemoApp = () => {
-  const [active, setActive] = createSignal(demos[0].name)
-  const [theme, setTheme] = createSignal(THEMES[0].name)
+  const [_qs, setQs] = useSearchParams<any>()
+  const qs = mergeProps({ active: demos[0].name, theme: THEMES[0].name }, () => _qs)
 
   createEffect(() => {
-    const t = THEMES.find(t => t.name === theme())
+    const t = THEMES.find(t => t.name === qs.theme)
     applyTheme(t?.css ?? '')
   })
 
@@ -144,14 +145,14 @@ export const DemoApp = () => {
         {/* Theme switcher — custom dropdown for proper color rendering */}
         <div class='px-2 pb-2 b-b-(1 solid #e5e7eb) mb-1 relative'>
           <label class='text-xs c-gray font-medium tracking-wide uppercase block mb-1'>Theme</label>
-          <ThemeSelect themes={THEMES} value={theme()} onChange={setTheme} />
+          <ThemeSelect themes={THEMES} value={qs.theme} onChange={t => setQs({ theme: t })} />
         </div>
 
         {/* Demo list */}
         <For each={demos}>{d => (
           <button
-            class={`block w-full text-left px-3 py-1.5 rd-1 text-sm truncate cursor-pointer ${active() === d.name ? 'bg-blue-500 c-white' : 'hover:bg-gray/10'}`}
-            onClick={() => setActive(d.name)}
+            class={`block w-full text-left px-3 py-1.5 rd-1 text-sm truncate cursor-pointer ${qs.active === d.name ? 'bg-blue-500 c-white' : 'hover:bg-gray/10'}`}
+            onClick={() => setQs({ active: d.name })}
           >
             {d.name}
           </button>
@@ -161,10 +162,10 @@ export const DemoApp = () => {
       {/* main */}
       <main class='flex-1 w-0 p-4 of-auto'>
         <For each={demos}>{d => (
-          <Show when={active() === d.name}>
+          <Show when={qs.active === d.name}>
             <div class='flex items-baseline gap-3 mb-1'>
               <h2 class='font-bold text-xl'>{d.name}</h2>
-              <span class='text-xs c-gray font-mono'>Theme: {theme()}</span>
+              <span class='text-xs c-gray font-mono'>Theme: {qs.theme}</span>
             </div>
             <p class='c-gray text-sm mb-3'>{d.desc}</p>
             <d.comp />

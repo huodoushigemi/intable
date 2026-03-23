@@ -330,8 +330,6 @@ function BasePlugin(): Plugin$0 {
           { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
           { get class() { return o.col.class }, get style() { return o.col.style } },
           { get style() { return o.col.width ? `width: ${o.col.width}px` : '' } },
-          // todo
-          () => store.props.tdProps?.(o) || {}
         )
         return <Td {...mProps}>{o.children}</Td>
       },
