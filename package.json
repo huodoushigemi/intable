@@ -1,6 +1,6 @@
 {
-  "name": "intable",
-  "version": "0.0.7",
+  "name": "intable-project",
+  "version": "0.0.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
