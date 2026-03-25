@@ -16,6 +16,8 @@ export default defineConfig({
     (await import('babel-plugin-solid-undestructure')).undestructurePlugin('vanilla-js'),
     { load: (id) => id.includes('undestructure-macros') ? '' : null },
 
+    (await import('unplugin-preprocessor-directives/vite')).default(),
+
     solid(),
 
     (await import('vite-plugin-pages')).default({

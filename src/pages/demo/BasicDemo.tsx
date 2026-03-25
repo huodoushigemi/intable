@@ -1,8 +1,15 @@
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
 import { makeCols, makeData, replaceArray } from './helpers'
+import { DiffPlugin } from '../../../packages/intable/src/plugins/DiffPlugin'
 
 const cols = makeCols(6)
 const data = makeData(20, 6)
+
+const [xx, setXx] = createSignal([])
+setTimeout(() => {
+  setXx([])
+}, 2000);
 
 export const BasicDemo = () => (
   <Intable
@@ -15,5 +22,10 @@ export const BasicDemo = () => (
     border
     stickyHeader
     size='small'
+    plugins={xx()}
+    diff={{
+      enable: true,
+      data: []
+    }}
   />
 )

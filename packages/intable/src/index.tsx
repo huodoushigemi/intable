@@ -140,7 +140,7 @@ export const Intable = (props: TableProps) => {
 
   const store = createMutable({
     get rawProps() { return props },
-    get plugins() { return plugins() }
+    // get plugins() { return plugins() }
   } as TableStore)
 
   const unplugin = memoize((e: Plugin$0) => runWithOwner(owner, () => unFn(e, store)) as Plugin)
@@ -148,28 +148,43 @@ export const Intable = (props: TableProps) => {
   const plugins = createMemo(() => [
     ...defaultsPlugins,
     ...props.plugins || [],
-    RenderPlugin
+    // RenderPlugin
   ].map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0)))
   
+  // init rewriteProps
+  const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>())
+  store.props = toReactive((() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
+  // store.props = useMemoState(createMemo(() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
+
+  const rewriteProps = mapArray(plugins, (e, i) => {
+    const prev = createMemo(() => pluginsProps()[i() - 1]?.[0]() || props)
+    // const ret = mergeProps(prev, toReactive(mapValues(e.rewriteProps || {}, v => useMemo(() => v(prev(), { store })) )))
+    const ret = mergeProps(prev, toReactive(mapValues(e.rewriteProps || {}, (v, k) => useMemo(() => {
+      console.log(k)
+      return v(prev(), { store })
+    }) )))
+    pluginsProps()[i()][1](ret)
+  })
+  
+  createEffect(() => log(store.props.Table))
+
   // init store
   createComputed((old: Plugin[]) => {
     const added = difference(plugins(), old)
     runWithOwner(owner, () => {
       added.forEach(e => Object.assign(store, e.store?.(store)))
+      rewriteProps()
     })
     return plugins()
   }, [])
-  
-  // init processProps
-  const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>())
-  store.props = toReactive(createMemo(() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
-  // store.props = useMemoState(createMemo(() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
 
-  createComputed(mapArray(plugins, (e, i) => {
-    const prev = createMemo(() => pluginsProps()[i() - 1]?.[0]() || props)
-    const ret = mergeProps(prev, toReactive(mapValues(e.rewriteProps || {}, v => useMemo(() => v(prev(), { store })) )))
-    pluginsProps()[i()][1](ret)
-  }))
+  
+  // createMemo(prev => {
+  //   const attrs = { ...store.props }
+  //   if (Object.keys(prev).length == 0) return attrs
+  //   for (const k in attrs) attrs[k] != prev[k] && console.log(k)
+  //   return attrs
+  // }, {})
 
   // on mount
   onMount(() => {
@@ -273,6 +288,7 @@ function BasePlugin(): Plugin$0 {
       columns: ({ columns = [] }) => columns,
       newRow: ({ newRow = () => ({}) }) => newRow,
       Table: ({ Table = table }, { store }) => o => {
+        console.log('taltaltal')
         const [el, setEl] = createSignal<HTMLElement>()
         const { props } = useContext(Ctx)
         o = combineProps({
@@ -467,23 +483,23 @@ export const ScrollPlugin: Plugin = {
 }
 
 export const defaultsPlugins = [
-  ScrollPlugin,
+  // ScrollPlugin,
   BasePlugin,
-  CommandPlugin,
-  MenuPlugin,
-  CellSelectionPlugin,
-  StickyHeaderPlugin,
-  HeaderGroupPlugin,
-  FixedColumnPlugin,
-  DragPlugin,
-  ClipboardPlugin,
-  ExpandPlugin,
-  RowSelectionPlugin,
-  IndexPlugin,
-  EditablePlugin,
-  CellMergePlugin,
-  TreePlugin,
-  FitColWidthPlugin,
-  RowGroupPlugin,
-  ResizePlugin,
+  // CommandPlugin,
+  // MenuPlugin,
+  // CellSelectionPlugin,
+  // StickyHeaderPlugin,
+  // HeaderGroupPlugin,
+  // FixedColumnPlugin,
+  // DragPlugin,
+  // ClipboardPlugin,
+  // ExpandPlugin,
+  // RowSelectionPlugin,
+  // IndexPlugin,
+  // EditablePlugin,
+  // CellMergePlugin,
+  // TreePlugin,
+  // FitColWidthPlugin,
+  // RowGroupPlugin,
+  // ResizePlugin,
 ]
