@@ -25,6 +25,7 @@ declare module '../index' {
 const pathKey = (path: any[]): string => path.join('\0')
 
 export const RowGroupPlugin: Plugin = {
+  name: 'row-group',
   priority: -Infinity,
   store: (store) => ({
     rowGroup: {

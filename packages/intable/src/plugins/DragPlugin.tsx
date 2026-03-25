@@ -20,6 +20,7 @@ declare module '../index' {
 }
 
 export const DragPlugin: Plugin = {
+  name: 'drag',
   rewriteProps: {
     colDrag: ({ colDrag = false }) => colDrag,
     rowDrag: ({ rowDrag = false }) => rowDrag,

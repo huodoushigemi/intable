@@ -35,6 +35,7 @@ const DEL = Symbol('del')
 const NEW = Symbol('new')
 
 export const DiffPlugin: Plugin = {
+  name: 'diff',
   priority: Infinity,
   store: store => {
     const data = store.rawProps.data || []

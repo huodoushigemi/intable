@@ -1,5 +1,5 @@
 import { For, Show, useContext, createMemo, createSignal, createEffect } from 'solid-js'
-import { Ctx, type Plugin$0, type TableColumn } from '..'
+import { Ctx, type Plugin$0, type TableColumn, type TableStore } from '..'
 
 declare module '../index' {
   interface TableColumn {
@@ -66,7 +66,7 @@ function buildFlatGrid(
   allCols: TableColumn[],
   rawToIdx: Map<TableColumn, number>,
   rawLeaves: TableColumn[],
-  store: any,
+  store: TableStore,
 ): (GridCell | null)[][] {
 
   const width = allCols.length

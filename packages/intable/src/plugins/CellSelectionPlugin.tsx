@@ -1,4 +1,4 @@
-import { batch, createMemo } from 'solid-js'
+import { batch, createMemo, onCleanup } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { type Plugin } from '..'
 import { usePointerDrag } from '../hooks'
@@ -19,8 +19,14 @@ const inrange = (v, min, max) => v <= max && v >= min
 
 export const CellSelectionPlugin: Plugin = {
   name: 'cell-selection',
-  store: () => ({
-    selected: { start: [], end: [] }
+  store: (store) => ({
+    selected: { start: [], end: [] },
+    cellSelectionRect: () => {
+      const { start, end } = store.selected
+      const xs = [start[0], end[0]].sort((a, b) => a - b)
+      const ys = [start[1], end[1]].sort((a, b) => a - b)
+      return { xs, ys }
+    }
   }),
   commands: store => ({
     getAreaRows() {
@@ -31,12 +37,6 @@ export const CellSelectionPlugin: Plugin = {
   }),
   rewriteProps: {
     Table: ({ Table }, { store }) => (o) => {
-      store.cellSelectionRect ??= createMemo(() => {
-        const { start, end } = store.selected
-        const xs = [start[0], end[0]].sort((a, b) => a - b)
-        const ys = [start[1], end[1]].sort((a, b) => a - b)
-        return { xs, ys }
-      })
       
       usePointerDrag(() => store.table, {
         preventDefault: false,
@@ -122,7 +122,7 @@ export const CellSelectionPlugin: Plugin = {
           if (o.y == ys[1]) clazz += 'range-selected-b '
         }
         // if (o.x == 0 && iny) clazz += 'row-range-highlight '
-        if (o.col.id == store.$index.id && iny) clazz += 'row-range-highlight '
+        if (o.col.id == store.$index?.id && iny) clazz += 'row-range-highlight '
         return clazz
       })
 
