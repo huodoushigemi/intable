@@ -8,7 +8,7 @@ const data = makeData(20, 6)
  * Drag column header borders to resize columns.
  * Row resize is also enabled — drag row bottom borders.
  */
-export const ResizeDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

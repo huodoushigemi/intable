@@ -25,7 +25,7 @@ const data = createMutable(
  * The "Group" column auto-merges consecutive rows with equal values (mergeRow: true).
  * CellMergePlugin is added manually since it's not a default plugin.
  */
-export const CellMergeDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

@@ -37,3 +37,5 @@ export function replaceArray<T>(arr: T[], next: T[]) {
     arr.push(...next)
   })
 }
+
+export default () => {}

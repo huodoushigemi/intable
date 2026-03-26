@@ -7,7 +7,7 @@ const data = makeData(20, 6)
 /**
  * Checkbox column on the left. Click to select, header checkbox for select-all.
  */
-export const RowSelectionDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

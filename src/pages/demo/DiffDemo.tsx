@@ -10,7 +10,7 @@ const data = makeData(15, 5)
  * Right-click → add/delete rows shows added/removed highlights.
  * Press Ctrl+S to commit & clear highlights.
  */
-export const DiffDemo = () => (
+export default () => (
   <div>
     <p class='text-sm c-gray mb-2'>Edit cells to see change highlights. Ctrl+S to commit.</p>
     <Intable

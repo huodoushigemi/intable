@@ -39,7 +39,7 @@ const data = makeData(20, 8)
  *  - Number: Zod coerce + range 0–100
  *  - Table-level validator: blocks any value containing "error"
  */
-export const EditableDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

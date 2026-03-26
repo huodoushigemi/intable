@@ -35,7 +35,7 @@ cols.at(-1)!.fixed = 'right'
  * Everything combined: header groups, virtual scroll, editable,
  * expand, row selection, resize, drag, history, diff, index, border.
  */
-export const CompositeDemo = () => (
+export default () => (
   <div>
     <p class='text-sm c-gray mb-2'>All features enabled. Edit, drag, resize, select, expand, undo/redo, diff.</p>
     <Intable

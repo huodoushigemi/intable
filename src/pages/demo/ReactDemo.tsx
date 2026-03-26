@@ -4,7 +4,7 @@ import { Intable, component } from '../../../packages/react/src'
 import { range } from 'es-toolkit'
 import { DiffPlugin } from '../../../packages/intable/src/plugins/DiffPlugin'
 
-export const ReactDemo = component(() => {
+export default component(() => {
   const [cols, setCols] = useState([
     { id: 'col_0', name: 'Column 1', width: 120, editable: true },
     { name: 'HeaderGroup', children: [

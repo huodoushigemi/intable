@@ -20,7 +20,7 @@ const cols = createMutable([
 
 const data = makeData(100, 12)
 
-export const HeaderGroupDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

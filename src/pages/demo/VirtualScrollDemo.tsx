@@ -5,7 +5,7 @@ import { makeCols, makeData, replaceArray } from './helpers'
 const cols = makeCols(50, { width: 80 })
 const data = makeData(1000, 50)
 
-export const VirtualScrollDemo = () => (
+export default () => (
   <Intable
     class='h-60vh'
     columns={cols}

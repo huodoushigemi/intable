@@ -8,7 +8,7 @@ const data = makeData(20, 6)
  * Drag column headers to reorder columns.
  * Drag the index cell (row number) to reorder rows.
  */
-export const DragDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

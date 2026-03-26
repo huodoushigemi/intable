@@ -11,7 +11,7 @@ setTimeout(() => {
   setXx([])
 }, 2000);
 
-export const BasicDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

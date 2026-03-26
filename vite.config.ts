@@ -23,8 +23,7 @@ export default defineConfig({
     (await import('vite-plugin-pages')).default({
       resolver: 'solid',
       dirs: 'src/pages',
-      extendRoute: (route: any) => route,
-      generate: { dts: 'src/types/pages.d.ts' },
+      importMode: 'sync',
     }),
     
     (await import('unocss/vite')).default({

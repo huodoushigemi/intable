@@ -8,7 +8,7 @@ const data = makeData(20, 6)
  * Select a cell range then Ctrl+C to copy, Ctrl+V to paste.
  * CopyPaste (ClipboardPlugin) is auto-loaded.
  */
-export const CopyPasteDemo = () => (
+export default () => (
   <div>
     <p class='text-sm c-gray mb-2'>Select cells → Ctrl+C to copy → click target cell → Ctrl+V to paste.</p>
     <Intable

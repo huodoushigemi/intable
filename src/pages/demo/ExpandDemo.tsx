@@ -8,7 +8,7 @@ const data = makeData(20, 6)
  * Click the chevron on the left to expand a row.
  * The expand render shows JSON of the row data.
  */
-export const ExpandDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

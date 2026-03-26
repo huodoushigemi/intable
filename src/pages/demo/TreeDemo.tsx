@@ -28,7 +28,7 @@ const data = createMutable([
  * Tree-structured data with expand/collapse.
  * TreePlugin must be added manually.
  */
-export const TreeDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

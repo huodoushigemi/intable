@@ -9,7 +9,7 @@ const data = makeData(30, 8)
  * Click a cell then drag or shift+click to select a range.
  * Arrow keys to navigate.
  */
-export const CellSelectionDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

@@ -27,7 +27,7 @@ const data = createMutable(
  * Rows are grouped by `category` then `region`.
  * Click group headers to expand/collapse.
  */
-export const RowGroupDemo = () => (
+export default () => (
   <Intable
     class='w-full h-60vh'
     columns={cols}

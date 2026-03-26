@@ -9,7 +9,7 @@ const data = makeData(15, 5)
  * Edit cells then press Ctrl+Z to undo, Ctrl+Y to redo.
  * HistoryPlugin must be added manually.
  */
-export const HistoryDemo = () => (
+export default () => (
   <div>
     <p class='text-sm c-gray mb-2'>Edit a cell, then Ctrl+Z to undo, Ctrl+Y to redo.</p>
     <Intable
