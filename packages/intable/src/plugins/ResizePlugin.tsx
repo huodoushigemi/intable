@@ -99,7 +99,8 @@ export const ResizePlugin: Plugin = {
       columns = columns.map((e, i) => ({ ...e, [store.raw]: e[store.raw] ?? e })),
       columns = columns.map(e => e.resizable === void 0 ? { ...e, resizable: store.props?.resizable?.col.enable, [store.raw]: e[store.raw] ?? e } : e),
       columns = columns.map((e, i) => store[COL][i] ? { ...e, width: store[COL][i], [store.raw]: e[store.raw] ?? e } : e),
-      untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__resize__cols ??= [])))
+      // untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__resize__cols ??= [])))
+      columns
     ),
     Th: ({ Th }, { store }) => o => {
       o = combineProps({ class: 'relative' }, o)

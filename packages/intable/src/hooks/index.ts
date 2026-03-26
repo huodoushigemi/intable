@@ -1,4 +1,4 @@
-import { $PROXY, batch, createComputed, createEffect, createMemo, createRenderEffect, createRoot, createSignal, mergeProps, on, onCleanup, untrack, type Signal } from 'solid-js'
+import { $PROXY, batch, createComputed, createEffect, createMemo, createRenderEffect, createRoot, createSignal, getOwner, mergeProps, on, onCleanup, runWithOwner, untrack, type Signal } from 'solid-js'
 import { $RAW, createMutable } from 'solid-js/store'
 import { createEventListener, createEventListenerMap } from '@solid-primitives/event-listener'
 import { createPointerListeners } from '@solid-primitives/pointer'
@@ -187,10 +187,38 @@ export function useHistory([val, setVal]) {
   return { undo, redo, clear, get index() { return state.index }, get history() { return state.history } }
 }
 
+export function createShallowState(state) {
+  const owner = getOwner()
+  const map = {}
+  const get = (k, v?) => (map[k] ??= runWithOwner(owner, () => createSignal(v)))
+
+  for (const k in state) get(k, state[k])
+
+  return new Proxy(state, {
+    get(o, k, r) {
+      return k == $PROXY ? r : get(k)[0]()
+    },
+    set(o, k, v) {
+      o[k] = v
+      get(k, v)[1](() => v)
+      return true
+    },
+    deleteProperty(o, k) {
+      get(k)[1](undefined)
+      delete o[k]
+      delete map[k]
+      return true
+    },
+    has: (o, p) => p == $PROXY || p in map,
+    ownKeys: (o) => Reflect.ownKeys(map),
+  })
+}
+
 export function useMemoState(fn) {
-  const state = createMutable({})
+  // const state = createMutable({})
+  const state = createShallowState({})
   createComputed(() => {
-    const val = fn()
+    const val = { ...fn() }
     untrack(() => batch(() => {
       for (const k in state) k in val || (delete state[k])
       Object.assign(state, val)
