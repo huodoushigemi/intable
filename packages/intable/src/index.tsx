@@ -131,6 +131,7 @@ export interface TableStore extends Obj {
   raw: symbol
   props: TableProps2
   rawProps: TableProps
+  ID: string
   plugins: Plugin[]
 }
 
@@ -163,6 +164,7 @@ export const Intable = (props: TableProps) => {
   // init rewriteProps
   const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>())
   store.props = useMemoState((() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
+  // store.props = toReactive((() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
   
   createComputed(mapArray(plugins, (e, i) => {
     const prev = createMemo(() => pluginsProps()[i() - 1]?.[0]() || props)
@@ -264,7 +266,9 @@ function BasePlugin(): Plugin$0 {
         trs: [],
         trSizes: [],
         internal: Symbol('internal'),
-        raw: Symbol('raw'),
+        // raw: Symbol('raw'),
+        raw: '__raw',
+        ID: '__ID',
       }
     },
     rewriteProps: {
@@ -425,9 +429,8 @@ const FitColWidthPlugin: Plugin$0 = store => {
     priority: -Infinity,
     rewriteProps: {
       columns: ({ columns }, { store }) => (
-        columns = columns.map((e, i) => ({ ...e, ...__fit_col_width__cols_temp?.[i], [store.raw]: e[store.raw] ?? e })),
-        // untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__fit_col_width__cols ??= [])))
-        columns
+        columns = columns.map((e, i) => ({ ...e, ...__fit_col_width__cols_temp?.[i], [store.ID]: e[store.ID] ??= Symbol() })),
+        untrack(() => batch(() => reconcile(columns, { key: store.ID })(store.__fit_col_width__cols ??= [])))
       )
     }
   }

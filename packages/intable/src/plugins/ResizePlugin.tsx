@@ -46,7 +46,7 @@ const ColHandle = (o: THProps) => {
       end(() => {
         const col = props.columns[i]
         const cols = [...store.rawProps.columns || []]
-        const index = cols.indexOf(col[store.raw] ?? col)
+        const index = cols.findIndex(e =>  e[store.ID] === col[store.ID])
         if (index > -1) {
           cols[index] = { ...cols[index], width: th.offsetWidth }
           props.onColumnsChange?.(cols)
@@ -72,7 +72,7 @@ const RowHandle = (o: TDProps) => {
       end(() => {
         const row = props.data[i]
         const data = [...store.rawProps.data || []]
-        const index = data.indexOf(row[store.raw] ?? row)
+        const index = data.findIndex(e => e[store.ID] === row[store.ID])
         if (index > -1) {
           // todo
         }
@@ -82,13 +82,12 @@ const RowHandle = (o: TDProps) => {
   createEventListener(() => el, 'dblclick', () => o.data[COL]= void 0)
   return <div ref={el} class={`in-cell__resize-handle absolute bottom-0 left-0 flex flex-col justify-center h-1! ${o.y == props.data.length - 1 ? 'justify-end!' : ''} after:h-1 cursor-s-resize z-1`} />
 }
-
 export const ResizePlugin: Plugin = {
   name: 'resize',
   priority: -Infinity,
   store: () => ({
     [COL]: [],
-    [ROW]: []
+    [ROW]: [],
   }),
   rewriteProps: {
     resizable: ({ resizable }) => defaultsDeep(resizable, {
@@ -96,11 +95,10 @@ export const ResizePlugin: Plugin = {
       row: { enable: false, min: 20, max: 400 }
     }),
     columns: ({ columns }, { store }) => (
-      columns = columns.map((e, i) => ({ ...e, [store.raw]: e[store.raw] ?? e })),
-      columns = columns.map(e => e.resizable === void 0 ? { ...e, resizable: store.props?.resizable?.col.enable, [store.raw]: e[store.raw] ?? e } : e),
-      columns = columns.map((e, i) => store[COL][i] ? { ...e, width: store[COL][i], [store.raw]: e[store.raw] ?? e } : e),
-      // untrack(() => batch(() => reconcile(columns, { key: store.raw })(store.__resize__cols ??= [])))
-      columns
+      columns = columns.map((e, i) => ({ ...e, [store.ID]: e[store.ID] ??= Symbol() })),
+      columns = columns.map(e => e.resizable === void 0 ? { ...e, resizable: store.props?.resizable?.col.enable } : e),
+      columns = columns.map((e, i) => store[COL][i] ? { ...e, width: store[COL][i] } : e),
+      untrack(() => batch(() => reconcile(columns, { key: store.ID })(store.__resize__cols ??= [])))
     ),
     Th: ({ Th }, { store }) => o => {
       o = combineProps({ class: 'relative' }, o)

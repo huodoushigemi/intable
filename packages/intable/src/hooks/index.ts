@@ -198,7 +198,7 @@ export function createShallowState(state) {
     get(o, k, r) {
       return k == $PROXY ? r : get(k)[0]()
     },
-    set(o, k, v) {
+    set(o, k, v, r) {
       o[k] = v
       get(k, v)[1](() => v)
       return true
@@ -211,6 +211,7 @@ export function createShallowState(state) {
     },
     has: (o, p) => p == $PROXY || p in map,
     ownKeys: (o) => Reflect.ownKeys(map),
+    getOwnPropertyDescriptor: (o, k) => ({ enumerable: true, configurable: true, get() { return get(k)[0]() }, set(v) { get(k)[1](v) } }),
   })
 }
 

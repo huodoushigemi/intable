@@ -31,10 +31,11 @@ function maxDepth(columns: TableColumn[]): number {
 }
 
 /** Collect all leaf columns in tree order (these are what the body renders). */
-function flatLeaves(columns: TableColumn[], out: TableColumn[] = []): TableColumn[] {
+function flatLeaves(columns: TableColumn[], out: TableColumn[] = [], store: TableStore): TableColumn[] {
   for (const col of columns) {
+    col[store.ID] ??= Symbol()
     if (col.children?.length) {
-      flatLeaves(col.children, out)
+      flatLeaves(col.children, out, store)
     } else {
       out.push(col)
     }
@@ -84,7 +85,7 @@ function buildFlatGrid(
 
       // Find starting index in allCols
       const anchorLeaf = hasChildren ? rawLeaves[leafOffset] : col
-      const startIdx = rawToIdx.get(anchorLeaf)
+      const startIdx = rawToIdx.get(anchorLeaf[store.ID])
       if (startIdx == null) { if (!hasChildren) leafOffset++; continue }
 
       // Anchor cell
@@ -146,11 +147,11 @@ export const HeaderGroupPlugin: Plugin$0 = {
       if (maxDepth(rawCols) <= 1) return []
 
       const allCols = store.props.columns || []
-      const rawLeaves = flatLeaves(rawCols)
+      const rawLeaves = flatLeaves(rawCols, [], store)
 
       const rawToIdx = new Map<TableColumn, number>()
       for (let i = 0; i < allCols.length; i++) {
-        rawToIdx.set(allCols[i][store.raw] || allCols[i], i)
+        rawToIdx.set(allCols[i][store.ID], i)
       }
 
       const anchors: number[] = []
@@ -162,7 +163,7 @@ export const HeaderGroupPlugin: Plugin$0 = {
             const lc = leafCount(col)
             const anchorLeaf = rawLeaves[leafOffset]
             if (anchorLeaf) {
-              const si = rawToIdx.get(anchorLeaf)
+              const si = rawToIdx.get(anchorLeaf[store.ID])
               if (si != null) {
                 const ei = si + lc - 1
                 if (si <= xEnd && ei >= xStart) anchors.push(si)
@@ -185,7 +186,7 @@ export const HeaderGroupPlugin: Plugin$0 = {
      * Flatten nested column definitions into leaf-only columns for the body.
      * The header rendering is handled entirely by the Thead rewrite.
      */
-    columns: ({ columns }) => flatLeaves(columns),
+    columns: ({ columns }, { store }) => flatLeaves(columns, [], store),
 
     /**
      * Replace the default single-row <Thead> with a multi-row header
@@ -207,12 +208,12 @@ export const HeaderGroupPlugin: Plugin$0 = {
         if (depth <= 1) return null
 
         const allCols = props.columns || []
-        const rawLeaves = flatLeaves(rawCols)
+        const rawLeaves = flatLeaves(rawCols, [], store)
 
         // Map raw column identity → index in allCols (props.columns)
         const rawToIdx = new Map<TableColumn, number>()
         for (let i = 0; i < allCols.length; i++) {
-          rawToIdx.set(allCols[i][store.raw] || allCols[i], i)
+          rawToIdx.set(allCols[i][store.ID], i)
         }
 
         const grid = buildFlatGrid(rawCols, depth, allCols, rawToIdx, rawLeaves, store)
