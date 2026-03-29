@@ -4,8 +4,7 @@ import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
 import { createElementSize, createResizeObserver, makeResizeObserver } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
-import { difference, mapValues, memoize, sumBy } from 'es-toolkit'
-import { toReactive, useMemo, useMemoState } from './hooks'
+import { difference, isEqual, memoize, sumBy } from 'es-toolkit'
 import { log, unFn } from './utils'
 
 import 'virtual:uno.css'
@@ -162,15 +161,18 @@ export const Intable = (props: TableProps) => {
   }, [])
   
   // init rewriteProps
-  const pluginsProps = mapArray(plugins, () => createSignal<Partial<TableProps>>())
-  store.props = useMemoState((() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
-  // store.props = toReactive((() => pluginsProps()[pluginsProps().length - 1][0]() || props)) as TableProps2
-  
-  createComputed(mapArray(plugins, (e, i) => {
-    const prev = createMemo(() => pluginsProps()[i() - 1]?.[0]() || props)
-    const ret = mergeProps(prev, toReactive(mapValues(e.rewriteProps || {}, v => useMemo(() => v(prev(), { store })) )))
-    pluginsProps()[i()][1](ret)
-  }))
+  store.props = (() => {
+    const owner = getOwner()
+    const map = {}
+    const get = (k) => (map[k] ??= runWithOwner(owner, () => createMemo(() => fn(k))))
+    function fn(k) {
+      const arr = createMemo(() => plugins().map(e => e.rewriteProps?.[k]).filter(e => e), undefined, { equals: isEqual })
+      return arr().reduce((o, e) => e({ [k]: o }, { store }), props[k])
+    }
+    return new Proxy({}, {
+      get(o, k, r) { return k == $PROXY ? r : get(k)() }
+    }) as TableProps2
+  })()
 
   // on mount
   onMount(() => {

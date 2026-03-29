@@ -8,7 +8,7 @@ export default component(() => {
   const [cols, setCols] = useState([
     { id: 'col_0', name: 'Column 1', width: 120, editable: true },
     { name: 'HeaderGroup', children: [
-      // { id: 'col_1', name: 'Column 2', width: 120, editable: true, render: (props) => h('div', { style: { color: 'red' } }, props.data[props.col.id]) },
+      { id: 'col_1', name: 'Column 2', width: 120, editable: true, render: (props) => h('div', { style: { color: 'red' } }, props.data[props.col.id]) },
       { id: 'col_2', name: 'Column 3', width: 120, editable: true },
     ] },
     { id: 'col_3', name: 'Column 4', width: 120, editable: true },
@@ -25,13 +25,6 @@ export default component(() => {
     }
     return row
   }))
-
-  const [xx, setXx] = useState([])
-  useEffect(() => {
-    setTimeout(() => {
-      setXx([])
-    }, 2000);
-  }, [])
   
   return h(Intable, {
     className: 'w-full h-60vh',
@@ -48,7 +41,7 @@ export default component(() => {
     // 
     colDrag: true,
     rowDrag: true,
-    rowKey: 'col_0',
+    // rowKey: 'col_0',
     // 
     rowSelection: {
       enable: true,

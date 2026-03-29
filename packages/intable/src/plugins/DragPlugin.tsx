@@ -1,6 +1,6 @@
 import { delay } from "es-toolkit"
 import { isMatch } from "es-toolkit/compat"
-import { Ctx, type Plugin, type TableColumn, type THProps } from "../index"
+import { Ctx, type Plugin, type TableColumn, type TableStore, type THProps } from "../index"
 import { useSort } from '../hooks/useSort'
 
 declare module '../index' {
@@ -47,17 +47,17 @@ export const DragPlugin: Plugin = {
     async function onColDragend() {
       if (colDrag.drag == colDrag.rel) return
       const [cols, rawCols] = [store.props!.columns, [...store.rawProps.columns || []]]
-      const col1 = (col => col[store.raw] ?? col)(cols[colDrag.drag.getAttribute('x')])
-      const col2 = (col => col[store.raw] ?? col)(cols[colDrag.rel.getAttribute('x')])
+      const col1 = getRawCol(store, cols[colDrag.drag.getAttribute('x')])
+      const col2 = getRawCol(store, cols[colDrag.rel.getAttribute('x')])
+      if (!col1 || !col2) return
       const i1 = rawCols.indexOf(col1)
       const i2 = rawCols.indexOf(col2)
-      if (i1 < 0 || i2 < 0) return
       rawCols[i1].fixed = rawCols[i2].fixed
       rawCols.splice(i2 - (i1 > i2 ? 0 : 1) + (colDrag.type == 'before' ? 0 : 1), 0, rawCols.splice(i1, 1)[0])
       store.props!.onColumnsChange?.(rawCols)
       // select area
       await Promise.resolve()
-      const i = store.props!.columns.findIndex(e => e == col1 || e[store.raw] == col1)
+      const i = store.props!.columns.findIndex(e => colEq(store, e, col1))
       if (i < 0) return
       store.selected.start[0] = store.selected.end[0] = i
     }
@@ -65,6 +65,7 @@ export const DragPlugin: Plugin = {
     async function onRowDragend() {
       if (rowDrag.drag == rowDrag.rel) return
       const [data, rawData] = [store.props!.data, [...store.rawProps.data || []]]
+      // todo
       const data1 = (row => row[store.raw] ?? row)(data[rowDrag.drag.getAttribute('y')])
       const data2 = (row => row[store.raw] ?? row)(data[rowDrag.rel.getAttribute('y')])
       const i1 = rawData.indexOf(data1)
@@ -79,4 +80,16 @@ export const DragPlugin: Plugin = {
       store.selected.start[1] = store.selected.end[1] = i
     }
   },
+}
+
+function getRawCol(store: TableStore, col: TableColumn) {
+  return store.rawProps.columns?.find(e => colEq(store, e, col))
+}
+
+function colEq({ ID }: TableStore, col1: TableColumn, col2: TableColumn) {
+  return (
+    col1 == col2 ||
+    (col1.id && col2.id && col1.id === col2.id) ||
+    (col1[ID] && col2[ID] && col1[ID] === col2[ID])
+  )
 }

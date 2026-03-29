@@ -33,10 +33,7 @@ export const Intable: FC<TableProps> = (props) => {
 
 export const component = <T extends Record<string, any>>(Comp: FC<T>) => {
   return (props: T) => {
-    const el = document.createDocumentFragment()
-    el.remove ??= () => {}
-    el.removeChild = el => el.parentElement?.removeChild(el)
-    // const el = document.createElement('div')
+    const el = document.createElement('div')
 
     const root = createRoot(el)
 

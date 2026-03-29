@@ -25,9 +25,12 @@ export default () => (
       size='small'
       plugins={[DiffPlugin]}
       diff={{
-        enable: true,
-        onCommit: (d) => console.log('Diff committed:', d),
-      }}
+      enable: true,
+      data: (e => {
+        e.splice(1, 1, { col_0: 'xxx', col_1: '123' })
+        return e
+      })([...data])}
+    }
     />
   </div>
 )
