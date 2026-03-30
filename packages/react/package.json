@@ -17,6 +17,7 @@
     "dist"
   ],
   "dependencies": {
+    "dayjs": "^1.11.20",
     "intable": "workspace:^",
     "solid-js": "^1.9.9"
   },

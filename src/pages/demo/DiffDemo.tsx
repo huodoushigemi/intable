@@ -5,6 +5,9 @@ import { makeCols, makeData, replaceArray } from './helpers'
 const cols = makeCols(5, { editable: true })
 const data = makeData(15, 5)
 
+const diffData = [...data]
+diffData.splice(1, 1, { col_0: 'xxx', col_1: '123' })
+
 /**
  * Edit cells — changed cells are highlighted.
  * Right-click → add/delete rows shows added/removed highlights.
@@ -25,12 +28,9 @@ export default () => (
       size='small'
       plugins={[DiffPlugin]}
       diff={{
-      enable: true,
-      data: (e => {
-        e.splice(1, 1, { col_0: 'xxx', col_1: '123' })
-        return e
-      })([...data])}
-    }
+        enable: true,
+        data: diffData
+      }}
     />
   </div>
 )

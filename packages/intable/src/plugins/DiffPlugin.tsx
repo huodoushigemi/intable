@@ -23,7 +23,7 @@ declare module '../index' {
     }
   }
   interface TableStore {
-    diffData: any[]
+    diffData: () => any[]
     diffDataKeyed: () => any
   }
   interface Commands {
@@ -41,9 +41,8 @@ export const DiffPlugin: Plugin = {
     const data = store.rawProps.data || []
     data.forEach(row => unwrap(row)[store.rawProps.rowKey] ??= uuid())
     return {
-      diffData: structuredClone(unwrap(data || [])),
-      diffData2: () => store.props.diff?.data ?? store.diffData,
-      diffDataKeyed: createLazyMemo(() => keyBy(store.diffData2(), e => e[store.props!.rowKey]))
+      diffData: () => store.props.diff?.data ?? [],
+      diffDataKeyed: createLazyMemo(() => keyBy(store.diffData(), e => e[store.props!.rowKey]))
     }
   },
   commands: store => ({
@@ -58,12 +57,11 @@ export const DiffPlugin: Plugin = {
         if (!old) added.push(e)
         else if (!isEqual(e, old)) changed.push(e)
       }
-      for (const e of store.diffData2()) {
+      for (const e of store.diffData()) {
         !keyed[e[rowKey]] && removed.push(e)
       }
       await store.props!.diff?.onCommit?.(data, { added, removed, changed })
       added[NEW] = 0
-      store.diffData = data
     }
   }),
   rewriteProps: {
@@ -78,7 +76,7 @@ export const DiffPlugin: Plugin = {
       if (!store.props.diff?.enable) return data
       
       const { rowKey, diff } = store.props || {}
-      const diffData = store.diffData2() || []
+      const diffData = store.diffData()
 
       // Fast path: same number of rows, same keys in same order (edit-only, no add/delete/move).
       // Skips the O(n²) diffArrays call which is the common case when only cell values changae.
@@ -90,7 +88,6 @@ export const DiffPlugin: Plugin = {
         if (sameOrder) return data
       }
 
-      // todo eq
       // Structural change (add / delete / move) — fall back to diff library
       const diffArr = diffArrays(diffData, data, { comparator: (a, b) => a == b || a[rowKey] == b[rowKey] })
       return diffArr.flatMap(e => (

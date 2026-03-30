@@ -2,7 +2,7 @@ import { mergeProps, type JSX } from 'solid-js'
 import { component } from 'undestructure-macros'
 import { type Plugin, type TD } from '../..'
 import { Checkbox, Files } from './components'
-import { resolveOptions } from '../../utils'
+import { resolveOptions, toArr } from '../../utils'
 import { renderComponent, solidComponent } from '../../components/utils'
 
 declare module '../../index' {
@@ -45,7 +45,7 @@ export const RenderPlugin: Plugin = {
 const text: Render = component(({ data, col, onChange }) => {
   return <>{
     (v =>
-      col.enum ? resolveOptions(col.enum).find(e => e.value == v)?.label ?? v : v
+      col.enum ? toArr(v).map(v => resolveOptions(col.enum!).find(e => e.value == v)?.label ?? v).join(', ') : v
     )(data[col.id])
   }</>
 })

@@ -22,6 +22,7 @@ import TreeDemo from './TreeDemo'
 import CopyPasteDemo from './CopyPasteDemo'
 import CompositeDemo from './CompositeDemo'
 import ReactDemo from './ReactDemo'
+import ReactAntd from './ReactAntd'
 
 // ── Theme CSS (equivalent to: import 'intable/theme/*') ──────────────────────
 import antdCss         from '../../../packages/intable/src/theme/antd.scss?inline'
@@ -122,7 +123,8 @@ const demos = [
   { name: 'History',         comp: HistoryDemo,         desc: 'Undo / Redo (Ctrl+Z / Ctrl+Y)' },
   { name: 'Diff',            comp: DiffDemo,            desc: 'Track changes & commit (Ctrl+S)' },
   { name: 'Composite',       comp: CompositeDemo,       desc: 'All features combined' },
-  { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' }
+  { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' },
+  { name: 'ReactAntd',       comp: ReactAntd,           desc: 'React Antd integration demo' },
 ]
 
 export const DemoApp = () => {
