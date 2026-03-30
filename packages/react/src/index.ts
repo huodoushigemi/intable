@@ -1,6 +1,5 @@
 import { useEffect, useRef, createElement as h, type FC } from 'react'
-import { createRoot } from 'react-dom/client'
-import { flushSync } from 'react-dom'
+import { createRoot, flushSync } from './utils'
 import { type TableProps } from 'intable'
 
 // #if DEV
