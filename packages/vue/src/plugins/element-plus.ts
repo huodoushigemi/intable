@@ -29,7 +29,7 @@ const getElement = (el: any) => {
   return el.querySelector('input') ?? el.querySelector('button') ?? el.querySelector('[class*=__trigger]') ?? el
 }
 
-const createEditor = (Comp: Component, extra?, isSelector?): Editor => {
+export const createEditor = (Comp: Component, extra?, isSelector?): Editor => {
   return ({ eventKey, value, col, ok, cancel, props }) => {
     const v = ref(isSelector ? value : (eventKey || value))
     const elref = ref()
@@ -48,7 +48,7 @@ const createEditor = (Comp: Component, extra?, isSelector?): Editor => {
         if (e.key === 'Escape') cancel()
       },
       ...isSelector ? {
-        onChange: () => ok(),
+        onChange: val => !Array.isArray(val) && ok(),
         options: resolveOptions(col.enum ?? []),
       } : {}
     }))

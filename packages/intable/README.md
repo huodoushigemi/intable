@@ -145,7 +145,7 @@ const App = () => {
 | width    | 列宽（px）             | number                        |
 | fixed    | 固定列                 | `'left' \| 'right'`           |
 | render   | 自定义渲染器           | `string \| Render`            |
-| enum     | 枚举映射（用于渲染）   | `Record<string,any> \| {label?,value}[]` |
+| enum     | 枚举映射   | `Record<string,any> \| {label?,value}[]` |
 | editable | 是否可编辑             | boolean                       |
 | editor   | 编辑器类型或自定义实现 | `string \| Editor`            |
 | resizable| 是否允许调整列宽       | boolean                       |
