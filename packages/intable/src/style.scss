@@ -110,7 +110,7 @@
 }
 
 .fixed-left, .fixed-right {
-  @apply sticky! z-1 bg-#fff;
+  @apply sticky! z-2 bg-#fff;
   &.is-first::after, &.is-last::after {
     @apply content-[''] absolute top-0 w-[10px] h-full pointer-events-none;
   }

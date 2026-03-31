@@ -6,6 +6,7 @@ import { diffArrays } from 'diff'
 import { isEqual, keyBy } from 'es-toolkit'
 import { type Plugin } from '..'
 import { log } from '../utils'
+import { createMemo } from 'solid-js'
 
 declare module '../index' {
   interface TableProps {
@@ -98,19 +99,20 @@ export const DiffPlugin: Plugin = {
       ))
     },
     Td: ({ Td }, { store }) => !store.props.diff?.enable ? Td : o => {
-      o = combineProps(o, {
-        get class() {
-          const { diff } = store.props
-          const id = o.data[store.props!.rowKey]
-          return [
-            o.data[NEW] ? 'bg-#dafaea!' :
-            o.data[DEL] ? 'bg-#ffe8e8!' :
-            o.data[store.internal] ? '' :
-            diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id]?.[o.col.id] ? 'bg-#dafaea!' : ''
-          ].join(' ')
-        }
+      const clazz = createMemo(() => {
+        const { diff } = store.props
+        const id = o.data[store.props!.rowKey]
+        return [
+          o.data[NEW] ? 'bg-green!' :
+          o.data[DEL] ? 'bg-red!' :
+          o.data[store.internal] ? '' :
+          diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id]?.[o.col.id] ? 'bg-green!' : ''
+        ].join(' ')
       })
-      return <Td {...o} />
+      return <Td {...o} class={o.class + (clazz() ? ' relative z-1' : '')}>
+        {o.children}
+        {clazz() && <div class={clazz() + ' absolute inset-0 z--1 op-20 pointer-events-none'} />}
+      </Td>
     },
   },
   keybindings: (store) => ({

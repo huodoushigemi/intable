@@ -29,7 +29,7 @@ export const AntdPlugin: Plugin = {
 export const createEditor = (Comp: FC<any>, opts = v => v, isSelector?: boolean): Editor => (editorOpts) => {
   const { eventKey, value, col, ok, cancel, props } = editorOpts
   const container = document.createElement('div')
-  container.className = 'flex items-center'
+  container.style.display = 'contents'
   const root = createRoot(container)
   
   let currentValue = eventKey || value

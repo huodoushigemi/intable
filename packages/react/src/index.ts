@@ -33,10 +33,11 @@ export const Intable: FC<TableProps> = (props) => {
 export const component = <T extends Record<string, any>>(Comp: FC<T>) => {
   return (props: T) => {
     const el = document.createElement('div')
+    el.style.display = 'contents'
 
     const root = createRoot(el)
 
-    createComputed(() => flushSync(() => root.render(h(Comp, props))))
+    createComputed(() => flushSync(() => root.render(typeof Comp === 'function' ? h(Comp, props) : Comp)))
     onCleanup(() => root.unmount())
 
     return el

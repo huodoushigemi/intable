@@ -45,7 +45,7 @@ export const MenuPlugin: Plugin = {
       const [pos, setPos] = createSignal<{ x: number; y: number }>()
       function onContextMenu(e: PointerEvent) {
         e.preventDefault()
-        setPos({ x: e.x, y: e.y })
+        if (store.table.contains(e.target)) setPos({ x: e.x, y: e.y })
       }
 
       createEventListener(document, 'pointerdown', e => {
