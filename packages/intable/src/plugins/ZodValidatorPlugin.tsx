@@ -29,7 +29,7 @@ declare module '../index' {
  *     zodSchema: z.string().email('Invalid email'),
  *     validator: async (value) => {
  *       const taken = await checkEmailTaken(value)
- *       return taken ? 'Email already in use' : true
+ *       if (taken) throw new Error('Email already taken')
  *     },
  *   },
  *   { id: 'age', zodSchema: z.coerce.number().int().min(0).max(150) },
@@ -46,7 +46,7 @@ export const ZodValidatorPlugin: Plugin = {
       if (schema) {
         const result = schema.safeParse(value)
         if (!result.success) {
-          return result.error.issues[0]?.message ?? false
+          throw new Error(result.error.issues[0]?.message || 'Invalid value')
         }
       }
 
@@ -54,8 +54,6 @@ export const ZodValidatorPlugin: Plugin = {
       if (validator) {
         return validator(value, data, col)
       }
-
-      return true
     },
   },
 }

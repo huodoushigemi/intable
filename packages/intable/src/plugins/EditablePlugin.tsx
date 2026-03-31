@@ -8,15 +8,11 @@ import { Checkbox, Files } from './RenderPlugin/components'
 import { chooseFile, resolveOptions } from '../utils'
 
 declare module '../index' {
-  interface TableProps {
-    validator?: (value: any, data: any, col: TableColumn) => string | boolean | Promise<string | boolean>
-  }
   interface TableColumn {
     editable?: boolean
     editor?: string | Editor
     editorProps?: any
     editorPopup?: boolean // todo
-    validator?: (value: any, rowData: any, col: TableColumn) => boolean | string | Promise<boolean | string>
   }
   interface TableStore {
     editors: { [key: string]: Editor }
@@ -59,9 +55,8 @@ export const EditablePlugin: Plugin = {
 
       const preEdit = createMemo(() => selected() && editable() && !editing())
 
-      const [validationError, setValidationError] = createSignal<string | null>(null)
       const [validating, setValidating] = createSignal(false)
-      createEffect(() => { if (!editing()) { setValidationError(null); setValidating(false) } })
+      createEffect(() => { if (!editing()) { store.clearCellValidation?.(o.data, o.col); setValidating(false) } })
 
       const editorState = createAsyncMemo(async () => {
         if (editing()) {
@@ -77,7 +72,7 @@ export const EditablePlugin: Plugin = {
               await validate(ret.getValue())
               setEditing(false)
             },
-            cancel: () => (canceled = true, setValidationError(null), setEditing(false)),
+            cancel: () => (canceled = true, store.clearCellValidation?.(o.x, o.y), setEditing(false)),
             onChange: v => validate(v).catch(() => {}) // Validate on each change but ignore errors until final submission
           }
           const ret = editor(opt)
@@ -97,28 +92,12 @@ export const EditablePlugin: Plugin = {
       })
 
       async function validate(value) {
-        if (props.validator || o.col.validator) {
-          try {
-            setValidating(true)
-            const result = await (async () => {
-              for (const v of [props.validator, o.col.validator]) {
-                if (!v) continue
-                const r = await v(value, o.data, o.col)
-                if (r !== true) return r
-              }
-              return true
-            })()
-            setValidating(false)
-            if (result !== true) {
-              setValidationError(typeof result === 'string' ? result : 'Error')
-            } else {
-              setValidationError(null)
-            }
-          } catch (e) {
-            setValidating(false)
-            setValidationError((e as Error).message || 'Error')
-          }
-          if (validationError() != null) throw new Error(validationError() || 'Error')
+        if (!store.validateCell) return
+        try {
+          setValidating(true)
+          await store.validateCell(value, o.data, o.col)
+        } finally {
+          setValidating(false)
         }
       }
 
@@ -139,7 +118,7 @@ export const EditablePlugin: Plugin = {
       
       o = combineProps(o, {
         ref: v => el = v,
-        get class() { return [editing() ? 'is-editing' : '', validationError() !== null ? 'is-invalid' : ''].filter(Boolean).join(' ') },
+        get class() { return editing() ? 'is-editing' : '' },
         get style() { return editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '' },
         onClick: () => input?.focus?.(),
         onDblClick: () => setEditing(editable()),
@@ -170,11 +149,6 @@ export const EditablePlugin: Plugin = {
                 {validating() && <span class='cell-validating' />}
               </div>
             : o.children
-          }
-          {validationError() !== null &&
-            <div class='cell-validation-error'>
-              {validationError()}
-            </div>
           }
         </Td>
       )
