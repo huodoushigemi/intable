@@ -1,5 +1,5 @@
-import z, { symbol } from 'zod'
-import { useEffect, useRef, useState, createElement as h, type FC, useMemo } from 'react'
+import z from 'zod'
+import { useState, createElement as h, useMemo } from 'react'
 
 import { Intable, component } from '../../../packages/react/src'
 import { AntdPlugin } from '../../../packages/react/src/plugins/antd'
@@ -32,7 +32,7 @@ export default component(() => {
       id: 'select2', name: 'Select2', editable: true, editor: 'select', editorProps: { mode: 'multiple' },
       enum: { A: 'Option A', B: 'Option B', C: 'Option C' },
     },
-    { id: 'readonly', name: 'ReadOnly', width: 100 },
+    { id: 'readonly', name: h('div', { className: 'c-red' }, 'ReadOnly'), width: 100 },
   ])
 
   const [data, setData] = useState([

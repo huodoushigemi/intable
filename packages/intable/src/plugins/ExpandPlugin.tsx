@@ -52,7 +52,7 @@ export const ExpandPlugin: Plugin = {
         <Tr {...o}>{
           !o.data?.[store.expandCol.id] ? o.children :
           <td colspan={store.props.columns?.length} style='width: 100%'>
-            {renderComponent(store.props.expand?.render, { ...o, data: o.data[store.expandCol.id] }, store.props.renderer)}
+            {renderComponent(store.props.expand?.render, { ...o, data: o.data[store.expandCol.id] }, store)}
           </td>
         }</Tr>
       )

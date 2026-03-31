@@ -1,12 +1,13 @@
 import type { JSX } from 'solid-js'
+import type { TableStore } from '..'
 
 export function solidComponent<T extends (...arg) => JSX.Element>(comp: T) {
   comp.__solid = 1
   return comp
 }
 
-export function renderComponent(Comp: any, props: any, renderer: any) {
+export function renderComponent(Comp: any, props: any, store: TableStore) {
   if (!Comp) return null
-  if (!Comp.__solid) Comp = renderer(Comp)
-  return <Comp {...props} />
+  if (!Comp.__solid) Comp = store.props.renderer!(Comp)
+  return typeof Comp === 'function' ? <Comp {...props} /> : Comp
 }

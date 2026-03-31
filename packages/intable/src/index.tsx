@@ -19,12 +19,13 @@ import { CommandPlugin } from './plugins/CommandPlugin'
 import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
 import { ResizePlugin } from './plugins/ResizePlugin'
 import { DragPlugin } from './plugins/DragPlugin'
-import { solidComponent } from './components/utils'
+import { renderComponent, solidComponent } from './components/utils'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
 import { CellMergePlugin } from './plugins/CellMergePlugin'
 import { TreePlugin } from './plugins/TreePlugin'
 import { HeaderGroupPlugin } from './plugins/HeaderGroup'
+import { ValidatorPlugin } from './plugins/ValidatorPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -39,7 +40,7 @@ type TableProps2 = Requireds<TableProps, (
   'newRow'
 )>
 
-type Each<T = any> = (props: { each: T[]; children: (e: () => any, i: () => number) => JSX.Element }) => JSX.Element
+type Each<T = any> = (props: { each: T[]; children: (e: () => T, i: () => number) => JSX.Element }) => JSX.Element
 
 type ProcessProps = {
   [K in keyof TableProps]?: (prev: TableProps2, ctx: { store: TableStore }) => TableProps[K]
@@ -195,12 +196,12 @@ export const Intable = (props: TableProps) => {
 }
 
 const THead = () => {
-  const { props } = useContext(Ctx)
+  const { props, store } = useContext(Ctx)
   return (
     <props.Thead>
       <props.Tr>
         <props.EachCells each={props.columns || []}>
-          {(col, colIndex) => <props.Th col={col()} x={colIndex()}>{col().name}</props.Th>}
+          {(col, colIndex) => <props.Th col={col()} x={colIndex()}>{renderComponent(col().name, undefined, store)}</props.Th>}
         </props.EachCells>
       </props.Tr>
     </props.Thead>
@@ -490,6 +491,7 @@ export const defaultsPlugins = [
   ExpandPlugin,
   RowSelectionPlugin,
   IndexPlugin,
+  ValidatorPlugin,
   EditablePlugin,
   CellMergePlugin,
   TreePlugin,
