@@ -28,7 +28,7 @@ declare module '../index' {
     diffDataKeyed: () => any
   }
   interface Commands {
-    diffCommit(data?: any[]): void
+    diffCommit(data?: any[]): Promise<void>
   }
 }
 

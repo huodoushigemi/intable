@@ -58,7 +58,7 @@ export const EditablePlugin: Plugin = {
       const [validating, setValidating] = createSignal(false)
       createEffect(() => { if (!editing()) { store.clearCellValidation?.(o.data, o.col); setValidating(false) } })
 
-      const editorState = createAsyncMemo(async () => {
+      const editorState = createAsyncMemo(() => {
         if (editing()) {
           let canceled = false
           const editor = (editor => typeof editor == 'string' ? store.editors[editor] : editor)(o.col.editor || 'text')
