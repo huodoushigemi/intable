@@ -12,7 +12,11 @@ declare module '../index' {
   }
   interface TableStore {
     validateCell: (value: any, data: any, col: TableColumn) => Promise<void>
+    validateRow: (data: any) => Promise<void>
+    validate: () => Promise<void>
     clearCellValidation: (data: any, col: TableColumn) => void
+    clearRowValidation: (data: any) => void
+    clearValidation: () => void
     cellValidationErrors: { [row: Key]: { [col: Key]: string | null } | null }
   }
 }
@@ -21,7 +25,7 @@ export const ValidatorPlugin: Plugin = {
   name: 'validator',
   store: (store) => ({
     cellValidationErrors: {} as { [row: Key]: { [col: Key]: string | null } | null },
-    validateCell: async (value, data, col) => {
+    validateCell: async (value, data, col, scroll?) => {
       const validators = [store.props.validator, col.validator]
       const id = data[store.props.rowKey]
       for (const fn of validators) {
@@ -32,16 +36,51 @@ export const ValidatorPlugin: Plugin = {
           const msg = (e as Error).message || 'Error'
           store.cellValidationErrors[id] ??= {}
           store.cellValidationErrors[id][col.id] = msg
+          if (scroll) store.scrollToCell?.(col, data)
           throw new Error(msg)
         }
       }
       store.cellValidationErrors[id] ??= {}
       store.cellValidationErrors[id][col.id] = null
     },
+    validateRow: async (data, scroll?) => {
+      const cols = store.props.columns
+      const promises = cols.map(col => store.validateCell(data[col.id], data, col))
+      const rets = await Promise.all(promises.map(e => e.catch(e => e)))
+      const errs = rets.map((r, i) => r instanceof Error ? [cols[i].id, r] : null).filter(e => e)
+      if (errs.length) {
+        if (scroll) {
+          const col = cols[rets.findIndex(r => r instanceof Error)]
+          store.scrollToCell?.(col, data)
+        }
+        throw Object.fromEntries(errs)
+      }
+    },
+    validate: async () => {
+      const data = store.rawProps.data || []
+      const promises = data.map(row => store.validateRow(row))
+      const rets = await Promise.all(promises.map(e => e.catch(e => e)))
+      const errs = rets.map((r, i) => r ? [i, r] : null).filter(e => e)
+      if (errs.length) {
+        store.scrollToCell?.(store.props.columns.findIndex(e => e.id === Object.keys(errs[0][1])[0]), store.props.data?.[errs[0][0]])
+        throw errs[0][1]
+      }
+    },
     clearCellValidation: (data, col) => {
       const id = data[store.props.rowKey]
       if (!store.cellValidationErrors[id]) return
       store.cellValidationErrors[id][col.id] = null
+    },
+    clearRowValidation: (data) => {
+      const id = data[store.props.rowKey]
+      if (!store.cellValidationErrors[id]) return
+      const cols = store.props.columns
+      for (const col of cols) {
+        store.cellValidationErrors[id][col.id] = null
+      }
+    },
+    clearValidation: () => {
+      store.cellValidationErrors = {}
     }
   }),
   rewriteProps: {

@@ -1,11 +1,12 @@
 import { useEffect, useRef, createElement as h, type FC } from 'react'
 import { createRoot, flushSync } from './utils'
-import { type TableProps } from 'intable'
 
+import { solidComponent } from '../../intable/src/components/utils'
 // #if DEV
 import '../../intable/src/wc'
 // #else
 import 'intable/wc'
+import { type TableProps } from 'intable'
 // #endif
 
 import './style.scss'
@@ -31,7 +32,7 @@ export const Intable: FC<TableProps> = (props) => {
 
 
 export const component = <T extends Record<string, any>>(Comp: FC<T>) => {
-  return (props: T) => {
+  return solidComponent((props: T) => {
     const el = document.createElement('div')
     el.style.display = 'contents'
 
@@ -41,7 +42,7 @@ export const component = <T extends Record<string, any>>(Comp: FC<T>) => {
     onCleanup(() => root.unmount())
 
     return el
-  }
+  })
 }
 
 export default Intable

@@ -10,6 +10,7 @@ declare module '../index' {
   }
   interface TableStore {
     commands: Commands
+    scrollToCell?: (x: number | object, y: number | object, opt?: ScrollIntoViewOptions) => void
   }
   interface Plugin {
     commands?: (store: TableStore, commands: Partial<Commands>) => Partial<Commands> & Record<string, any>
@@ -30,7 +31,13 @@ export const CommandPlugin: Plugin = {
       ), {} as Commands)
     ))
     return {
-      get commands() { return commands() }
+      get commands() { return commands() },
+      scrollToCell(x, y, opt) {
+        x = typeof x == 'object' ? store.props.columns.indexOf(x) : x
+        y = typeof y == 'object' ? store.props.data.indexOf(y) : y
+        const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
+        if (cell) cell.scrollIntoView({ behavior: 'smooth', ...opt })
+      }
     }
   },
   rewriteProps: {

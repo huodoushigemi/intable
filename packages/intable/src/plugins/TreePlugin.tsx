@@ -71,6 +71,7 @@ export const TreePlugin: Plugin$0 = store => {
     store: (store) => ({
       tree: useSelector({ multiple: true }),
       _treeMeta: new Map(),
+      _hasChildren: false,
     }),
 
     rewriteProps: {
@@ -99,6 +100,7 @@ export const TreePlugin: Plugin$0 = store => {
 
         // Reactive write: any context reading store._treeMeta will re-run
         store._treeMeta = meta
+        store._haschildren = Object.values(Object.fromEntries(meta)).some(e => e.hasChildren)
 
         return flat
       },
@@ -119,8 +121,7 @@ export const TreePlugin: Plugin$0 = store => {
         
         return (
           <Td {...o}>
-            {/* todo */}
-            {o.x === firstCol() ? (
+            {store._haschildren && o.x === firstCol() ? (
               <div class='flex items-center' style={`padding-left: ${meta()?.depth! * 16}px`}>
               {meta()?.hasChildren ? (
                 <ILucideChevronRight

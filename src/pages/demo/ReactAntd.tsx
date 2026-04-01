@@ -1,5 +1,5 @@
 import z from 'zod'
-import { useState, createElement as h, useMemo } from 'react'
+import { useState, createElement as h, useMemo, useEffect } from 'react'
 
 import { Intable, component } from '../../../packages/react/src'
 import { AntdPlugin } from '../../../packages/react/src/plugins/antd'
@@ -7,6 +7,8 @@ import { DiffPlugin } from '../../../packages/intable/src/plugins/DiffPlugin'
 import { ZodValidatorPlugin } from '../../../packages/intable/src/plugins/ZodValidatorPlugin'
 
 export default component(() => {
+  const [store, setStore] = useState(null)
+
   const [cols, setCols] = useState([
     {
       id: 'text', name: 'Text (1–5 chars, no reserved)', width: 180, editable: true,
@@ -33,6 +35,7 @@ export default component(() => {
       enum: { A: 'Option A', B: 'Option B', C: 'Option C' },
     },
     { id: 'readonly', name: h('div', { className: 'c-red' }, 'ReadOnly'), width: 100 },
+    { id: 'scroll', name: 'Scroll', editable: true, zodSchema: z.string(), validator: () => { throw new Error('Scroll to this cell') } },
   ])
 
   const [data, setData] = useState([
@@ -49,9 +52,14 @@ export default component(() => {
     e.splice(1, 1, { id: Symbol(), date: '2008-12-12' })
     return e
   }, [])
+
+  useEffect(() => {
+    if (store) store.validate()
+  }, [store])
   
   return h(Intable, {
-    className: 'w-full h-60vh',
+    store: setStore,
+    className: 'w-full',
     columns: cols,
     onColumnsChange: v => setCols(v),
     data: data,

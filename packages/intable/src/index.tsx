@@ -64,6 +64,7 @@ export interface Plugin {
 export type Plugin$0 = Plugin | ((store: TableStore) => Plugin)
 
 export interface TableProps {
+  store?: { value: TableStore } | { current: TableStore } | ((store: TableStore) => void)
   columns?: TableColumn[]
   data?: any[]
   index?: boolean
@@ -184,6 +185,17 @@ export const Intable = (props: TableProps) => {
 
   window.store = store
   window.ctx = ctx
+
+  // ref
+  createEffect(async () => {
+    const ref = store.props.store
+    await Promise.resolve()
+    if (ref) {
+      if (typeof ref === 'function') ref(store)
+      else if ('value' in ref) ref.value = store
+      else if ('current' in ref) ref.current = store
+    }
+  })
 
   return (
     <Ctx.Provider value={ctx}>
