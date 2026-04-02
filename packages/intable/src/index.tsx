@@ -101,8 +101,8 @@ export interface TableProps {
   onDataChange?: (data: any[]) => void
 }
 
-export type THProps = { x: number; col: TableColumn; children: JSX.Element; rowspan?: number; colspan?: number; style?: any }
-export type TDProps = { x: number; y: number; data: any; col: TableColumn; children: JSX.Element; rowspan?: number; colspan?: number }
+export type THProps = { x: number; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number; style?: any }
+export type TDProps = { x: number; y: number; data: any; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number }
 export type TD = Component<TDProps>
 
 type Obj = Record<string | symbol, any>
@@ -483,6 +483,7 @@ export const ScrollPlugin: Plugin = {
             {layers()}
           </div>
           <table ref={el => store.table = el} class={`data-table--table`}>{o.children}</table>
+          {!store.props.data.length && <div class='data-table__empty'>No data</div>}
         </div>
       )
     }

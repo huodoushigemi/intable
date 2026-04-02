@@ -1,5 +1,6 @@
 import { createEffect } from 'solid-js'
 import { type Plugin } from '..'
+import { unFn } from '../utils'
 
 declare module '../index' {
   interface TableProps {
@@ -79,9 +80,12 @@ export const ClipboardPlugin: Plugin = {
       const data = store.props!.data!.slice()
       const maxY = Math.min(y1 + pasteH - 1, data.length - 1)
       for (let dy = 0; dy <= maxY - y1; dy++) {
-        const patch: Record<string, any> = {}
+        const patch = {}
         targetCols.forEach((col, dx) => {
-          patch[col.id as string] = arr2[dy % clipH][dx % clipW]
+          const rowData = data[y1 + dy]
+          const isEditable = unFn(store.props!.editable, { col, data: rowData, x: allCols.indexOf(col), y: y1 + dy })
+          if (!isEditable) return
+          patch[col.id] = arr2[dy % clipH][dx % clipW]
         })
         data[y1 + dy] = { ...data[y1 + dy], ...patch }
       }

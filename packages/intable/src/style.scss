@@ -65,6 +65,10 @@
     }
   }
 
+  &__empty {
+    @apply sticky left-0 flex justify-center items-center w-full lh-15 op-40;
+  }
+
   &--scroll-view {
     @apply of-auto;
   }

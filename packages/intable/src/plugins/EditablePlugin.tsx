@@ -5,11 +5,14 @@ import { delay } from 'es-toolkit'
 import { createMutable } from 'solid-js/store'
 import { Ctx, type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
-import { chooseFile, resolveOptions } from '../utils'
+import { chooseFile, resolveOptions, unFn } from '../utils'
 
 declare module '../index' {
+  interface TableProps {
+    editable?: boolean | ((props: TDProps) => boolean)
+  }
   interface TableColumn {
-    editable?: boolean
+    editable?: boolean | ((props: TDProps) => boolean)
     editor?: string | Editor
     editorProps?: any
     editorPopup?: boolean // todo
@@ -44,10 +47,14 @@ export const EditablePlugin: Plugin = {
     editors: { ...editors }
   }),
   rewriteProps: {
+    editable: ({ editable }, { store }) => o => {
+      const arr = [o.col.editable, editable].filter(e => e != null)
+      return !!arr.length && arr.every(e => unFn(e, o)) && !o.data[store.internal] && !o.col[store.internal]
+    },
     Td: ({ Td }, { store }) => o => {
       let el!: HTMLElement
       const { props } = useContext(Ctx)
-      const editable = createMemo(() => !!o.col.editable && !o.data[store.internal] && !o.col[store.internal])
+      const editable = createMemo(() => unFn(props.editable, o))
       const [editing, setEditing] = createSignal(false)
       let eventKey = ''
 
@@ -72,7 +79,7 @@ export const EditablePlugin: Plugin = {
               await validate(ret.getValue())
               setEditing(false)
             },
-            cancel: () => (canceled = true, store.clearCellValidation?.(o.x, o.y), setEditing(false)),
+            cancel: () => (canceled = true, store.clearCellValidation?.(o.data, o.col), setEditing(false)),
             onChange: v => validate(v).catch(() => {}) // Validate on each change but ignore errors until final submission
           }
           const ret = editor(opt)
@@ -167,9 +174,9 @@ const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
       onInput={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()))}
       onChange={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()), isSelector && ok())}
       on:pointerdown={e => e.stopPropagation()}
-      on:keydown={e => {
+      on:keydown={(e: KeyboardEvent) => {
         e.stopPropagation()
-        e.key == 'Enter' && ok()
+        e.key == 'Enter' && !e.shiftKey && ok()
         e.key == 'Escape' && cancel()
       }}
       options={col.enum ? resolveOptions(col.enum ?? []) : undefined}
@@ -188,39 +195,25 @@ const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
 
 const Input = o => <input {...o} />
 
-const text = createEditor(Input)
-const number = createEditor(Input, { type: 'number' })
-const range = createEditor(Input, { type: 'range' })
-const color = createEditor(Input, { type: 'color' })
-const tel = createEditor(Input, { type: 'tel' })
-const password = createEditor(Input, { type: 'password' })
-const date = createEditor(Input, { type: 'date' }, true)
-const time = createEditor(Input, { type: 'time' }, true)
-const datetime = createEditor(Input, { type: 'datetime-local' }, true)
-const select = createEditor(o => <select {...o}>{o.options?.map(e => <option value={e.value}>{e.label}</option>)}</select>, {}, true)
-
-const file = createEditor(o => {
-  const onAdd = () => chooseFile({ multiple: true }).then(files => o.onChange([...o.value || [], ...files.map(e => ({ name: e.name, size: e.size }))]))
-  return <Files {...o} class='relative z-9 outline-(2 blue) min-h-a! h-a! p-1 bg-#fff' onAdd={onAdd} />
-})
-
-const checkbox = createEditor(o => (
-  <label ref={o.ref} class='h-full flex items-center'>
-    <Checkbox {...o} ref={() => {}} onInput={() => {}} class='mx-3!' />
-  </label>
-))
-
 export const editors = {
-  text,
-  number,
-  range,
-  date,
-  time,
-  datetime,
-  color,
-  tel,
-  password,
-  file,
-  checkbox,
-  select,
+  text: createEditor(Input),
+  textarea: createEditor(o => <textarea {...o} />),
+  number: createEditor(Input, { type: 'number' }),
+  range: createEditor(Input, { type: 'range' }),
+  date: createEditor(Input, { type: 'date' }, true),
+  time: createEditor(Input, { type: 'time' }, true),
+  datetime: createEditor(Input, { type: 'datetime-local' }, true),
+  color: createEditor(Input, { type: 'color' }),
+  tel: createEditor(Input, { type: 'tel' }),
+  password: createEditor(Input, { type: 'password' }),
+  file: createEditor(o => {
+    const onAdd = () => chooseFile({ multiple: true }).then(files => o.onChange([...o.value || [], ...files.map(e => ({ name: e.name, size: e.size }))]))
+    return <Files {...o} class='relative z-9 outline-(2 blue) min-h-a! h-a! p-1 bg-#fff' onAdd={onAdd} />
+  }),
+  checkbox: createEditor(o => (
+    <label ref={o.ref} class='h-full flex items-center'>
+      <Checkbox {...o} ref={() => {}} onInput={() => {}} class='mx-3!' />
+    </label>
+  )),
+  select: createEditor(o => <select {...o}>{o.options?.map(e => <option value={e.value}>{e.label}</option>)}</select>, {}, true),
 }
