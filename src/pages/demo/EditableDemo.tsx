@@ -10,8 +10,9 @@ const cols = createMutable([
   {
     id: 'col_0', name: 'Text (1–20 chars, no reserved)', width: 180, editable: true,
     zodSchema: z.string().min(1, 'Required').max(20, 'Max 20 characters'),
-    validator: (value: string) =>
-      RESERVED.includes(value.toLowerCase()) ? `"${value}" is a reserved word` : true,
+    validator: (value: string) => {
+      if (RESERVED.includes(value.toLowerCase())) throw Error(`"${value}" is a reserved word`)
+    }
   },
   {
     id: 'col_1', name: 'Number (0–100)', width: 140, editable: true, editor: 'number',
@@ -26,6 +27,7 @@ const cols = createMutable([
   },
   { id: 'col_6', name: 'Range',    width: 120, editable: true, editor: 'range' },
   { id: 'col_7', name: 'ReadOnly', width: 100 },
+  { id: 'col_8', name: 'Required', editable: true, required: true },
 ] as any[])
 
 const data = makeData(20, 8)
@@ -51,8 +53,8 @@ export default () => (
     stickyHeader
     size='small'
     plugins={[ZodValidatorPlugin]}
-    validator={(value) =>
-      String(value ?? '').toLowerCase().includes('error') ? 'Value must not contain "error"' : true
-    }
+    validator={(value) => {
+      if (String(value ?? '').toLowerCase().includes('error')) throw Error('Value must not contain "error"')
+    }}
   />
 )

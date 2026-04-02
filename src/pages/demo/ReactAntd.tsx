@@ -13,14 +13,13 @@ export default component(() => {
     {
       id: 'text', name: 'Text (1–5 chars, no reserved)', width: 180, editable: true,
       zodSchema: z.string().min(1, 'Required').max(5, 'Max 5 characters'),
-      validator: (value: string) =>
-        ['admin', 'root', 'null'].includes(value.toLowerCase()) ? `"${value}" is a reserved word` : true,
+      validator: (value: string) => { if (['admin', 'root', 'null'].includes(value.toLowerCase())) throw Error(`"${value}" is a reserved word`) }
     },
     {
       id: 'num', name: 'Number (0–100)', width: 140, editable: true, editor: 'number',
       zodSchema: z.coerce.number({ error: 'Must be a number' }).min(0, 'Min 0').max(100, 'Max 100'),
     },
-    { id: 'date', name: 'Date',     width: 130, editable: true, editor: 'date' },
+    { id: 'date', name: 'Date',     width: 130, editable: true, editor: 'date', required: true },
     { id: 'time', name: 'Time',     width: 130, editable: true, editor: 'time' },
     { id: 'datetime', name: 'DateTime',     width: 130, editable: true, editor: 'datetime' },
     { id: 'color', name: 'Color',    width: 100, editable: true, editor: 'color' },

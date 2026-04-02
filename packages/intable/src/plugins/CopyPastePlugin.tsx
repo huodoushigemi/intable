@@ -42,8 +42,8 @@ export const ClipboardPlugin: Plugin = {
       const [x1, x2] = [start[0], end[0]].sort((a, b) => a - b)
       const [y1, y2] = [start[1], end[1]].sort((a, b) => a - b)
       // Skip internal columns (index, row-selection, etc.)
-      const cols = store.props!.columns!.slice(x1, x2 + 1).filter(col => !col[store.internal])
-      const rows = store.props!.data!.slice(y1, y2 + 1)
+      const cols = store.props.columns!.slice(x1, x2 + 1).filter(col => !col[store.internal])
+      const rows = store.props.data!.slice(y1, y2 + 1)
       const text = rows.map(row =>
         cols.map(col => {
           const val = row[col.id as string] ?? ''
@@ -71,19 +71,27 @@ export const ClipboardPlugin: Plugin = {
       const pasteW = selW > clipW && selW % clipW === 0 ? selW : clipW
 
       // Collect target user columns starting from x1 (skip internals), up to pasteW
-      const allCols = store.props!.columns!
+      const allCols = store.props.columns!
       const targetCols: typeof allCols = []
       for (let i = x1; i < allCols.length && targetCols.length < pasteW; i++) {
         if (!allCols[i][store.internal]) targetCols.push(allCols[i])
       }
 
-      const data = store.props!.data!.slice()
-      const maxY = Math.min(y1 + pasteH - 1, data.length - 1)
+      const data = store.props.data!.slice()
+      const requiredRows = y1 + pasteH
+      // Create new rows if needed
+      if (requiredRows > data.length) {
+        for (let i = data.length; i < requiredRows; i++) {
+          const newRow = store.props.newRow?.(i) || {}
+          data.push(newRow)
+        }
+      }
+      const maxY = y1 + pasteH - 1
       for (let dy = 0; dy <= maxY - y1; dy++) {
         const patch = {}
         targetCols.forEach((col, dx) => {
           const rowData = data[y1 + dy]
-          const isEditable = unFn(store.props!.editable, { col, data: rowData, x: allCols.indexOf(col), y: y1 + dy })
+          const isEditable = unFn(store.props.editable, { col, data: rowData, x: allCols.indexOf(col), y: y1 + dy })
           if (!isEditable) return
           patch[col.id] = arr2[dy % clipH][dx % clipW]
         })
@@ -97,7 +105,7 @@ export const ClipboardPlugin: Plugin = {
         if (!allCols[i][store.internal]) { endX = i; userCount++ }
       }
       store.selected.end = [endX, maxY]
-      store.props!.onDataChange?.(data)
+      store.props.onDataChange?.(data)
     },
   })
 }

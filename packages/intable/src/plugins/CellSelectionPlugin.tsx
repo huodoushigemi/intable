@@ -1,4 +1,4 @@
-import { batch, createMemo, onCleanup } from 'solid-js'
+import { batch, createMemo } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { type Plugin } from '..'
 import { usePointerDrag } from '../hooks'
@@ -135,41 +135,34 @@ export const CellSelectionPlugin: Plugin = {
       )
     },
   },
-  keybindings: (store) => {
-    const scrollIntoView = () => {
-      const cell = store.table?.querySelector(`td[x="${store.selected.start[0]}"][y="${store.selected.start[1]}"]`)
-      ;(cell as HTMLElement | null)?.scrollIntoViewIfNeeded(false)
-      ;(cell as HTMLElement | null)?.focus()
-    }
-    return {
-      'ArrowLeft': () => {
-        const { start, end } = store.selected
-        if (!start.length) return
-        start[0] = end[0] = Math.max(start[0] - 1, 0)
-        end[1] = start[1]
-        scrollIntoView()
-      },
-      'ArrowRight': () => {
-        const { start, end } = store.selected
-        if (!start.length) return
-        start[0] = end[0] = Math.min(start[0] + 1, store.props!.columns!.length - 1)
-        end[1] = start[1]
-        scrollIntoView()
-      },
-      'ArrowUp': () => {
-        const { start, end } = store.selected
-        if (!start.length) return
-        start[1] = end[1] = Math.max(start[1] - 1, 0)
-        end[0] = start[0]
-        scrollIntoView()
-      },
-      'ArrowDown': () => {
-        const { start, end } = store.selected
-        if (!start.length) return
-        start[1] = end[1] = Math.min(start[1] + 1, store.props!.data!.length - 1)
-        end[0] = start[0]
-        scrollIntoView()
-      },
-    }
-  },
+  keybindings: (store) => ({
+    'ArrowLeft': () => {
+      const { start, end } = store.selected
+      if (!start.length) return
+      start[0] = end[0] = Math.max(start[0] - 1, 0)
+      end[1] = start[1]
+      store.scrollCellIfNeeded(start[0], start[1])
+    },
+    'ArrowRight': () => {
+      const { start, end } = store.selected
+      if (!start.length) return
+      start[0] = end[0] = Math.min(start[0] + 1, store.props!.columns!.length - 1)
+      end[1] = start[1]
+      store.scrollCellIfNeeded(start[0], start[1])
+    },
+    'ArrowUp': () => {
+      const { start, end } = store.selected
+      if (!start.length) return
+      start[1] = end[1] = Math.max(start[1] - 1, 0)
+      end[0] = start[0]
+      store.scrollCellIfNeeded(start[0], start[1])
+    },
+    'ArrowDown': () => {
+      const { start, end } = store.selected
+      if (!start.length) return
+      start[1] = end[1] = Math.min(start[1] + 1, store.props!.data!.length - 1)
+      end[0] = start[0]
+      store.scrollCellIfNeeded(start[0], start[1])
+    },
+  }),
 }

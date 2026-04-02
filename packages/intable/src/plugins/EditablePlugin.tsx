@@ -63,34 +63,33 @@ export const EditablePlugin: Plugin = {
       const preEdit = createMemo(() => selected() && editable() && !editing())
 
       const [validating, setValidating] = createSignal(false)
-      createEffect(() => { if (!editing()) { store.clearCellValidation?.(o.data, o.col); setValidating(false) } })
 
       const editorState = createAsyncMemo(() => {
         if (editing()) {
-          let canceled = false
+          let canceled = false, initialValue = o.data[o.col.id]
           const editor = (editor => typeof editor == 'string' ? store.editors[editor] : editor)(o.col.editor || 'text')
           const opt = {
             props: o.col.editorProps,
             col: o.col,
             eventKey,
             data: o.data,
-            value: o.data[o.col.id],
+            value: initialValue,
             ok: async () => {
               await validate(ret.getValue())
               setEditing(false)
             },
-            cancel: () => (canceled = true, store.clearCellValidation?.(o.data, o.col), setEditing(false)),
-            onChange: v => validate(v).catch(() => {}) // Validate on each change but ignore errors until final submission
+            cancel: () => (canceled = true, setEditing(false)),
+            onChange: v => editing() && validate(v).catch(() => {}) // Validate on each change but ignore errors until final submission
           }
           const ret = editor(opt)
           onCleanup(() => {
-            if (!canceled && ret.getValue() !== o.data[o.col.id]) {
+            if (!canceled && ret.getValue() !== initialValue) {
               const arr = [...props.data!]
               arr[o.y] = { ...arr[o.y], [o.col.id]: ret.getValue() }
               props.onDataChange?.(arr)
             }
             if (!canceled) {
-              validate(ret.getValue())
+              validate(ret.getValue()).catch(() => {})
             }
             ret.destroy()
           })
@@ -99,9 +98,9 @@ export const EditablePlugin: Plugin = {
       })
 
       async function validate(value) {
-        if (!store.validateCell) return
         try {
           setValidating(true)
+          console.log('validate', value)
           await store.validateCell(value, o.data, o.col)
         } finally {
           setValidating(false)

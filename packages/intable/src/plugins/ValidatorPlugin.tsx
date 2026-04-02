@@ -8,6 +8,7 @@ declare module '../index' {
     validator?: (value: any, data: any, col: TableColumn) => void | Promise<void>
   }
   interface TableColumn {
+    required?: boolean
     validator?: (value: any, rowData: any, col: TableColumn) => void | Promise<void>
   }
   interface TableStore {
@@ -21,12 +22,20 @@ declare module '../index' {
   }
 }
 
+const isEmpty = v => v == null || v === '' || (Array.isArray(v) && v.length === 0) || (typeof v === 'object' && Object.keys(v).length === 0)
+
 export const ValidatorPlugin: Plugin = {
   name: 'validator',
   store: (store) => ({
     cellValidationErrors: {} as { [row: Key]: { [col: Key]: string | null } | null },
+
     validateCell: async (value, data, col, scroll?) => {
-      const validators = [store.props.validator, col.validator]
+      if (data[store.internal] || col[store.internal]) return
+      const validators = [
+        () => { if (col.required && isEmpty(value)) throw new Error('Required') },
+        col.validator,
+        store.props.validator,
+      ]
       const id = data[store.props.rowKey]
       for (const fn of validators) {
         if (!fn) continue
@@ -95,6 +104,14 @@ export const ValidatorPlugin: Plugin = {
           {error() != null && <div class='cell-validation-error'>{error()}</div>}
         </Td>
       )
+    },
+    Th: ({ Th }, { store }) => o => {
+      return (
+        <Th {...o}>
+          {o.col.required && <span class='mr-1 c-red/75'>*</span>}
+          {o.children}
+        </Th>
+      )
     }
-  }
+  },
 }

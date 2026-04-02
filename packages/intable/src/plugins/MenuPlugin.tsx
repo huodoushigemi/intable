@@ -192,4 +192,8 @@ function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
     data.splice(i, 0, ...rows)
     store.props?.onDataChange?.(data)
   })()
+
+  delay(0).then(() => {
+    store.scrollCellIfNeeded(store.selected.start[0], store.selected.start[1])
+  })
 }
