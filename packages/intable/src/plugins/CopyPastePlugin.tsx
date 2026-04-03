@@ -2,6 +2,52 @@ import { createEffect } from 'solid-js'
 import { type Plugin } from '..'
 import { unFn } from '../utils'
 
+/** Encode a single TSV cell per RFC 4180: quote it if it contains tabs,
+ *  newlines, or double-quotes; escape inner double-quotes as "". */
+function formatTSVCell(val: string): string {
+  if (/[\t\r\n"]/.test(val)) return '"' + val.replace(/"/g, '""') + '"'
+  return val
+}
+
+/** Parse TSV text following RFC 4180 (tab-separated). Handles quoted fields
+ *  that may contain embedded newlines, tabs, and escaped double-quotes (""). */
+function parseTSV(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ''
+  let i = 0
+  while (i < text.length) {
+    const ch = text[i]
+    if (ch === '"') {
+      // Quoted field
+      i++
+      while (i < text.length) {
+        if (text[i] === '"') {
+          if (text[i + 1] === '"') { cell += '"'; i += 2 } // escaped quote
+          else { i++; break } // end of quoted field
+        } else {
+          // Normalise CRLF inside quoted fields
+          if (text[i] === '\r' && text[i + 1] === '\n') { cell += '\n'; i += 2 }
+          else if (text[i] === '\r') { cell += '\n'; i++ }
+          else { cell += text[i++] }
+        }
+      }
+    } else if (ch === '\t') {
+      row.push(cell); cell = ''; i++
+    } else if (ch === '\r' && text[i + 1] === '\n') {
+      row.push(cell); rows.push(row); row = []; cell = ''; i += 2
+    } else if (ch === '\r' || ch === '\n') {
+      row.push(cell); rows.push(row); row = []; cell = ''; i++
+    } else {
+      cell += ch; i++
+    }
+  }
+  // Handle last cell / row (ignore trailing empty row from trailing newline)
+  if (cell || row.length) { row.push(cell); rows.push(row) }
+  if (rows.length && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0] === '') rows.pop()
+  return rows
+}
+
 declare module '../index' {
   interface TableProps {
     
@@ -45,20 +91,15 @@ export const ClipboardPlugin: Plugin = {
       const cols = store.props.columns!.slice(x1, x2 + 1).filter(col => !col[store.internal])
       const rows = store.props.data!.slice(y1, y2 + 1)
       const text = rows.map(row =>
-        cols.map(col => {
-          const val = row[col.id as string] ?? ''
-          // Escape in-cell tabs/newlines so TSV structure is preserved
-          return String(val).replace(/[\t\r\n]/g, ' ')
-        }).join('\t')
-      ).join('\n')
+        cols.map(col => formatTSVCell(String(row[col.id as string] ?? ''))).join('\t')
+      ).join('\r\n')
       navigator.clipboard.writeText(text)
     },
     paste: async () => {
       const { start, end } = store.selected
       if (!start?.length) return
       const text = await navigator.clipboard.readText()
-      // Normalise CRLF (Excel) and CR (old Mac) line endings; trim trailing newline
-      const arr2 = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n$/, '').split('\n').map(r => r.split('\t'))
+      const arr2 = parseTSV(text)
       const clipH = arr2.length
       const clipW = arr2[0].length
 

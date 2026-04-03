@@ -38,19 +38,13 @@ const NEW = Symbol('new')
 export const DiffPlugin: Plugin = {
   name: 'diff',
   priority: Infinity,
-  store: store => {
-    const data = store.rawProps.data || []
-    data.forEach(row => unwrap(row)[store.rawProps.rowKey] ??= uuid())
-    return {
-      diffData: () => store.props.diff?.data ?? [],
-      diffDataKeyed: createLazyMemo(() => keyBy(store.diffData(), e => e[store.props!.rowKey]))
-    }
-  },
+  store: store => ({
+    diffData: () => store.props.diff?.data ?? [],
+    diffDataKeyed: createLazyMemo(() => keyBy(store.diffData(), e => e[store.props!.rowKey]))
+  }),
   commands: store => ({
     async diffCommit(data = store.rawProps.data || []) {
       const { rowKey } = store.props || {}
-      data.forEach(row => unwrap(row)[rowKey] ??= uuid())
-      data = structuredClone(unwrap(data))
       const added = [], removed = [], changed = []
       const keyed = keyBy(data, e => e[rowKey])
       for (const e of data) {
@@ -111,7 +105,7 @@ export const DiffPlugin: Plugin = {
       })
       return <Td {...o} class={o.class + (clazz() ? ' relative z-1' : '')}>
         {o.children}
-        {clazz() && <div class={clazz() + ' absolute inset-0 z--1 op-20 pointer-events-none'} />}
+        {clazz() && <div class={clazz() + ' absolute inset-0 z--1 op-15 pointer-events-none'} />}
       </Td>
     },
   },

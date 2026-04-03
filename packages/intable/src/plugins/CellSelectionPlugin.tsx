@@ -164,5 +164,12 @@ export const CellSelectionPlugin: Plugin = {
       end[0] = start[0]
       store.scrollCellIfNeeded(start[0], start[1])
     },
+    '$mod+a': () => {
+      const { columns, data } = store.props!
+      if (!columns?.length || !data?.length) return
+      store.selected.start = [0, 0]
+      store.selected.end = [columns.length - 1, data.length - 1]
+      store.scrollCellIfNeeded(store.selected.start[0], store.selected.start[1])
+    },
   }),
 }
