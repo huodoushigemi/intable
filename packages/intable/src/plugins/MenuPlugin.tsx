@@ -79,14 +79,14 @@ export const MenuPlugin: Plugin = {
     },
   },
   menus: (store) => [
-    { label: '新增行 ↑', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])]) },
-    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props!.newRow(store.selected.end[1])], false) },
+    { label: '新增行 ↑', cb: () => store.commands.addRows(store.selected.end[1], [store.props.newRow(store.selected.end[1])]) },
+    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props.newRow(store.selected.end[1])], false) },
     { label: '删除行', cb: () => store.commands.deleteRows(range(...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number])) },
   ],
   commands: (store) => ({
     rowEquals(a, b) {
-      // return a[store.props!.rowKey] == b[store.props!.rowKey]
-      return a == b
+      const key = store.props.rowKey
+      return a == b || (key != null && a?.[key] == b?.[key])
     },
     rowIndexOf(data, row) {
       return data.findIndex(e => store.commands.rowEquals(e, row))
@@ -94,18 +94,18 @@ export const MenuPlugin: Plugin = {
     rowChange(row, i) {
       const data = [...store.rawProps.data || []]
       i = i != null
-        ? data.findIndex(ee => ee == store.props!.data[i])
+        ? data.findIndex(ee => store.commands.rowEquals(ee, store.props.data[i]))
         : store.commands.rowIndexOf(data, row)
       if (i > -1) {
         data[i] = row
-        store.props!.onDataChange?.(data)
+        store.props.onDataChange?.(data)
       }
     },
     addRows(i, rows, before = true) {
       addRows(store, i, rows, before)
     },
     deleteRows(ii) {
-      const { rowKey, data } = store.props!
+      const { rowKey, data } = store.props
       const val = [...store.rawProps.data || []]
       // const ids = new Set(data.filter((e, i) => ii.includes(i)).map(e => e[rowKey]))
       // remove(val, e => ids.has(e[rowKey]))
@@ -114,7 +114,7 @@ export const MenuPlugin: Plugin = {
       store.props?.onDataChange?.(val)
     },
     moveRows(ii, to) {
-      const { data: flatData } = store.props!
+      const { data: flatData } = store.props
 
       // Collect the actual row objects, skipping internal/system rows
       const rows = ii.map(i => flatData[i]).filter(r => r && !r?.[store.internal])
@@ -166,7 +166,7 @@ export const MenuPlugin: Plugin = {
 }
 
 function addRows(store: TableStore, i: number, rows: any[], before: boolean) {
-  const { data } = store.props!
+  const { data } = store.props
   const prev = i => {
     before = false
     while (--i >= 0 && data[i]?.[store.internal]) { }

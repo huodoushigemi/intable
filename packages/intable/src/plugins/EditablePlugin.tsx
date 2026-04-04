@@ -67,7 +67,7 @@ export const EditablePlugin: Plugin = {
       const editorState = createAsyncMemo(() => {
         if (editing()) {
           let canceled = false, initialValue = o.data[o.col.id]
-          const editor = (editor => typeof editor == 'string' ? store.editors[editor] : editor)(o.col.editor || 'text')
+          const editor = (e => typeof e == 'string' ? store.editors[e] : e)(o.col.editor ?? o.col.type ?? 'text')
           const opt = {
             props: o.col.editorProps,
             col: o.col,
@@ -84,13 +84,12 @@ export const EditablePlugin: Plugin = {
           const ret = editor(opt)
           onCleanup(() => {
             if (!canceled && ret.getValue() !== initialValue) {
-              const arr = [...props.data!]
-              arr[o.y] = { ...arr[o.y], [o.col.id]: ret.getValue() }
-              props.onDataChange?.(arr)
+              store.commands.rowChange({ ...props.data[o.y], [o.col.id]: ret.getValue() })
             }
             if (!canceled) {
               validate(ret.getValue()).catch(() => {})
             }
+            eventKey = ''
             ret.destroy()
           })
           return [opt, ret] as const
@@ -100,7 +99,6 @@ export const EditablePlugin: Plugin = {
       async function validate(value) {
         try {
           setValidating(true)
-          console.log('validate', value)
           await store.validateCell(value, o.data, o.col)
         } finally {
           setValidating(false)

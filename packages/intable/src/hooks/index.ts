@@ -151,7 +151,10 @@ export function useMouseDown(el: MaybeAccessor<Many<HTMLElement | undefined>>) {
 export function useClicked(el: MaybeAccessor<Many<HTMLElement | undefined>>) {
   const [clicked, setClicked] = createSignal(false)
   const els = () => castArray(access(el))
-  createEventListener(() => els().map(e => e?.getRootNode()), 'click', e => setClicked(els().some(el => el?.contains(e.target))))
+  createEventListener(() => els().map(e => e?.getRootNode()), 'click', e => {
+    const path = e.composedPath()
+    setClicked(els().some(el => path.includes(el)))
+  })
   return clicked
 }
 

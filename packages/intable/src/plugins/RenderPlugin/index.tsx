@@ -10,6 +10,7 @@ declare module '../../index' {
 
   }
   interface TableColumn {
+    type?: string
     // render?: string | Render
     render?: Render
     enum?: Record<string, any> | { label?: string; value: any }[]
@@ -33,7 +34,7 @@ export const RenderPlugin: Plugin = {
       return (
         <Td {...o}>
           {(() => {
-            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render) || text
+            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type) || text
             return renderComponent(Comp, mergeProps(o, { onChange: v => store.commands.rowChange({ ...o.data, [o.col.id]: v }, o.y) }), store)
           })()}
         </Td>

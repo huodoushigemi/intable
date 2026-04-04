@@ -75,6 +75,8 @@ export const log = (...args) => (console.log(...args), args[0])
 
 export const toArr = v => Array.isArray(v) ? v : v != null ? [v] : []
 
+export const isEmpty = v => v == null || v === '' || (Array.isArray(v) && v.length === 0) || (typeof v === 'object' && Object.keys(v).length === 0)
+
 export const parseStyle = s => s ? s.split(';').reduce((o, e) => ((([k, v]) => o[k.trim()] = v.trim())(e.split(':')), o), {}) : {}
 
 export function findret<T, R>(arr: readonly T[], cb: (e: T, i: number) => R): R | undefined {

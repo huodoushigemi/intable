@@ -91,7 +91,8 @@ export default component(() => {
     plugins: [DiffPlugin, AntdPlugin, ZodValidatorPlugin],
     diff: {
       enable: true,
-      data: diffdata
+      data: diffdata,
+      onCommit: (_, opt) => console.log('Diff commit:', opt),
     }
   })
 })

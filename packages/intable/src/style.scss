@@ -134,6 +134,17 @@
   }
 }
 
+.filter-input {
+  @apply block w-full mt-1 px-1.5 py-0.5 text-[12px] bg-transparent b-1 b-[--table-b-c] rounded outline-none box-border;
+  font-family: inherit;
+  &:focus {
+    @apply b-[--c-primary];
+  }
+  &::placeholder {
+    @apply op-30;
+  }
+}
+
 .copied .range-selected {
   & > .area { border-style: dashed; }
 }

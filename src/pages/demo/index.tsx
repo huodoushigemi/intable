@@ -23,6 +23,7 @@ import CopyPasteDemo from './CopyPasteDemo'
 import CompositeDemo from './CompositeDemo'
 import ReactDemo from './ReactDemo'
 import ReactAntd from './ReactAntd'
+import FilterDemo from './FilterDemo'
 
 // ── Theme CSS (equivalent to: import 'intable/theme/*') ──────────────────────
 import antdCss         from '../../../packages/intable/src/theme/antd.scss?inline'
@@ -123,6 +124,7 @@ const demos = [
   { name: 'History',         comp: HistoryDemo,         desc: 'Undo / Redo (Ctrl+Z / Ctrl+Y)' },
   { name: 'Diff',            comp: DiffDemo,            desc: 'Track changes & commit (Ctrl+S)' },
   { name: 'Composite',       comp: CompositeDemo,       desc: 'All features combined' },
+  { name: 'Filter',          comp: FilterDemo,          desc: 'Per-column text filter with live filtering' },
   { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' },
   { name: 'ReactAntd',       comp: ReactAntd,           desc: 'React Antd integration demo' },
 ]
@@ -141,7 +143,7 @@ export const DemoApp = () => {
   return (
     <div class='flex h-100vh'>
       {/* sidebar */}
-      <nav class='w-52 shrink-0 of-y-auto b-r-(1 solid #e5e7eb) p-2 bg-#fafafa flex flex-col gap-1'>
+      <nav class='w-52 shrink-0 of-y-auto b-r-(1 solid #e5e7eb) p-2 bg-#fafafa flex flex-col gap-1 [&>*]:flex-shrink-0'>
         <h2 class='font-bold text-lg px-2 py-1'>Plugin Demos</h2>
 
         {/* Theme switcher — custom dropdown for proper color rendering */}

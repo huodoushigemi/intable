@@ -108,7 +108,7 @@ export type TD = Component<TDProps>
 type Obj = Record<string | symbol, any>
 
 export interface TableColumn extends Obj {
-  id?: any
+  id: any
   name?: string
   width?: number
   fixed?: 'left' | 'right'
