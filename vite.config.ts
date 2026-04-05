@@ -23,7 +23,7 @@ export default defineConfig({
     (await import('vite-plugin-pages')).default({
       resolver: 'solid',
       dirs: 'src/pages',
-      importMode: 'sync',
+      // importMode: 'sync',
     }),
     
     (await import('unocss/vite')).default({
