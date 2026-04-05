@@ -28,7 +28,6 @@ export const ExpandPlugin: Plugin = {
       fixed: 'left',
       width: 45,
       render: solidComponent((o) => <ArrowCell store={store} data={o.data} />),
-      // todo
       props: o => ({ onClick: () => store.commands.expand.toggle(o.data) }),
       [store.internal]: 1
     } as TableColumn,
@@ -47,21 +46,14 @@ export const ExpandPlugin: Plugin = {
       ? [store.expandCol, ...columns]
       : columns,
       
-    Tr: ({ Tr }, { store }) => store.props.expand?.enable ? o => {
-      return (
-        <Tr {...o}>{
-          !o.data?.[store.expandCol.id] ? o.children :
-          <td colspan={store.props.columns?.length} style='width: 100%'>
-            {renderComponent(store.props.expand?.render, { ...o, data: o.data[store.expandCol.id] }, store)}
-          </td>
-        }</Tr>
-      )
-    } : Tr,
-
-    Td: ({ Td }, { store }) => o => {
-      o = combineProps(o, { onClick: () => o.col.id == store.expandCol.id && store.commands.expand.toggle(o.data) })
-      return <Td {...o} />
-    },
+    Tr: ({ Tr }, { store }) => store.props.expand?.enable ? o => (
+      <Tr {...o}>{
+        !o.data?.[store.expandCol.id] ? o.children :
+        <td colspan={store.props.columns?.length} style='width: 100%'>
+          {renderComponent(store.props.expand?.render, { ...o, data: o.data[store.expandCol.id] }, store)}
+        </td>
+      }</Tr>
+    ) : Tr,
     
     data: ({ data }, { store }) => (
       store.commands.expand.value.length

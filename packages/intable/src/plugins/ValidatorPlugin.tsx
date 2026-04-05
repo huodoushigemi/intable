@@ -94,12 +94,9 @@ export const ValidatorPlugin: Plugin = {
   rewriteProps: {
     Td: ({ Td }, { store }) => o => {
       const error = () => store.cellValidationErrors[o.data[store.props.rowKey]]?.[o.col.id]
-      const combined = combineProps(o, {
-        get class() { return error() != null ? 'is-invalid' : '' }
-      })
       return (
-        <Td {...combined}>
-          {o.children}
+        <Td {...o} class={o.class + ' ' + (error() != null ? 'is-invalid' : '')}>
+          {/*@once*/ o.children}
           {error() != null && <div class='cell-validation-error'>{error()}</div>}
         </Td>
       )
@@ -108,7 +105,7 @@ export const ValidatorPlugin: Plugin = {
       return (
         <Th {...o}>
           {o.col.required && <span class='mr-1 c-red/75'>*</span>}
-          {o.children}
+          {/*@once*/ o.children}
         </Th>
       )
     }

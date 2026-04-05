@@ -80,7 +80,7 @@ const RowHandle = (o: TDProps) => {
     },
   })
   createEventListener(() => el, 'dblclick', () => o.data[COL]= void 0)
-  return <div ref={el} class={`in-cell__resize-handle absolute bottom-0 left-0 flex flex-col justify-center h-1! ${o.y == props.data.length - 1 ? 'justify-end!' : ''} after:h-1 cursor-s-resize z-1`} />
+  return <div ref={el} class={`in-cell__resize-handle absolute bottom-0 left-0 flex flex-col justify-center h-1! ${o.y == props.data.length - 1 ? 'justify-end!' : ''} after:h-1 cursor-s-resize z-2`} />
 }
 export const ResizePlugin: Plugin = {
   name: 'resize',
@@ -101,18 +101,23 @@ export const ResizePlugin: Plugin = {
       untrack(() => batch(() => reconcile(columns, { key: store.ID })(store.__resize__cols ??= [])))
     ),
     Th: ({ Th }, { store }) => o => {
-      o = combineProps({ class: 'relative' }, o)
-      return <Th {...o}>
-        {o.children}
+      return <Th {...o} class={`relative ${o.class}`}>
+        {/*@once*/ o.children}
         {o.col.resizable && <ColHandle {...o} />}
       </Th>
     },
-    Td: ({ Td }, { store }) => !store.props?.resizable?.row.enable ? Td : o => {
-      o = combineProps({ class: 'relative' }, o)
-      return <Td {...o}>
-        {o.children}
-        {o.x == 0 && store.props?.resizable?.row.enable && <RowHandle {...o} />}
-      </Td>
+    // Td: ({ Td }, { store }) => !store.props?.resizable?.row.enable ? Td : o => {
+    //   // o = combineProps({ class: 'relative' }, o)
+    //   return <Td {...o}>
+    //     {/*@once*/ o.children}
+    //     {o.x == 0 && store.props?.resizable?.row.enable && <RowHandle {...o} />}
+    //   </Td>
+    // },
+    Tr: ({ Tr }, { store }) => !store.props?.resizable?.row.enable ? Tr : o => {
+      return <Tr {...o} class={`relative ${o.class}`}>
+        {/*@once*/ o.children}
+        {store.props?.resizable?.row.enable && o.y != null && <RowHandle {...o} />}
+      </Tr>
     },
     cellStyle: ({ cellStyle }, { store }) => o => {
       return `${unFn(cellStyle, o)};` + (store[ROW][o.y] ? `height: ${store[ROW][o.y]}px` : '')

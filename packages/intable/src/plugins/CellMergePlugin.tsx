@@ -104,15 +104,10 @@ export const CellMergePlugin: Plugin = {
       const isCovered = () => store._mergeMap?.().covered.has(key()) ?? false
       const span = () => store._mergeMap?.().spans.get(key())
 
-      o = combineProps(o, {
-        get rowspan() { return span()?.rowspan },
-        get colspan() { return span()?.colspan },
-      })
-
       return (
         // Covered cells must not render any DOM node — HTML collapses the layout automatically
         <Show when={!isCovered()}>
-          <Td {...o} />
+          <Td {...o} rowspan={span()?.rowspan} colspan={span()?.colspan} />
         </Show>
       )
     },

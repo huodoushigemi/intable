@@ -1,4 +1,5 @@
 import { batch, createMemo } from 'solid-js'
+import { createLazyMemo } from '@solid-primitives/memo'
 import { combineProps } from '@solid-primitives/props'
 import { type Plugin } from '..'
 import { usePointerDrag } from '../hooks'
@@ -21,12 +22,12 @@ export const CellSelectionPlugin: Plugin = {
   name: 'cell-selection',
   store: (store) => ({
     selected: { start: [], end: [] },
-    cellSelectionRect: () => {
+    cellSelectionRect: createLazyMemo(() => {
       const { start, end } = store.selected
       const xs = [start[0], end[0]].sort((a, b) => a - b)
       const ys = [start[1], end[1]].sort((a, b) => a - b)
       return { xs, ys }
-    }
+    })
   }),
   commands: store => ({
     getAreaRows() {
@@ -100,10 +101,9 @@ export const CellSelectionPlugin: Plugin = {
         const inx = inrange(o.x, ...[start[0], end[0]].sort((a, b) => a - b))
         return inx ? 'col-range-highlight' : ''
       })
-      const mo = combineProps(o, { get class() { return clazz() } })
       return (
-        <Th {...mo}>
-          {mo.children}
+        <Th {...o} class={`${o.class} ${clazz()}`} >
+          {/*@once*/ o.children}
           {clazz() && <div class='area' />}
         </Th>
       )
@@ -126,10 +126,9 @@ export const CellSelectionPlugin: Plugin = {
         return clazz
       })
 
-      const mo = combineProps(o, { get class() { return clazz() }, tabindex: -1 })
       return (
-        <Td {...mo}>
-          {mo.children}
+        <Td {...o} class={`${o.class} ${clazz()}`} tabindex={-1}>
+          {/*@once*/ o.children}
           {clazz() && <div class='area' />}
         </Td>
       )

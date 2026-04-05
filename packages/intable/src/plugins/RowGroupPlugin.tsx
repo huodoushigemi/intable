@@ -84,7 +84,8 @@ export const RowGroupPlugin: Plugin = {
       return row
     },
     Td: ({ Td }, { store }) => o => {
-      if (!o.data?.[GROUP]) return <Td {...o} />
+      // todo
+      if (!o.data?.[GROUP]) return Td(o)
       
       const { props } = useContext(Ctx)
       const show = createMemo(() => store.rowGroup.isExpand(o.data))

@@ -113,14 +113,13 @@ export const TreePlugin: Plugin$0 = store => {
         const rowKey = () => store.props.rowKey
         const meta = () => store._treeMeta?.get(o.data?.[rowKey()])
 
-        o = combineProps(o, {
-          onDblClick() {
-            meta()?.hasChildren && store.tree.toggle(o.data?.[rowKey()])
-          },
-        })
+        const onDblClick = e => {
+          o.onDblClick?.(e)
+          meta()?.hasChildren && store.tree.toggle(o.data?.[rowKey()])
+        }
         
         return (
-          <Td {...o}>
+          <Td {...o} onDblClick={onDblClick}>
             {store._haschildren && o.x === firstCol() ? (
               <div class='flex items-center' style={`padding-left: ${meta()?.depth! * 16}px`}>
               {meta()?.hasChildren ? (

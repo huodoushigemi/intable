@@ -79,7 +79,7 @@ export interface TableProps {
   Table?: Component<any>
   Thead?: Component<any>
   Tbody?: Component<any>
-  Td?: TD
+  Td?: Component<TDProps>
   Th?: Component<THProps>
   Tr?: Component<{ y?: number; data?: any; style?: any; children: JSX.Element }>
   EachRows?: Each
@@ -103,7 +103,6 @@ export interface TableProps {
 
 export type THProps = { x: number; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number; style?: any }
 export type TDProps = { x: number; y: number; data: any; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number }
-export type TD = Component<TDProps>
 
 type Obj = Record<string | symbol, any>
 
@@ -358,6 +357,7 @@ function BasePlugin(): Plugin$0 {
           { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
           { get class() { return o.col.class }, get style() { return o.col.style } },
           { get style() { return o.col.width ? `width: ${o.col.width}px` : '' } },
+          () => o.col.props?.(o) ?? {}
         )
         return <Td {...mProps}>{o.children}</Td>
       },

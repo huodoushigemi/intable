@@ -54,13 +54,12 @@ export const EditablePlugin: Plugin = {
     Td: ({ Td }, { store }) => o => {
       let el!: HTMLElement
       const { props } = useContext(Ctx)
-      const editable = createMemo(() => unFn(props.editable, o))
       const [editing, setEditing] = createSignal(false)
       let eventKey = ''
 
-      const selected = createMemo(() => (([x, y]) => o.x == x && o.y == y)(store.selected.start || []))
-
-      const preEdit = createMemo(() => selected() && editable() && !editing())
+      const editable = () => unFn(props.editable, o)
+      const selected = () => (([x, y]) => o.x == x && o.y == y)(store.selected.start || [])
+      const preEdit = () => selected() && editable() && !editing()
 
       const [validating, setValidating] = createSignal(false)
 
@@ -120,7 +119,7 @@ export const EditablePlugin: Plugin = {
       const size = createMutable({ w: 0, h: 0 })
       createComputed(() => editing() && (size.w = el.getBoundingClientRect().width, size.h = el.getBoundingClientRect().height))
       
-      o = combineProps(o, {
+      o = combineProps(o, () => ({}), {
         ref: v => el = v,
         get class() { return editing() ? 'is-editing' : '' },
         get style() { return editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '' },
