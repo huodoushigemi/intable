@@ -2,6 +2,7 @@ import { createElementSize } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { keyBy, uniqBy } from 'es-toolkit'
 import { createComputed, createMemo, createSignal, mergeProps, untrack } from 'solid-js'
+import { throttlePromise } from '../utils'
 
 /**
  * Fenwick Tree (Binary Indexed Tree)
@@ -82,7 +83,10 @@ export function useVirtualizer(opt: VirtualizerOptions) {
   let tree = new FenwickTree(0)
 
   // Version signal: bumped by resizeItem; triggers start/end/items recompute.
-  const [v, bumpV] = createSignal(undefined, { equals: false })
+  // const [v, bumpV] = createSignal(undefined, { equals: false })
+  const [v, _bumpV] = createSignal(undefined, { equals: false })
+  const raf = throttlePromise(queueMicrotask)
+  const bumpV = () => raf().then(_bumpV)
 
   // Grow when count increases; shrink when it decreases.
   createComputed(() => {
@@ -104,7 +108,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
   /** Compute item geometry directly from Fenwick tree — no array needed. */
   const getItem = (i: number): Item => ({
     index: i,
-    start: i > 0 ? tree.sum(i - 1) : 0,
+    start: tree.sum(i - 1),
     end: tree.sum(i),
   })
 
@@ -139,7 +143,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     for (let i = startIdx(); i <= endIdx(); i++) arr.push(getItem(i))
     if (opt.extras) {
       arr.push(...(opt.extras(startIdx(), endIdx())?.map(i => getItem(i)) || []))
-      arr = uniqBy(arr, e => e.index).sort((a, b) => a.index - b.index)
+      arr = uniqBy(arr, e => e.index)
     }
     return arr
   })
@@ -168,12 +172,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     },
     getVirtualItems: items2,
     getVirtualItem: (() => {
-      const keyed = createMemo(() => {
-        v()
-        const map: Record<number, Item> = {}
-        for (const item of items2()) map[item.index] = item
-        return map
-      })
+      const keyed = createMemo(() => keyBy(items2(), e => e.index))
       return (i: number) => keyed()[i]
     })()
   }

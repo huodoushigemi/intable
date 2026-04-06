@@ -257,21 +257,25 @@ function BasePlugin(): Plugin$0 {
     store: (store) => {
       // 共享一个 ResizeObserver 观察所有 th，回调按 index 分发，替代每列独立 createElementSize
       const thObs = makeResizeObserver((es) => {
-        for (const e of es) {
-          const el = e.target
-          const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
-          const h = store.ths.indexOf(el)
-          if (h >= 0 && el.parentElement) store.thSizes[h] = { width, height }
-        }
+        batch(() => {
+          for (const e of es) {
+            const el = e.target
+            const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
+            const x = el.getAttribute('x')
+            if (x >= 0 && el.parentElement) store.thSizes[x] = { width, height }
+          }
+        })
       })
       // 共享一个 ResizeObserver 观察所有 tr，回调按 index 分发，替代每行独立 createElementSize
-      const trObs = makeResizeObserver((es) => {
-        for (const e of es) {
-          const el = e.target
-          const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
-          const y = store.trs.indexOf(el)
-          if (y >= 0 && el.parentElement) store.trSizes[y] = { width, height }
-        }
+      const trObs = makeResizeObserver(async (es) => {
+        batch(() => {
+          for (const e of es) {
+            const el = e.target
+            const { inlineSize: width, blockSize: height } = e.borderBoxSize[0]
+            const y = el.getAttribute('y')
+            if (y >= 0 && el.parentElement) store.trSizes[y] = { width, height }
+          }
+        })
       })
       return {
         thObs,

@@ -122,3 +122,19 @@ function resolveOpt(opt) {
     { label: opt, value: opt }
   )
 }
+
+export function throttlePromise(of) {
+  let lock = false
+  let resolve
+  return () => {
+    const ret = new Promise(function(s) { resolve = s })
+    if (lock) return ret
+    lock = true
+    of(() => {
+      resolve()
+      lock = false
+      resolve = null
+    })
+    return ret
+  }
+}
