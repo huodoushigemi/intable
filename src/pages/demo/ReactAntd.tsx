@@ -55,6 +55,11 @@ export default component(() => {
   useEffect(() => {
     if (store) store.validate()
   }, [store])
+
+  const [plugins, setPlugins] = useState([])
+  useEffect(() => {
+    setPlugins([DiffPlugin, AntdPlugin, ZodValidatorPlugin])
+  }, [])
   
   return h(Intable, {
     store: setStore,
@@ -88,7 +93,7 @@ export default component(() => {
         ])
       )
     },
-    plugins: [DiffPlugin, AntdPlugin, ZodValidatorPlugin],
+    plugins,
     diff: {
       enable: true,
       data: diffdata,

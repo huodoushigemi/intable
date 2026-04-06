@@ -147,19 +147,20 @@ export const Intable = (props: TableProps) => {
 
   const unplugin = memoize((e: Plugin$0) => runWithOwner(owner, () => unFn(e, store)) as Plugin)
 
-  const plugins = createMemo(() => [
-    ...defaultsPlugins,
-    ...props.plugins || [],
-    RenderPlugin
-  ].map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0)))
+  const plugins = createMemo(prev => {
+    const ret = [
+      ...defaultsPlugins,
+      ...props.plugins || [],
+      RenderPlugin
+    ].map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
-  // init store
-  createComputed((old: Plugin[]) => {
-    const added = difference(plugins(), old)
+    // init store
+    const added = difference(ret, prev)
     runWithOwner(owner, () => {
       added.forEach(e => Object.assign(store, e.store?.(store)))
     })
-    return plugins()
+
+    return ret
   }, [])
   
   // init rewriteProps
