@@ -1,0 +1,1 @@
+import{J as e,ht as t,k as n}from"./index-CXLAxZDC.js";function r(t,r){let i=n(r).map(e=>`col_`+e);return e(n(t).map((e,t)=>Object.fromEntries([[`id`,t],...i.map(e=>[e,`${e}_${t+1}`])])))}function i(t,r){return e(n(t).map(e=>({id:`col_`+e,name:`Col `+e,width:100,...r})))}function a(e,n){t(()=>{e.length=0,e.push(...n)})}var o=()=>{};export{a as i,i as n,r,o as t};
