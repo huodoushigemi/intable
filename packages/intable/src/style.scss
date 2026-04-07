@@ -58,7 +58,7 @@
   }
 
   &--border {
-    @apply b-1;
+    @apply b-1 b-solid;
 
     th, td {
       background-image: linear-gradient(var(--table-b-c), var(--table-b-c)), linear-gradient(var(--table-b-c), var(--table-b-c));
@@ -74,7 +74,11 @@
   }
 
   &__layers {
-    @apply pointer-events-none absolute left-0 top-0 [&>*]:absolute z-1;
+    @apply pointer-events-none absolute inset-0 [&>*]:absolute z-1;
+  }
+
+  &__load-more {
+    @apply py-2 text-center text-3 c-gray/70;
   }
 }
 

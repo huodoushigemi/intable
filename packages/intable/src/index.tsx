@@ -35,7 +35,7 @@ export const Ctx = createContext({
 type Requireds<T, K extends keyof T> = Pri<Omit<T, K> & Required<Pick<T, K>>>
 type Pri<T> = { [K in keyof T]: T[K] }
 type TableProps2 = Requireds<TableProps, (
-  'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells' |
+  'Scroll' | 'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells' |
   'rowKey' | 'data' | 'columns' |
   'newRow'
 )>
@@ -76,6 +76,7 @@ export interface TableProps {
   size?: string
   newRow?: (i: number) => any
   // Component
+  Scroll?: Component<any>
   Table?: Component<any>
   Thead?: Component<any>
   Tbody?: Component<any>
@@ -84,6 +85,7 @@ export interface TableProps {
   Tr?: Component<{ y?: number; data?: any; style?: any; children: JSX.Element }>
   EachRows?: Each
   EachCells?: Each<TableColumn>
+  Footer?: Component<any>
   // 
   cellClass?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
   cellStyle?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
@@ -200,10 +202,12 @@ export const Intable = (props: TableProps) => {
 
   return (
     <Ctx.Provider value={ctx}>
-      <ctx.props.Table>
-        <THead />
-        <TBody />
-      </ctx.props.Table>
+      <ctx.props.Scroll>
+        <ctx.props.Table>
+          <THead />
+          <TBody />
+        </ctx.props.Table>
+      </ctx.props.Scroll>
     </Ctx.Provider>
   )
 }
@@ -245,6 +249,7 @@ export default Intable
 function BasePlugin(): Plugin$0 {
   const omits = { col: null, data: null }
 
+  const scroll = o => <div {...o} />
   const table = o => <table {...o} /> as any
   const thead = o => <thead {...o} /> as any
   const tbody = o => <tbody {...o} /> as any
@@ -268,7 +273,7 @@ function BasePlugin(): Plugin$0 {
         })
       })
       // 共享一个 ResizeObserver 观察所有 tr，回调按 index 分发，替代每行独立 createElementSize
-      const trObs = makeResizeObserver(async (es) => {
+      const trObs = makeResizeObserver((es) => {
         batch(() => {
           for (const e of es) {
             const el = e.target
@@ -295,14 +300,50 @@ function BasePlugin(): Plugin$0 {
       data: ({ data = [] }) => data,
       columns: ({ columns = [] }) => columns,
       newRow: ({ newRow = () => ({}) }) => newRow,
+      Scroll: ({ Scroll = scroll }, { store }) => o => {
+        const pos = createScrollPosition(() => store.scroll_el)
+        const size = createElementSize(() => store.scroll_el)
+
+        const clazz = createMemo(() => {
+          const el = store.scroll_el
+          if (!el) return
+          const isleft = pos.x == 0
+          const isright = pos.x >= el.scrollWidth - (size.width || 0)
+          return (
+            isleft && isright ? '' :
+            !isleft && !isright ? 'is-scroll-mid' :
+            isleft ? 'is-scroll-left' : 
+            isright ? 'is-scroll-right' :
+            ''
+          )
+        })
+        
+        o = combineProps(o,
+          { ref: el => store.scroll_el = el, class: 'data-table--scroll-view' },
+          { get class() { return `data-table ${store.props.border && 'data-table--border'} data-table--${store.props.size}` } },
+          { get class() { return store.props.class }, get style() { return store.props.style } },
+          { get class() { return clazz() } }
+        )
+
+        const layers = mapArray(() => store.plugins.flatMap(e => e.layers ?? []), Layer => <Layer {...store} />)
+        
+        return (
+          <Scroll tabindex={-1} {...o}>
+            <div class='data-table__layers'>
+              {layers()}
+            </div>
+            {o.children}
+            <store.props.Footer />
+            {!store.props.data.length && <div class='data-table__empty'>No data</div>}
+          </Scroll>
+        )
+      },
+      Footer: ({ Footer }) => (
+        Footer ??= o => <div {...combineProps({ class: 'data-table__footer' }, o)} />,
+        o => <Footer {...o} />
+      ),
       Table: ({ Table = table }, { store }) => o => {
-        const [el, setEl] = createSignal<HTMLElement>()
-        const { props } = useContext(Ctx)
-        o = combineProps({
-          ref: setEl,
-          get class() { return `data-table ${props.class} ${props.border && 'data-table--border'} data-table--${props.size}` },
-          get style() { return props.style }
-        }, o)
+        o = combineProps({ ref: el => store.table = el, class: `data-table--table` }, o)
         return <Table {...o} />
       },
       Thead: ({ Thead = thead }, { store }) => o => {
@@ -456,47 +497,7 @@ const FitColWidthPlugin: Plugin$0 = store => {
   }
 }
 
-export const ScrollPlugin: Plugin = {
-  name: 'scroll',
-  priority: Infinity,
-  rewriteProps: {
-    Table: (prev, { store }) => o => {
-      const pos = createScrollPosition(() => store.scroll_el)
-      const size = createElementSize(() => store.scroll_el)
-
-      const clazz = createMemo(() => {
-        const el = store.scroll_el
-        if (!el) return
-        const isleft = pos.x == 0
-        const isright = pos.x >= el.scrollWidth - (size.width || 0)
-        return (
-          isleft && isright ? '' :
-          !isleft && !isright ? 'is-scroll-mid' :
-          isleft ? 'is-scroll-left' : 
-          isright ? 'is-scroll-right' :
-          ''
-        )
-      })
-      
-      o = combineProps(o, { ref: el => store.scroll_el = el, class: 'data-table--scroll-view' }, { get class() { return clazz() } })
-
-      const layers = mapArray(() => store.plugins.flatMap(e => e.layers ?? []), Layer => <Layer {...store} />)
-      
-      return (
-        <div tabindex={-1} {...o}>
-          <div class='data-table__layers'>
-            {layers()}
-          </div>
-          <table ref={el => store.table = el} class={`data-table--table`}>{o.children}</table>
-          {!store.props.data.length && <div class='data-table__empty'>No data</div>}
-        </div>
-      )
-    }
-  }
-}
-
 export const defaultsPlugins = [
-  ScrollPlugin,
   BasePlugin,
   CommandPlugin,
   MenuPlugin,
