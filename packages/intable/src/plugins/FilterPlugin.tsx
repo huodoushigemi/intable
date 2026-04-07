@@ -7,7 +7,13 @@ import { normalizeType } from '../components/AndOrFields'
 
 declare module '../index' {
   interface TableProps {
-    filterable?: boolean
+    filter?: {
+      // value: AndOrNode[]
+      onChange?: (value: AndOrNode[]) => void
+
+      /** @default true */
+      autoMatch?: boolean
+    }
   }
   interface TableColumn {
     filterable?: boolean
@@ -125,12 +131,11 @@ function passesFilters(
   row: any,
   filters: Record<string, AndOrNode>,
   columns: TableColumn[],
-  globalFilterable: boolean | undefined,
   internal: symbol,
 ): boolean {
   return columns.every(col => {
-    if (col[internal] || !(col.filterable ?? globalFilterable)) return true
-    const tree = getFilterTree(filters, col)
+    if (col[internal] || !(col.filterable)) return true
+    const tree = filters[col.id]
     if (!tree || !hasActiveTree(tree)) return true
     return evaluateFilterTree(row[col.id], tree, normalizeType(col))
   })
@@ -142,40 +147,32 @@ export const FilterPlugin: Plugin = {
     filters: {},
   }),
   rewriteProps: {
+    filter: ({ filter }, { store }) => ({
+      autoMatch: true,
+      ...filter,
+    }),
     data: ({ data }, { store }) => {
       if (!data) return data
       const { filters } = store
-      const { columns = [], filterable } = store.props
+      const { columns, filter } = store.props
+      if (!filter!.autoMatch) return data
       if (!Object.values(filters).some(hasActiveTree)) return data
-      return data.filter(row => passesFilters(row, filters, columns, filterable, store.internal))
-    },
-    onDataChange: ({ onDataChange }, { store }) => (newFiltered) => {
-      const raw = store.rawProps.data ?? []
-      const { columns = [], filterable } = store.props
-      if (!Object.values(store.filters).some(hasActiveTree)) {
-        onDataChange?.(newFiltered)
-        return
-      }
-      // Map filtered-view edits back to the original unfiltered array
-      const original = [...raw]
-      let filtIdx = 0
-      raw.forEach((row, origIdx) => {
-        if (passesFilters(row, store.filters, columns, filterable, store.internal)) {
-          original[origIdx] = newFiltered[filtIdx++]
-        }
-      })
-      onDataChange?.(original)
+      return data.filter(row => passesFilters(row, filters, columns, store.internal))
     },
     Th: ({ Th }, { store }) => o => {
-      const isFilterable = () => !!(o.col.filterable ?? store.props.filterable) && !o.col[store.internal]
+      const isFilterable = () => !!o.col.filterable && !o.col[store.internal]
       return (
         <Th {...o}>
           {o.children}
           <Show when={isFilterable()}>
             <Filter
               col={o.col}
-              tree={getFilterTree(store.filters, o.col)}
-              setTree={tree => setFilterTree(store.filters, o.col, tree)}
+              tree={store.filters[o.col.id]}
+              setTree={tree => {
+                if (!tree) delete store.filters[o.col.id]
+                else store.filters[o.col.id] = tree
+                store.props.filter?.onChange?.(Object.values(store.filters))
+              }}
             />
           </Show>
         </Th>
