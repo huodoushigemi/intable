@@ -119,7 +119,7 @@ export const EditablePlugin: Plugin = {
       const size = createMutable({ w: 0, h: 0 })
       createComputed(() => editing() && (size.w = el.getBoundingClientRect().width, size.h = el.getBoundingClientRect().height))
       
-      o = combineProps(o, () => ({}), {
+      o = combineProps(o, {
         ref: v => el = v,
         get class() { return editing() ? 'is-editing' : '' },
         get style() { return editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '' },

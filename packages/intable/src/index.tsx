@@ -116,7 +116,7 @@ export interface TableColumn extends Obj {
   fixed?: 'left' | 'right'
   class?: any
   style?: any
-  props?: (props) => JSX.HTMLAttributes<any>
+  // props?: (props) => JSX.HTMLAttributes<any>
 }
 
 type Nullable<T> = T | undefined
@@ -406,7 +406,7 @@ function BasePlugin(): Plugin$0 {
           { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
           { get class() { return o.col.class }, get style() { return o.col.style } },
           { get style() { return o.col.width ? `width: ${o.col.width}px` : '' } },
-          () => o.col.props?.(o) ?? {}
+          // () => o.col.props?.(o) ?? {}
         )
         return <Td {...mProps}>{o.children}</Td>
       },
