@@ -74,6 +74,7 @@ export interface TableProps {
   style?: any
   rowKey?: any
   size?: string
+  loading?: boolean
   newRow?: (i: number) => any
   // Component
   Scroll?: Component<any>
@@ -319,7 +320,7 @@ function BasePlugin(): Plugin$0 {
         })
         
         o = combineProps(o,
-          { ref: el => store.scroll_el = el, class: 'data-table--scroll-view' },
+          // { ref: el => store.scroll_el = el, class: '' },
           { get class() { return `data-table ${store.props.border && 'data-table--border'} data-table--${store.props.size}` } },
           { get class() { return store.props.class }, get style() { return store.props.style } },
           { get class() { return clazz() } }
@@ -332,8 +333,10 @@ function BasePlugin(): Plugin$0 {
             <div class='data-table__layers'>
               {layers()}
             </div>
-            {o.children}
-            <store.props.Footer />
+            <div class='data-table--scroll-view h-full' ref={el => store.scroll_el = el}>
+              {o.children}
+              <store.props.Footer />
+            </div>
             {!store.props.data.length && <div class='data-table__empty'>No data</div>}
           </Scroll>
         )
@@ -417,7 +420,12 @@ function BasePlugin(): Plugin$0 {
       // EachRows: ({ EachRows }) => EachRows || (o => <Index each={o.each}>{(e, i) => o.children(e, () => i)}</Index>),
       // EachCells: ({ EachCells }) => EachCells || (o => <Index each={o.each}>{(e, i) => o.children(e, () => i)}</Index>),
       renderer: ({ renderer = a => a }) => renderer
-    }
+    },
+    layers: [
+      function Loading(store) {
+        return store.props.loading ? <div class='data-table__loading'><IStreamlineUltimateLoadingBold class='text-2xl animate-spin' /></div> : null
+      }
+    ]
   }
 }
 
