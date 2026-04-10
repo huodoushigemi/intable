@@ -1,0 +1,1 @@
+import{a as e,vt as t}from"./index-Qt4OSfDv.js";import{i as n,n as r,r as i}from"./helpers-C5YFjho2.js";var a=r(6),o=i(20,6),s=()=>t(e,{class:`w-full h-60vh`,columns:a,onColumnsChange:e=>n(a,e),data:o,onDataChange:e=>n(o,e),index:!0,border:!0,stickyHeader:!0,size:`small`,colDrag:!0,rowDrag:!0});export{s as t};
