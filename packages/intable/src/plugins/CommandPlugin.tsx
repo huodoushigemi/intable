@@ -46,7 +46,6 @@ export const CommandPlugin: Plugin = {
         const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
         if (!cell) return
         cell.scrollIntoViewIfNeeded(opt)
-        cell.focus()
       },
     }
   },

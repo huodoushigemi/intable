@@ -25,6 +25,27 @@ declare module '../index' {
 
 export const VirtualScrollPlugin: Plugin = {
   name: 'virtual-scroll',
+  store: (store) => ({
+    scrollToCell(x, y, opt) {
+      const vx = store.virtualizerX, vy = store.virtualizerY
+      if (vx && typeof x === 'number') vx.scrollToIndex(x)
+      if (vy && typeof y === 'number') vy.scrollToIndex(y)
+    },
+    scrollCellIfNeeded(x, y, opt) {
+      // 如果 cell 不在可视范围内，则滚动到该 cell
+      const vx = store.virtualizerX, vy = store.virtualizerY
+      const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
+      if (!cell) return store.scrollToCell(x, y)
+      const rect = cell.getBoundingClientRect()
+      const viewRect = store.scroll_el!.getBoundingClientRect()
+      if (rect.top < viewRect.top || rect.bottom > viewRect.bottom) {
+        if (vy && typeof y === 'number') vy.scrollToIndex(y)
+      }
+      if (rect.left < viewRect.left || rect.right > viewRect.right) {
+        if (vx && typeof x === 'number') vx.scrollToIndex(x)
+      }
+    }
+  }),
   rewriteProps: {
     virtual: ({ virtual }) => defaultsDeep(virtual, {
       x: { overscan: 5 },

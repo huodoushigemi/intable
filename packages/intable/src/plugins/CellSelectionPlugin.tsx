@@ -2,6 +2,7 @@ import { batch, createMemo } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { type Plugin } from '..'
 import { usePointerDrag } from '../hooks'
+import { unFn } from '../utils'
 
 declare module '../index' {
   interface TableProps {
@@ -136,40 +137,66 @@ export const CellSelectionPlugin: Plugin = {
     },
   },
   keybindings: (store) => ({
-    'ArrowLeft': () => {
+    'ArrowLeft': async () => {
       const { start, end } = store.selected
       if (!start.length) return
       start[0] = end[0] = Math.max(start[0] - 1, 0)
       end[1] = start[1]
       store.scrollCellIfNeeded(start[0], start[1])
+      await new Promise(requestAnimationFrame)
+      store.table.querySelector(`[x="${start[0]}"][y="${start[1]}"]`)?.focus()
     },
-    'ArrowRight': () => {
+    'ArrowRight': async () => {
       const { start, end } = store.selected
       if (!start.length) return
       start[0] = end[0] = Math.min(start[0] + 1, store.props!.columns!.length - 1)
       end[1] = start[1]
       store.scrollCellIfNeeded(start[0], start[1])
+      await new Promise(requestAnimationFrame)
+      store.table.querySelector(`[x="${start[0]}"][y="${start[1]}"]`)?.focus()
     },
-    'ArrowUp': () => {
+    'ArrowUp': async () => {
       const { start, end } = store.selected
       if (!start.length) return
       start[1] = end[1] = Math.max(start[1] - 1, 0)
       end[0] = start[0]
       store.scrollCellIfNeeded(start[0], start[1])
+      await new Promise(requestAnimationFrame)
+      store.table.querySelector(`[x="${start[0]}"][y="${start[1]}"]`)?.focus()
     },
-    'ArrowDown': () => {
+    'ArrowDown': async () => {
       const { start, end } = store.selected
       if (!start.length) return
       start[1] = end[1] = Math.min(start[1] + 1, store.props!.data!.length - 1)
       end[0] = start[0]
       store.scrollCellIfNeeded(start[0], start[1])
+      await new Promise(requestAnimationFrame)
+      store.table.querySelector(`[x="${start[0]}"][y="${start[1]}"]`)?.focus()
     },
     '$mod+a': () => {
       const { columns, data } = store.props!
       if (!columns?.length || !data?.length) return
       store.selected.start = [0, 0]
       store.selected.end = [columns.length - 1, data.length - 1]
-      store.scrollCellIfNeeded(store.selected.start[0], store.selected.start[1])
     },
+    'backspace': () => {
+      const { start, end } = store.selected
+      if (!start.length) return
+      const [x1, x2] = [start[0], end[0]].sort((a, b) => a - b)
+      const [y1, y2] = [start[1], end[1]].sort((a, b) => a - b)
+      const data = [...store.props.data!]
+      for (let y = y1; y <= y2; y++) {
+        const rowData = store.props.data![y]
+        const patch = {}
+        for (let x = x1; x <= x2; x++) {
+          const col = store.props.columns![x]
+          const isEditable = unFn(store.props.editable!, { col, data: rowData, x, y })
+          if (!isEditable) continue
+          patch[col.id] = ''
+        }
+        data[y] = { ...data[y], ...patch }
+      }
+      store.commands.rowsChange(data.slice(y1, y2 + 1))
+    }
   }),
 }
