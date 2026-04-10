@@ -134,6 +134,7 @@ export const EditablePlugin: Plugin = {
           {preEdit() &&
             <input
               style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events: none; opacity: 0'
+              // todo
               ref={e => { input = e; delay(0).then(() => e.focus({ preventScroll: true })) }}
               onKeyDown={e => {
                 e.key == ' ' && e.preventDefault()
@@ -148,7 +149,7 @@ export const EditablePlugin: Plugin = {
             />
           }
           {editorState()?.[1]?.el
-            ? <div class='in-cell-edit-wrapper'>
+            ? <div class='in-cell-edit-wrapper' tabindex={-1} on:keydown={e => e.stopPropagation()}>
                 {editorState()?.[1]?.el}
                 {validating() && <span class='cell-validating' />}
               </div>

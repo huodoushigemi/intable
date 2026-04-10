@@ -5,21 +5,6 @@ import { autoPlacement, offset } from 'floating-ui-solid'
 import { Show } from 'solid-js'
 import { isEqual } from 'es-toolkit'
 
-export type FilterRule =
-  | 'contains'
-  | 'eq'
-  | 'neq'
-  | 'startwith'
-  | 'endwith'
-  | 'blank'
-  | 'noblank'
-  | 'lt'
-  | 'gt'
-  | 'lte'
-  | 'gte'
-  | 'true'
-  | 'false'
-
 type FilterProps = {
   col: Field
   tree: AndOrNode | undefined

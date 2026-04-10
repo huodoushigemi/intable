@@ -38,7 +38,7 @@ export const CommandPlugin: Plugin = {
         x = typeof x == 'object' ? store.props.columns.indexOf(x) : x
         y = typeof y == 'object' ? store.props.data.indexOf(y) : y
         const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
-        if (cell) cell.scrollIntoView({ behavior: 'smooth', ...opt })
+        if (cell) cell.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center', ...opt })
       },
       scrollCellIfNeeded(x, y, opt = false) {
         x = typeof x == 'object' ? store.props.columns.indexOf(x) : x

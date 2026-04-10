@@ -74,7 +74,11 @@
   }
 
   &__layers {
-    @apply pointer-events-none absolute inset-0 [&>*]:absolute z-1;
+    @apply pointer-events-none absolute inset-0 [&>*]:absolute z-99;
+  }
+
+  &__loading {
+    @apply absolute inset-0 flex justify-center items-center bg-[--table-bg]/70 z-99 pointer-events-auto;
   }
 
   &__load-more {

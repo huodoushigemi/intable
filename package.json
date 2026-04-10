@@ -21,8 +21,11 @@
   },
   "devDependencies": {
     "@babel/plugin-syntax-typescript": "^7.27.1",
+    "@iconify-json/eos-icons": "^1.2.4",
+    "@iconify-json/line-md": "^1.2.16",
     "@iconify-json/lucide": "^1.2.63",
     "@iconify-json/solar": "^1.2.4",
+    "@iconify-json/streamline-ultimate": "^1.2.2",
     "@iconify-json/vscode-icons": "^1.2.29",
     "@types/node": "^25.0.8",
     "@unocss/transformer-directives": "^66.4.2",

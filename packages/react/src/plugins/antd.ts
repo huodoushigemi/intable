@@ -62,7 +62,6 @@ export const createEditor = (Comp: FC<any>, opts = v => v, isSelector?: boolean)
     }
     
     const handleKeyDown = (e: KeyboardEvent) => {
-      e.stopPropagation()
       if (e.key === 'Enter' && !e.shiftKey) ok()
       if (e.key === 'Escape') cancel()
     }
@@ -89,9 +88,9 @@ export const createEditor = (Comp: FC<any>, opts = v => v, isSelector?: boolean)
   }
   
   // 延迟渲染以兼容 antd@4 下拉框的定位问题
-  setTimeout(() => {
+  queueMicrotask(() => {
     root.render(h(EditorComp))
-  }, 0);
+  })
   
   return {
     el: container,

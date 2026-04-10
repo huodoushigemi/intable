@@ -4,6 +4,7 @@ import { Filter } from '../components/Filter'
 import type { FilterRule } from '../components/Filter'
 import type { AndOrNode, RuleNode } from '../components/AndOr'
 import { normalizeType } from '../components/AndOrFields'
+import { toArr } from '../utils'
 
 declare module '../index' {
   interface TableProps {
@@ -47,6 +48,19 @@ function toBool(v: any) {
   return !!v
 }
 
+function toList(v: any) {
+  if (Array.isArray(v)) return v
+  if (v == null || String(v).trim() === '') return []
+  return String(v).split(',').map(s => s.trim()).filter(Boolean)
+}
+
+function toPair(v: any): [any, any] {
+  if (Array.isArray(v)) return [v[0], v[1]]
+  if (v == null || String(v).trim() === '') return [undefined, undefined]
+  const arr = String(v).split(',').map(s => s.trim())
+  return [arr[0], arr[1]]
+}
+
 function isRuleNode(node: AndOrNode): node is RuleNode {
   return 'field' in node
 }
@@ -73,8 +87,18 @@ function matchFilter(raw: any, ruleNode: RuleNode, type: string) {
   if (type === 'number') {
     const a = toNum(raw)
     const b = toNum(fv)
-    if (a == null || b == null) return false
+    const list = toList(fv).map(toNum).filter(v => v != null)
+    const [minRaw, maxRaw] = toPair(fv)
+    const min = toNum(minRaw)
+    const max = toNum(maxRaw)
+    if (a == null) return false
     if (rule === 'eq') return a === b
+    if (rule === 'ne') return a !== b
+    if (rule === 'in') return list.includes(a)
+    if (rule === 'not_in') return !list.includes(a)
+    if (rule === 'between') return min != null && max != null && a >= Math.min(min, max) && a <= Math.max(min, max)
+    if (rule === 'not_between') return min != null && max != null && (a < Math.min(min, max) || a > Math.max(min, max))
+    if (b == null) return false
     if (rule === 'lt') return a < b
     if (rule === 'gt') return a > b
     if (rule === 'lte') return a <= b
@@ -85,8 +109,18 @@ function matchFilter(raw: any, ruleNode: RuleNode, type: string) {
   if (type === 'date') {
     const a = toDateTs(raw)
     const b = toDateTs(fv)
-    if (a == null || b == null) return false
+    const list = toList(fv).map(toDateTs).filter(v => v != null)
+    const [startRaw, endRaw] = toPair(fv)
+    const start = toDateTs(startRaw)
+    const end = toDateTs(endRaw)
+    if (a == null) return false
     if (rule === 'eq') return a === b
+    if (rule === 'ne') return a !== b
+    if (rule === 'in') return list.includes(a)
+    if (rule === 'not_in') return !list.includes(a)
+    if (rule === 'between') return start != null && end != null && a >= Math.min(start, end) && a <= Math.max(start, end)
+    if (rule === 'not_between') return start != null && end != null && (a < Math.min(start, end) || a > Math.max(start, end))
+    if (b == null) return false
     if (rule === 'lt') return a < b
     if (rule === 'gt') return a > b
     if (rule === 'lte') return a <= b
@@ -95,23 +129,19 @@ function matchFilter(raw: any, ruleNode: RuleNode, type: string) {
 
   const text = String(raw ?? '').toLowerCase()
   const needle = String(fv ?? '').toLowerCase()
+  const list = toList(fv).map(v => String(v).toLowerCase())
+  const [startRaw, endRaw] = toPair(fv)
+  const start = String(startRaw ?? '').toLowerCase()
+  const end = String(endRaw ?? '').toLowerCase()
   if (rule === 'eq') return text === needle
-  if (rule === 'neq') return text !== needle
+  if (rule === 'ne') return text !== needle
+  if (rule === 'in') return list.includes(text)
+  if (rule === 'not_in') return !list.includes(text)
+  if (rule === 'between') return start !== '' && end !== '' && text >= (start < end ? start : end) && text <= (start < end ? end : start)
+  if (rule === 'not_between') return start !== '' && end !== '' && (text < (start < end ? start : end) || text > (start < end ? end : start))
   if (rule === 'startwith') return text.startsWith(needle)
   if (rule === 'endwith') return text.endsWith(needle)
   return text.includes(needle)
-}
-
-function getFilterTree(filters: Record<string, AndOrNode>, col: TableColumn): AndOrNode | undefined {
-  return filters[col.id]
-}
-
-function setFilterTree(filters: Record<string, AndOrNode>, col: TableColumn, tree?: AndOrNode) {
-  if (!tree) {
-    delete filters[col.id]
-    return
-  }
-  filters[col.id] = tree
 }
 
 function evaluateFilterTree(raw: any, node: AndOrNode, type: string): boolean {
@@ -147,10 +177,38 @@ export const FilterPlugin: Plugin = {
     filters: {},
   }),
   rewriteProps: {
-    filter: ({ filter }, { store }) => ({
+    filter: ({ filter }) => ({
       autoMatch: true,
       ...filter,
     }),
+    newRow: ({ newRow }, { store }) => function (...args) {
+      // 根据 filters 生成一个默认值满足过滤条件的行，如果 filters 有多层嵌套则暂不处理
+      const row = newRow(...args)
+      const { filters, props } = store
+      const { columns } = props!
+      
+      columns.forEach(col => {
+        if (col[store.internal] || !col.filterable) return
+        const tree = filters[col.id]
+        // 这里只处理了简单的单层规则节点，复杂树结构暂不处理
+        if (tree && isRuleNode(tree)) {
+          row[col.id] = ({
+            ne: `not ${tree.value}`,
+            between: toArr(tree.value)[0],
+            not_between: NaN,
+            in: toArr(tree.value)[0],
+            not_in: '',
+            lt: tree.value - 1,
+            gt: tree.value + 1,
+            blank: '',
+            noblank: 'default',
+            true: true,
+            false: false,
+          })[tree.op] ?? tree.value
+        }
+      })
+      return row
+    },
     data: ({ data }, { store }) => {
       if (!data) return data
       const { filters } = store

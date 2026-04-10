@@ -54,7 +54,7 @@ export const LoadMorePlugin: Plugin = {
   rewriteProps: {
     loadMore: ({ loadMore }, { store }) => ({
       enable: false,
-      threshold: 40,
+      threshold: 100,
       debounce: 200,
       ...loadMore,
     }),

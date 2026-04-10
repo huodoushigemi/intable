@@ -72,6 +72,7 @@ export default () => {
         columns={cols}
         onColumnsChange={v => replaceArray(cols, v)}
         data={data}
+        onDataChange={v => replaceArray(data, v)}
         index
         border
         stickyHeader
