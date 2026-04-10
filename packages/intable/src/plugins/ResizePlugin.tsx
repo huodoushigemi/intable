@@ -106,18 +106,11 @@ export const ResizePlugin: Plugin = {
         {o.col.resizable && <ColHandle {...o} />}
       </Th>
     },
-    // Td: ({ Td }, { store }) => !store.props?.resizable?.row.enable ? Td : o => {
-    //   // o = combineProps({ class: 'relative' }, o)
-    //   return <Td {...o}>
-    //     {/*@once*/ o.children}
-    //     {o.x == 0 && store.props?.resizable?.row.enable && <RowHandle {...o} />}
-    //   </Td>
-    // },
-    Tr: ({ Tr }, { store }) => !store.props?.resizable?.row.enable ? Tr : o => {
-      return <Tr {...o} class={`relative ${o.class}`}>
+    Td: ({ Td }, { store }) => !store.props?.resizable?.row.enable ? Td : o => {
+      return <Td {...o} class={`relative ${o.class}`}>
         {/*@once*/ o.children}
-        {store.props?.resizable?.row.enable && o.y != null && <RowHandle {...o} />}
-      </Tr>
+        {o.x == 0 && store.props?.resizable?.row.enable && <RowHandle {...o} />}
+      </Td>
     },
     cellStyle: ({ cellStyle }, { store }) => o => {
       return `${unFn(cellStyle, o)};` + (store[ROW][o.y] ? `height: ${store[ROW][o.y]}px` : '')
