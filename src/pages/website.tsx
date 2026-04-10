@@ -4,7 +4,7 @@
  * Stack: SolidJS + UnoCSS (Wind4)
  * Responsive: 375px · 768px · 1024px · 1440px
  */
-import { createSignal, onMount, onCleanup, For, Show } from 'solid-js'
+import { createSignal, onMount, onCleanup, For, Show, batch } from 'solid-js'
 import { createMutable } from 'solid-js/store'
 import { A } from '@solidjs/router'
 import 'virtual:uno.css'
@@ -78,11 +78,14 @@ const PLUGINS = [
   { name: 'EditablePlugin',      desc: '单元格编辑 + 10+ 编辑器', badge: 'core' },
   { name: 'ZodValidatorPlugin',  desc: 'Zod schema 数据校验', badge: 'validation' },
   { name: 'CellSelectionPlugin', desc: '矩形区域多选', badge: 'core' },
-  { name: 'CopyPastePlugin',     desc: 'Excel 式复制粘贴', badge: 'core' },
+  { name: 'ClipboardPlugin',    desc: 'Excel 式复制粘贴', badge: 'core' },
   { name: 'HistoryPlugin',      desc: '撤销 / 重做', badge: 'core' },
+  { name: 'FilterPlugin',       desc: '列筛选 / 条件过滤', badge: 'data' },
+  { name: 'RowSelectionPlugin', desc: '行勾选 / 批量操作', badge: 'ux' },
   { name: 'DragPlugin',         desc: '列 / 行拖拽排序', badge: 'ux' },
   { name: 'ResizePlugin',       desc: '列宽 / 行高拖拽', badge: 'ux' },
   { name: 'ExpandPlugin',       desc: '行展开自定义内容', badge: 'ux' },
+  { name: 'LoadMorePlugin',     desc: '滚动加载更多（无限加载）', badge: 'performance' },
   { name: 'RowGroupPlugin',     desc: '多字段行分组', badge: 'data' },
   { name: 'TreePlugin',         desc: '树形嵌套数据', badge: 'data' },
   { name: 'CellMergePlugin',    desc: '单元格合并', badge: 'data' },
@@ -168,7 +171,7 @@ function highlight(code: string) {
 
 // ─── Components ─────────────────────────────────────────────────────────────
 
-function Navbar() {
+function Navbar(props: { isDark: () => boolean; toggleDark: () => void }) {
   const [open, setOpen] = createSignal(false)
   const [scrolled, setScrolled] = createSignal(false)
   onMount(() => {
@@ -181,7 +184,7 @@ function Navbar() {
       class={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled() ? 'backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/30' : 'bg-transparent'
       }`}
-      style={scrolled() ? 'background:rgba(10,10,15,0.92)' : ''}
+      style={scrolled() ? 'background:var(--wt-nav-bg)' : ''}
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -197,7 +200,7 @@ function Navbar() {
           </a>
           {/* Desktop nav */}
           <nav class="hidden md:flex items-center gap-1">
-            {(['功能', '插件', '快速开始', '文档'] as const).map(item => (
+            {(['功能', '插件', '快速开始'] as const).map(item => (
               <a
                 href={`#${item}`}
                 class="px-4 py-2 text-sm text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors duration-150 cursor-pointer"
@@ -214,8 +217,27 @@ function Navbar() {
           </nav>
           {/* Actions */}
           <div class="hidden md:flex items-center gap-3">
+            <button
+              onClick={props.toggleDark}
+              class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+              title={props.isDark() ? '切换浅色模式' : '切换深色模式'}
+              aria-label="切换主题"
+            >
+              <Show
+                when={props.isDark()}
+                fallback={
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                  </svg>
+                }
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                </svg>
+              </Show>
+            </button>
             <a
-              href="https://github.com"
+              href="https://github.com/huodoushigemi/intable"
               target="_blank"
               rel="noopener noreferrer"
               class="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-400 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-all duration-150 cursor-pointer"
@@ -248,8 +270,8 @@ function Navbar() {
       </div>
       {/* Mobile menu */}
       <Show when={open()}>
-          <div class="md:hidden border-b border-white/5 px-4 pb-4 backdrop-blur-xl" style="background:rgba(10,10,15,0.97)">
-          {(['功能', '插件', '快速开始', '文档'] as const).map(item => (
+          <div class="md:hidden border-b border-white/5 px-4 pb-4 backdrop-blur-xl" style="background:var(--wt-mobile-menu-bg)">
+          {(['功能', '插件', '快速开始'] as const).map(item => (
             <a
               href={`#${item}`}
               class="block px-3 py-3 text-sm text-slate-400 hover:text-white border-b border-white/5 last:border-0 cursor-pointer"
@@ -266,7 +288,10 @@ function Navbar() {
             Demo
           </A>
           <div class="flex gap-3 mt-3">
-            <a href="https://github.com" class="flex-1 py-2 text-center text-sm text-slate-400 border border-white/10 rounded-lg cursor-pointer">GitHub</a>
+            <a href="https://github.com/huodoushigemi/intable" class="flex-1 py-2 text-center text-sm text-slate-400 border border-white/10 rounded-lg cursor-pointer">GitHub</a>
+            <button onClick={props.toggleDark} class="flex-1 py-2 text-center text-sm text-slate-400 border border-white/10 rounded-lg cursor-pointer">
+              {props.isDark() ? '☀ 浅色' : '🌙 深色'}
+            </button>
             <a href="#快速开始" class="flex-1 py-2 text-center text-sm text-white bg-indigo-600 rounded-lg cursor-pointer">开始使用</a>
           </div>
         </div>
@@ -330,7 +355,7 @@ function Hero() {
         {/* Stats */}
         <div class="flex flex-wrap justify-center gap-8 sm:gap-16 text-center">
           {[
-            { val: '14+', label: '插件' },
+            { val: '17+', label: '插件' },
             { val: '1M+', label: '行虚拟化' },
             { val: '3',   label: '框架支持' },
             { val: '0',   label: '外部依赖*' },
@@ -365,7 +390,7 @@ function Features() {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <For each={FEATURES}>{(f, _i) => (
-            <div class="relative p-6 rounded-2xl border" style="background:rgba(255,255,255,0.015)"
+            <div class="relative p-6 rounded-2xl border" style="background:var(--wt-card-bg)"
             >
               {/* Glow on hover */}
               <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/0 to-violet-500/0 group-hover:from-indigo-500/5 group-hover:to-violet-500/5 transition-all duration-300" />
@@ -402,7 +427,7 @@ function PluginsSection() {
               所有功能通过 <code class="font-mono text-violet-300 bg-violet-500/10 px-1.5 py-0.5 rounded text-sm">rewriteProps</code> 管道链式变换。
               每个插件接收上一个的输出，完全可组合、可替换。
             </p>
-            <pre class="text-xs font-mono text-slate-400 border border-white/5 rounded-xl p-4 overflow-x-auto leading-relaxed" style="background:#0f0f1a">
+            <pre class="wt-code text-xs font-mono text-slate-400 border border-white/5 rounded-xl p-4 overflow-x-auto leading-relaxed" style="background:#0f0f1a">
 {`<Intable
   plugins={[
     VirtualScrollPlugin,
@@ -417,7 +442,7 @@ function PluginsSection() {
               <p class="text-xs text-slate-500 mb-3">多框架支持</p>
               <div class="flex flex-wrap gap-2">
                 <For each={FRAMEWORKS}>{(fw) => (
-              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/5 text-xs text-slate-300" style="background:rgba(255,255,255,0.03)">
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/5 text-xs text-slate-300" style="background:var(--wt-card-bg)">
                     <span class="w-2 h-2 rounded-full" style={`background:${fw.color}`} />
                     {fw.name}
                     <span class="text-slate-600">·</span>
@@ -433,7 +458,7 @@ function PluginsSection() {
             <For each={PLUGINS}>{(p) => (
               <div
                 class="flex items-start gap-3 p-4 rounded-xl border border-white/5 hover:border-violet-500/20 transition-all duration-200 group cursor-default"
-                style="background:rgba(255,255,255,0.015)"
+                style="background:var(--wt-card-bg)"
               >
                 <div class="mt-0.5 w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-violet-400 transition-colors flex-shrink-0" />
                 <div class="min-w-0">
@@ -477,7 +502,7 @@ function CodeSection() {
               { step: '02', label: 'Vue', cmd: 'pnpm add @intable/vue' },
               { step: '03', label: 'React', cmd: 'pnpm add @intable/react' },
             ].map(s => (
-              <div class="flex items-center gap-4 p-4 rounded-xl border border-white/5" style="background:rgba(255,255,255,0.015)">
+              <div class="flex items-center gap-4 p-4 rounded-xl border border-white/5" style="background:var(--wt-card-bg)">
                 <span class="font-mono text-xs text-slate-600 w-6 shrink-0">{s.step}</span>
                 <div class="min-w-0">
                   <p class="text-xs text-slate-500 mb-1">{s.label}</p>
@@ -509,7 +534,7 @@ function CodeSection() {
           </div>
 
           {/* Code editor */}
-          <div class="rounded-2xl border border-white/8 overflow-hidden shadow-2xl shadow-black/50">
+          <div class="wt-code rounded-2xl border border-white/8 overflow-hidden shadow-2xl shadow-black/50">
             {/* Title bar */}
             <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5" style="background:#0f0f1a">
               <span class="w-3 h-3 rounded-full bg-red-500/70" />
@@ -567,11 +592,11 @@ function TableDemo() {
           <p class="text-sm text-slate-500 mt-2 font-mono">点击选择 · ⌘C 复制 · ⌘Z 撤销</p>
         </div>
 
-        <div class="wt-live-demo rounded-2xl border border-white/8 overflow-hidden shadow-2xl shadow-black/40">
+        <div class="wt-live-demo overflow-hidden shadow-2xl shadow-black/20">
           <Intable
             style="max-height:240px"
             data={data}
-            onDataChange={v => v.forEach((row, i) => Object.assign(data[i], row))}
+            onDataChange={v => batch(() => v.forEach((row, i) => Object.assign(data[i], row)))}
             columns={cols}
             index
             border
@@ -603,7 +628,7 @@ function Footer() {
           <div class="flex items-center gap-4 text-xs text-slate-600 font-mono">
             <a href="#功能" class="hover:text-slate-400 transition-colors cursor-pointer">功能</a>
             <a href="#插件" class="hover:text-slate-400 transition-colors cursor-pointer">插件</a>
-            <a href="#快速开始" class="hover:text-slate-400 transition-colors cursor-pointer">文档</a>
+            <a href="#快速开始" class="hover:text-slate-400 transition-colors cursor-pointer">快速开始</a>
           </div>
         </div>
       </div>
@@ -614,8 +639,33 @@ function Footer() {
 // ─── Root ────────────────────────────────────────────────────────────────────
 
 export const Website = () => {
+  const initDark = typeof window !== 'undefined'
+    ? (localStorage.getItem('wt-theme') === 'dark'
+        || (localStorage.getItem('wt-theme') === null
+            && window.matchMedia('(prefers-color-scheme: dark)').matches))
+    : true
+  const [isDark, setIsDark] = createSignal(initDark)
+  const toggleDark = () => {
+    const next = !isDark()
+    setIsDark(next)
+    localStorage.setItem('wt-theme', next ? 'dark' : 'light')
+  }
+
+  // fix: hash 路由 a 标签无法正确滚动到目标元素
+  function onClick(e) {
+    if (e.target.tagName === 'A' && e.target.getAttribute('href')?.startsWith('#')) {
+      const id = e.target.getAttribute('href')!.slice(1)
+      const el = document.getElementById(id)
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY
+        window.scrollTo({ top, behavior: 'smooth' })
+        e.preventDefault()
+      }
+    }
+  }
+
   return (
-    <div style="background:#080810;color:#fff;min-height:100vh;font-family:'IBM Plex Sans',system-ui,sans-serif">
+    <div class={`wt-website${isDark() ? ' wt-dark' : ''}`} style="min-height:100vh;font-family:'IBM Plex Sans',system-ui,sans-serif" onClick={onClick}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
         .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
@@ -624,10 +674,6 @@ export const Website = () => {
           *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
         :focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; border-radius: 6px; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
       `}</style>
 
       {/* Skip to content (a11y) */}
@@ -635,7 +681,7 @@ export const Website = () => {
         跳到主要内容
       </a>
 
-      <Navbar />
+      <Navbar isDark={isDark} toggleDark={toggleDark} />
       <main>
         <Hero />
         <Features />

@@ -333,7 +333,7 @@ function BasePlugin(): Plugin$0 {
             <div class='data-table__layers'>
               {layers()}
             </div>
-            <div class='data-table--scroll-view h-full' ref={el => store.scroll_el = el}>
+            <div class='data-table--scroll-view h-full max-h-inherit' ref={el => store.scroll_el = el}>
               {o.children}
               <store.props.Footer />
             </div>

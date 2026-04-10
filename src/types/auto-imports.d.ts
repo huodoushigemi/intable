@@ -11,4 +11,5 @@ declare global {
   const ILucidePlus: typeof import('~icons/lucide/plus.jsx')['default']
   const ILucideX: typeof import('~icons/lucide/x.jsx')['default']
   const IMyLoading: typeof import('~icons/my/loading.jsx')['default']
+  const IStreamlineUltimateLoadingBold: typeof import('~icons/streamline-ultimate/loading-bold.jsx')['default']
 }

@@ -12,7 +12,6 @@ declare module '../index' {
   interface TableProps {
     diff?: {
       /** @default false */
-      enable?: boolean
       data?: any[]
       /** @default true */
       added?: boolean
@@ -68,7 +67,7 @@ export const DiffPlugin: Plugin = {
       ...diff
     }),
     data: ({ data }, { store }) => {
-      if (!store.props.diff?.enable) return data
+      if (!store.props.diff?.data) return data
       
       const { rowKey, diff } = store.props || {}
       const diffData = store.diffData()
@@ -92,7 +91,7 @@ export const DiffPlugin: Plugin = {
         e.value
       ))
     },
-    Td: ({ Td }, { store }) => !store.props.diff?.enable ? Td : o => {
+    Td: ({ Td }, { store }) => !store.props.diff?.data ? Td : o => {
       const clazz = createMemo(() => {
         const { diff } = store.props
         const id = o.data[store.props!.rowKey]
