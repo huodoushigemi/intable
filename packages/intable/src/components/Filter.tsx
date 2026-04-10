@@ -5,21 +5,6 @@ import { autoPlacement, offset } from 'floating-ui-solid'
 import { Show } from 'solid-js'
 import { isEqual } from 'es-toolkit'
 
-export type FilterRule =
-  | 'contains'
-  | 'eq'
-  | 'neq'
-  | 'startwith'
-  | 'endwith'
-  | 'blank'
-  | 'noblank'
-  | 'lt'
-  | 'gt'
-  | 'lte'
-  | 'gte'
-  | 'true'
-  | 'false'
-
 type FilterProps = {
   col: Field
   tree: AndOrNode | undefined
@@ -59,6 +44,7 @@ export const Filter = (props: FilterProps) => {
     const r = firstRule(tree())
     if (!r) return
     r.value = value
+    props.setTree(tree())
   }
 
   return (
@@ -72,7 +58,7 @@ export const Filter = (props: FilterProps) => {
         <RuleValueEditor
           field={props.col}
           op={rule()?.op}
-          class='filter-input'
+          class='filter-input h-6'
           value={rule()?.value ?? ''}
           enum={props.col.enum}
           onChange={value => updateQuickValue(String(value ?? ''))}

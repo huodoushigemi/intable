@@ -63,6 +63,9 @@ interface VirtualizerOptions {
   batch?: number
   getScrollElement: () => Element
   horizontal?: boolean
+  // todo
+  paddingStart?: number
+  paddingEnd?: number
   count: number
   estimateSize: (i: number) => number
   extras?: (startIdx: number, endIdx: number) => number[]
@@ -149,6 +152,7 @@ export function useVirtualizer(opt: VirtualizerOptions) {
   })
 
   return {
+    tree,
     options: opt,
     startIdx,
     endIdx,
@@ -174,6 +178,12 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     getVirtualItem: (() => {
       const keyed = createMemo(() => keyBy(items2(), e => e.index))
       return (i: number) => keyed()[i]
-    })()
+    })(),
+    scrollToIndex: (i: number) => {
+      const el = opt.getScrollElement()
+      const offset = tree.sum(i - 1)
+      if (opt.horizontal) el.scrollTo({ left: offset, behavior: 'instant' })
+      else el.scrollTo({ top: offset, behavior: 'instant' })
+    },
   }
 }

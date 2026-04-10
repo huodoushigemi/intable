@@ -72,11 +72,15 @@ export default () => {
         columns={cols}
         onColumnsChange={v => replaceArray(cols, v)}
         data={data}
+        onDataChange={v => replaceArray(data, v)}
         index
         border
         stickyHeader
         size='small'
         plugins={[FilterPlugin]}
+        filter={{
+          onChange: v => console.log('Filters changed:', v),
+        }}
       />
 
       <h2 class='font-bold text-xl mt-8 mb-4'>Filters Graphs</h2>

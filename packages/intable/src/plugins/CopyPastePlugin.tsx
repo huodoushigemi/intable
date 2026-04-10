@@ -146,7 +146,7 @@ export const ClipboardPlugin: Plugin = {
         if (!allCols[i][store.internal]) { endX = i; userCount++ }
       }
       store.selected.end = [endX, maxY]
-      store.props.onDataChange?.(data)
+      store.commands.rowsChange?.(data)
     },
   })
 }

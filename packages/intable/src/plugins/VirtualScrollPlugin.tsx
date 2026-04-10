@@ -25,6 +25,27 @@ declare module '../index' {
 
 export const VirtualScrollPlugin: Plugin = {
   name: 'virtual-scroll',
+  store: (store) => ({
+    scrollToCell(x, y, opt) {
+      const vx = store.virtualizerX, vy = store.virtualizerY
+      if (vx && typeof x === 'number') vx.scrollToIndex(x)
+      if (vy && typeof y === 'number') vy.scrollToIndex(y)
+    },
+    scrollCellIfNeeded(x, y, opt) {
+      // 如果 cell 不在可视范围内，则滚动到该 cell
+      const vx = store.virtualizerX, vy = store.virtualizerY
+      const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
+      if (!cell) return store.scrollToCell(x, y)
+      const rect = cell.getBoundingClientRect()
+      const viewRect = store.scroll_el!.getBoundingClientRect()
+      if (rect.top < viewRect.top || rect.bottom > viewRect.bottom) {
+        if (vy && typeof y === 'number') vy.scrollToIndex(y)
+      }
+      if (rect.left < viewRect.left || rect.right > viewRect.right) {
+        if (vx && typeof x === 'number') vx.scrollToIndex(x)
+      }
+    }
+  }),
   rewriteProps: {
     virtual: ({ virtual }) => defaultsDeep(virtual, {
       x: { overscan: 5 },
@@ -32,13 +53,15 @@ export const VirtualScrollPlugin: Plugin = {
       // x: { batch: 3, overscan: 2 },
       // y: { batch: 5, overscan: 5 },
     }),
+    Scroll: ({ Scroll }, { store }) => o => {
+      o = combineProps({ class: 'virtual' }, o)
+      return <Scroll {...o} />
+    },
     Table: ({ Table }, { store }) => (o) => {
-      let el: HTMLElement
-
       const { props } = useContext(Ctx)
       
       const virtualizerY = useVirtualizer(mergeProps(() => props.virtual?.y, {
-        getScrollElement: () => el,
+        getScrollElement: () => store.scroll_el!,
         get count() { return props.data?.length || 0 },
         estimateSize: () => 32,
         indexAttribute: 'y',
@@ -62,7 +85,7 @@ export const VirtualScrollPlugin: Plugin = {
 
       const virtualizerX = useVirtualizer(mergeProps(() => props.virtual?.x, {
         horizontal: true,
-        getScrollElement: () => el,
+        getScrollElement: () => store.scroll_el!,
         get count() { return props.columns?.length || 0 },
         estimateSize: i => props.columns?.[i].width ?? 40,
         indexAttribute: 'x',
@@ -104,8 +127,6 @@ export const VirtualScrollPlugin: Plugin = {
         }
         return ret
       })
-
-      o = combineProps({ ref: e => el = e, class: 'virtual' }, o)
 
       createEffect(() => {
         const { table } = store

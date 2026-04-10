@@ -1,37 +1,102 @@
-/* intable official website — supplemental styles
- * These override the component's default light-theme CSS variables
- * so the live demo section matches the OLED dark aesthetic.
- */
+/* intable official website — supplemental styles */
 
-/* ── Live demo: dark-theme table overrides ─────────────────────────────────── */
-.wt-live-demo {
-  /* Override the .data-table's own CSS variable declarations */
-  .data-table {
-    --bg: #0a0a12;
-    --c-primary: #6366f1;
-    --menu-bg: #1e1e2e;
-    --li-hover-bg: rgba(255, 255, 255, .06);
-    --table-b-c: rgba(255, 255, 255, .07);
-    --table-c: #cbd5e1;
-    --table-bg: #0a0a12;
-    --table-header-c: #64748b;
-    --table-header-bg: #0f0f1a;
-    --table-row-hover-bg: rgba(255, 255, 255, .04);
-    --select-area-bg: rgba(99, 102, 241, .15);
-    color-scheme: dark;
+/* ── Theme tokens ───────────────────────────────────────────────────── */
+.wt-website {
+  /* Light theme (default) */
+  --wt-page-bg:        #f5f6fa;
+  --wt-page-fg:        #0f172a;
+  --wt-nav-bg:         rgba(245, 246, 250, 0.93);
+  --wt-mobile-menu-bg: rgba(245, 246, 250, 0.98);
+  --wt-card-bg:        rgba(0, 0, 0, 0.025);
 
-    background: #0a0a12;
+  background: var(--wt-page-bg);
+  color:      var(--wt-page-fg);
+  transition: background 0.2s, color 0.2s;
+}
 
-    th, td {
-      border-color: rgba(255, 255, 255, .07);
-    }
+.wt-website.wt-dark {
+  /* Dark theme */
+  --wt-page-bg:        #080810;
+  --wt-page-fg:        #ffffff;
+  --wt-nav-bg:         rgba(10, 10, 15, 0.92);
+  --wt-mobile-menu-bg: rgba(10, 10, 15, 0.97);
+  --wt-card-bg:        rgba(255, 255, 255, 0.015);
+}
 
-    thead th {
-      background: #0f0f1a;
-    }
+/* ── Light mode: utility class overrides ───────────────────────────────────── */
+.wt-website:not(.wt-dark) {
+  /* Text — general */
+  .text-white              { color: #0f172a; }
+  .text-slate-200,
+  .text-slate-300          { color: #334155; }
+  .text-slate-400          { color: #475569; }
+  .text-slate-500          { color: #64748b; }
+  .text-slate-600          { color: #94a3b8; }
+  .text-amber-300          { color: #92400e; }
+  .text-violet-300         { color: #7c3aed; }
 
-    tr:hover > td {
-      background: rgba(255, 255, 255, .04);
+  /* Exception: keep white text on solid-colored-bg elements (CTA buttons) */
+  [class*="bg-indigo"].text-white,
+  [class*="bg-indigo"] .text-white { color: #ffffff; }
+
+  /* Hover text */
+  .hover\:text-white:hover { color: #0f172a; }
+
+  /* Borders */
+  .border-white\/3  { border-color: rgba(0, 0, 0, 0.05); }
+  .border-white\/5  { border-color: rgba(0, 0, 0, 0.07); }
+  .border-white\/8  { border-color: rgba(0, 0, 0, 0.09); }
+  .border-white\/10 { border-color: rgba(0, 0, 0, 0.10); }
+  .hover\:border-white\/20:hover { border-color: rgba(0, 0, 0, 0.15); }
+
+  /* Hover backgrounds */
+  .hover\:bg-white\/5:hover { background-color: rgba(0, 0, 0, 0.04); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar-thumb       { background: rgba(0, 0, 0, 0.12); }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.22); }
+
+  /* Live demo: use default (light) table styles */
+  .wt-live-demo {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  /* Reset inside always-dark code blocks */
+  .wt-code {
+    color: #fff;
+    .text-white              { color: #ffffff; }
+    .text-slate-200,
+    .text-slate-300          { color: #cbd5e1; }
+    .text-slate-400          { color: #94a3b8; }
+    .text-slate-500          { color: #64748b; }
+    .text-amber-300          { color: #fde68a; }
+    .hover\:text-white:hover { color: #ffffff; }
+  }
+}
+
+/* ── Dark mode table & demo overrides ───────────────────────────────────── */
+.wt-website.wt-dark {
+  .wt-live-demo {
+    border-color: rgba(255, 255, 255, 0.08);
+
+    .data-table {
+      --bg: #0a0a12;
+      --c-primary: #6366f1;
+      --menu-bg: #1e1e2e;
+      --li-hover-bg: rgba(255, 255, 255, .06);
+      --table-b-c: rgba(255, 255, 255, .07);
+      --table-c: #cbd5e1;
+      --table-bg: #0a0a12;
+      --table-header-c: #64748b;
+      --table-header-bg: #0f0f1a;
+      --table-row-hover-bg: rgba(255, 255, 255, .04);
+      --select-area-bg: rgba(99, 102, 241, .15);
+      color-scheme: dark;
+      background: #0a0a12;
+
+      th, td        { border-color: rgba(255, 255, 255, .07); }
+      thead th      { background: #0f0f1a; }
+      tr:hover > td { background: rgba(255, 255, 255, .04); }
     }
   }
 }

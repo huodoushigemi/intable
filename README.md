@@ -1,132 +1,28 @@
-# intable
 
-## 特征
+## 相比传统表格解决了什么痛点
 
-- 类似 Excel 的表格组件
-- 单元格多选、复制、粘贴
-- 单元格编辑、数据校验
-- 列宽、行高可拖动
-- 虚拟滚动
-- 数据分组
-- 行展开
-- 插件易扩展
-- 多框架支持（Vue、React）
-- 多 UI库支持（Antd、ElementPlus）
+| 痛点 | el-table / ant-table | intable |
+|---|---|---|
+| 大数据量卡顿 | 全量渲染，1000 行即明显卡顿 | 行/列双向虚拟滚动，百万行流畅 |
+| 单元格编辑难扩展 | 需要自行封装 `template` / `render`，与表格强耦合 | `editable: true` + `editor` 字段开箱即用，可自定义编辑器 |
+| 功能越加越重 | 所有功能内置，无论用不用都打包进来 | 插件化拆分，按需 `import`，用什么装什么 |
+| 复制粘贴体验差 | 不支持多单元格选区复制 | 原生类 Excel 选区 + TSV 复制粘贴，兼容 Excel / 飞书 |
+| 撤销/重做缺失 | 几乎没有内置支持 | `HistoryPlugin` 内置完整撤销/重做栈 |
+| 跨框架复用困难 | 绑定单一框架 | 同一套插件 API 在 SolidJS / React / Vue 下通用 |
+| 插件/扩展机制弱 | 多数功能靠 slot/事件临时拼凑 | 责任链 `rewriteProps` 管道，插件完全可组合、可替换 |
 
-## 快速开始
+## GitHub Copilot 智能提示（Copilot Skills）
 
-<details>
-<summary>solid-js</summary>
+在你的项目中加入 intable 的 Copilot instruction 文件后，GitHub Copilot 会自动识别你的使用场景（如"我想加筛选"、"数据量很大"），并给出正确的 intable 代码建议。
 
-**安装**
+### 快速安装（单文件，推荐）
 
-```sh
-pnpm add intable
+下载场景速查文件到你项目的 `.github/instructions/` 目录：
+
+```bash
+mkdir -p .github/instructions
+
+curl -o .github/instructions/intable.instructions.md https://raw.githubusercontent.com/huodoushigemi/intable/main/.github/instructions/intable-scenarios.instructions.md
 ```
 
-**使用**
-
-```jsx
-import { render } from 'solid-js/web'
-import Intable from 'intable'
-
-const App = () => {
-  const columns = [
-    { id: 'name', name: '名称' },
-    { id: 'date', name: '日期' },
-    { id: 'address', name: '地址' },
-  ]
-
-  const data = [
-    { date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-    { date: '2016-05-02', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-    { date: '2016-05-04', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-    { date: '2016-05-01', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-  ]
-
-  return <Intable data={data} columns={columns} />
-}
-
-render(() => <App />)
-```
-</details>
-
-<details>
-<summary>vue</summary>
-
-**安装**
-
-```sh
-pnpm add @intable/react
-```
-
-**使用**
-
-```html
-<template>
-  <Intable data={data} columns={columns} />
-</template>
-
-<script setup>
-import Intable from '@intable/vue'
-
-const columns = [
-  { id: 'name', name: '名称' },
-  { id: 'date', name: '日期' },
-  { id: 'address', name: '地址' },
-]
-
-const data = [
-  { date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-  { date: '2016-05-02', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-  { date: '2016-05-04', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-  { date: '2016-05-01', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-]
-</script>
-```
-</details>
-
-<details>
-<summary>react</summary>
-
-**安装**
-
-```sh
-pnpm add @intable/react
-```
-
-**使用**
-
-```jsx
-import Intable from 'intable'
-
-const App = () => {
-  const columns = [
-    { id: 'name', name: '名称' },
-    { id: 'date', name: '日期' },
-    { id: 'address', name: '地址' },
-  ]
-
-  const data = [
-    { date: '2016-05-03', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-    { date: '2016-05-02', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-    { date: '2016-05-04', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-    { date: '2016-05-01', name: 'Tom', address: 'No. 189, Grove St, Los Angeles' },
-  ]
-
-  return <Intable data={data} columns={columns} />
-}
-```
-</details>
-
-## Props
-
-| 属性名       | 描述         | 类型                            | 默认值 |
-| ------------ | ------------ | ------------------------------- | ------ |
-| data         | 数据         | any[]                           |        |
-| columns      | 展示列       | Column[]                        |        |
-| index        | 显示序号     | bool                            | false  |
-| border       | 显示纵向边框 | bool                            | false  |
-| stickyHeader | 表头吸顶     | bool                            | false  |
-| size         | 尺寸         | 'large' \| 'default' \| 'small' | false  |
-| rowSelection | 启用行选择   | [@see]()                        | false  |
+> **效果**：安装后，当你描述需求（如"加一个大数据量的可编辑表格"），Copilot 会自动引用 intable 的正确 API 和插件，无需反复查文档。

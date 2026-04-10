@@ -3,6 +3,7 @@ import { createEventListener } from '@solid-primitives/event-listener'
 import { combineProps } from '@solid-primitives/props'
 import { createKeybindingsHandler } from 'tinykeys'
 import { type Commands, type Plugin } from '..'
+import { createLazyMemo } from '@solid-primitives/memo'
 
 declare module '../index' {
   interface TableProps {
@@ -26,18 +27,18 @@ export const CommandPlugin: Plugin = {
   priority: Infinity,
   store: (store) => {
     const owner = getOwner()
-    const commands = createMemo(() => (
+    const commands = createLazyMemo(() => (
       store.plugins.reduce((o, e) => (
         Object.assign(o, runWithOwner(owner, () => e.commands?.(store, {...o})))
       ), {} as Commands)
     ))
+    Object.defineProperty(store, 'commands', { get: () => commands() })
     return {
-      get commands() { return commands() },
       scrollToCell(x, y, opt) {
         x = typeof x == 'object' ? store.props.columns.indexOf(x) : x
         y = typeof y == 'object' ? store.props.data.indexOf(y) : y
         const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
-        if (cell) cell.scrollIntoView({ behavior: 'smooth', ...opt })
+        if (cell) cell.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center', ...opt })
       },
       scrollCellIfNeeded(x, y, opt = false) {
         x = typeof x == 'object' ? store.props.columns.indexOf(x) : x
@@ -45,7 +46,6 @@ export const CommandPlugin: Plugin = {
         const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
         if (!cell) return
         cell.scrollIntoViewIfNeeded(opt)
-        cell.focus()
       },
     }
   },

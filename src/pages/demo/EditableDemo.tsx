@@ -25,6 +25,7 @@ const cols = createMutable([
     id: 'col_5', name: 'Select', width: 120, editable: true, editor: 'select',
     enum: { A: 'Option A', B: 'Option B', C: 'Option C' },
   },
+  { id: 'file', name: 'File', width: 120, editable: true, type: 'file', required: true },
   { id: 'col_6', name: 'Range',    width: 120, editable: true, editor: 'range' },
   { id: 'col_7', name: 'ReadOnly', width: 100 },
   { id: 'col_8', name: 'Required', editable: true, required: true },
