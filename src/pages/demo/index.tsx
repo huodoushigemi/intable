@@ -109,6 +109,7 @@ function ThemeSelect(props: { themes: typeof THEMES; value: string; onChange: (v
 
 // ── Demo list ─────────────────────────────────────────────────────────────────
 const demos = [
+  { name: 'Composite',       comp: CompositeDemo,       desc: 'All features combined' },
   { name: 'Basic',           comp: BasicDemo,          desc: 'Minimal table with index, border, sticky header' },
   { name: 'VirtualScroll',   comp: VirtualScrollDemo,  desc: 'Virtual scroll (X+Y) with 10k rows × 50 cols' },
   { name: 'HeaderGroup',     comp: HeaderGroupDemo,     desc: 'Nested column header groups with colspan/rowspan' },
@@ -124,7 +125,6 @@ const demos = [
   { name: 'Tree',            comp: TreeDemo,            desc: 'Tree-structured data with expand/collapse' },
   { name: 'History',         comp: HistoryDemo,         desc: 'Undo / Redo (Ctrl+Z / Ctrl+Y)' },
   { name: 'Diff',            comp: DiffDemo,            desc: 'Track changes & commit (Ctrl+S)' },
-  { name: 'Composite',       comp: CompositeDemo,       desc: 'All features combined' },
   { name: 'Filter',          comp: FilterDemo,          desc: 'Per-column text filter with live filtering' },
   { name: 'LoadMore',        comp: LoadMoreDemo,        desc: 'Auto load next page when scrolled to bottom' },
   { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' },

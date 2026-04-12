@@ -27,29 +27,29 @@ export const VirtualScrollPlugin: Plugin = {
   name: 'virtual-scroll',
   store: (store) => ({
     scrollToCell(x, y, opt) {
+      x = typeof x == 'object' ? store.props.columns.indexOf(x) : x
+      y = typeof y == 'object' ? store.props.data.indexOf(y) : y
       const vx = store.virtualizerX, vy = store.virtualizerY
-      if (vx && typeof x === 'number') vx.scrollToIndex(x)
-      if (vy && typeof y === 'number') vy.scrollToIndex(y)
+      vx.scrollToIndex(x, true)
+      vy.scrollToIndex(y, true)
     },
     scrollCellIfNeeded(x, y, opt) {
+      x = typeof x == 'object' ? store.props.columns.indexOf(x) : x
+      y = typeof y == 'object' ? store.props.data.indexOf(y) : y
       // 如果 cell 不在可视范围内，则滚动到该 cell
       const vx = store.virtualizerX, vy = store.virtualizerY
       const cell = store.table.querySelector(`[x="${x}"][y="${y}"]`) as HTMLElement
       if (!cell) return store.scrollToCell(x, y)
       const rect = cell.getBoundingClientRect()
       const viewRect = store.scroll_el!.getBoundingClientRect()
-      if (rect.top < viewRect.top || rect.bottom > viewRect.bottom) {
-        if (vy && typeof y === 'number') vy.scrollToIndex(y)
-      }
-      if (rect.left < viewRect.left || rect.right > viewRect.right) {
-        if (vx && typeof x === 'number') vx.scrollToIndex(x)
-      }
+      if (rect.top < viewRect.top || rect.bottom > viewRect.bottom) vy.scrollToIndex(y, true)
+      if (rect.left < viewRect.left || rect.right > viewRect.right) vx.scrollToIndex(x, true)
     }
   }),
   rewriteProps: {
     virtual: ({ virtual }) => defaultsDeep(virtual, {
-      x: { overscan: 5 },
-      y: { overscan: 10 },
+      x: { overscan: 2 },
+      y: { overscan: 2 },
       // x: { batch: 3, overscan: 2 },
       // y: { batch: 5, overscan: 5 },
     }),

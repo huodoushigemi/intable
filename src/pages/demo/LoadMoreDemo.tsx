@@ -41,7 +41,7 @@ export default () => {
   const loadMore = async () => {
     if (loading() || !hasMore()) return
     setLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 400))
+    await new Promise(resolve => setTimeout(resolve, 1000))
     const start = data.length
     const end = Math.min(start + pageSize, total)
     data.push(...Array.from({ length: end - start }, (_, i) => buildRow(start + i)))

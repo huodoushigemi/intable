@@ -110,7 +110,7 @@ export const EditablePlugin: Plugin = {
       
       createEffect(() => {
         if (editing()) {
-          const sss = createMemo(() => JSON.stringify(store.selected))
+          const sss = createMemo(() => JSON.stringify(store.selected ?? '{}'))
           createEffect(on(sss, () => setEditing(false), { defer: true }))
         }
       })
@@ -130,6 +130,13 @@ export const EditablePlugin: Plugin = {
       
       return (
         <Td {...o}>
+          {editorState()?.[1]?.el
+            ? <div class='in-cell-edit-wrapper' tabindex={-1} on:keydown={e => e.stopPropagation()}>
+                {editorState()?.[1]?.el}
+                {validating() && <span class='cell-validating' />}
+              </div>
+            : o.children
+          }
           {preEdit() &&
             <input
               style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events: none; opacity: 0'
@@ -146,13 +153,6 @@ export const EditablePlugin: Plugin = {
                 setEditing(true)
               }}
             />
-          }
-          {editorState()?.[1]?.el
-            ? <div class='in-cell-edit-wrapper' tabindex={-1} on:keydown={e => e.stopPropagation()}>
-                {editorState()?.[1]?.el}
-                {validating() && <span class='cell-validating' />}
-              </div>
-            : o.children
           }
         </Td>
       )

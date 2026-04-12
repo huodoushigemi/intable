@@ -97,8 +97,7 @@ const columns = [
   { id: 'name',   name: '姓名', width: 140, editable: true },                    // text（默认）
   { id: 'age',    name: '年龄', width: 80,  editable: true, editor: 'number' },  // 数字
   { id: 'joined', name: '入职', width: 140, editable: true, editor: 'date' },    // 日期
-  { id: 'dept',   name: '部门', width: 140, editable: true, editor: 'select',
-    enum: { eng: '工程', design: '设计', pm: '产品' } },                           // 下拉
+  { id: 'dept',   name: '部门', width: 140, editable: true, editor: 'select', enum: { eng: '工程', design: '设计', pm: '产品' } }, // 下拉
   { id: 'active', name: '在职', width: 80,  editable: true, editor: 'checkbox' }, // 复选框
   { id: 'score',  name: '评分', width: 100, editable: true, editor: 'range' },    // 滑块
   { id: 'color',  name: '颜色', width: 80,  editable: true, editor: 'color' },    // 颜色
@@ -117,22 +116,22 @@ import { ZodValidatorPlugin } from 'intable/plugins/ZodValidatorPlugin'
 import { z } from 'zod'   // pnpm add zod
 
 const columns = [
-  { id: 'name',  name: '姓名', editable: true,
-    zodSchema: z.string().min(1, '不能为空').max(50) },
-  { id: 'age',   name: '年龄', editable: true, editor: 'number',
-    zodSchema: z.coerce.number().int().min(0).max(150) },
-  { id: 'email', name: '邮箱', editable: true,
-    zodSchema: z.string().email('请输入有效邮箱') },
+  { id: 'name',  name: '姓名', editable: true, zodSchema: z.string().min(1, '不能为空').max(50) },
+  { id: 'age',   name: '年龄', editable: true, editor: 'number', zodSchema: z.coerce.number().int().min(0).max(150) },
+  { id: 'email', name: '邮箱', editable: true, zodSchema: z.string().email('请输入有效邮箱') },
 ]
 
+let store
+// 校验：await store.validate()
+
 // SolidJS
-<Intable columns={columns} data={data} plugins={[ZodValidatorPlugin]} />
+<Intable store={e => store = e} columns={columns} data={data} plugins={[ZodValidatorPlugin]} />
 
 // React
-<Intable columns={columns} data={data} plugins={[ZodValidatorPlugin]} />
+<Intable store={e => store = e} columns={columns} data={data} plugins={[ZodValidatorPlugin]} />
 
 // Vue
-<intable :columns="columns" :data="data" :plugins="[ZodValidatorPlugin]" />
+<intable :store="e => store = e" :columns="columns" :data="data" :plugins="[ZodValidatorPlugin]" />
 ```
 
 ---
@@ -495,26 +494,51 @@ import { z } from 'zod'
 const plugins = [VirtualScrollPlugin, FilterPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]
 
 const columns = [
-  { id: 'name',  name: '姓名', width: 140, editable: true, filterable: true, type: 'text',
-    zodSchema: z.string().min(1) },
-  { id: 'dept',  name: '部门', width: 140, editable: true, filterable: true, type: 'enum',
-    editor: 'select', enum: { eng: '工程', design: '设计' } },
-  { id: 'salary',name: '薪资', width: 100, editable: true, filterable: true, type: 'number' },
+  { id: 'name', name: '姓名', width: 140, editable: true, filterable: true, type: 'text', required: true, zodSchema: z.string().min(2, '姓名至少2个字符').max(50, '姓名最多50个字符'), validator: (value: string) => { const reserved = ['admin', 'root']; if (reserved.includes(value.toLowerCase())) throw new Error('姓名不能使用保留词'); } },
+  { id: 'dept', name: '部门', width: 140, editable: true, filterable: true, type: 'enum', editor: 'select', enum: { eng: '工程', design: '设计' }, required: true },
+  { id: 'salary', name: '薪资', width: 100, editable: true, filterable: true, type: 'number', required: true, zodSchema: z.coerce.number({ error: '请输入数字' }).min(3000, '薪资至少3000').max(50000, '薪资最多50000') },
+  { id: 'email', name: '邮箱', width: 180, editable: true, filterable: true, required: true, zodSchema: z.string().email('邮箱格式不正确') },
+  { id: 'age', name: '年龄', width: 80, editable: true, filterable: true, type: 'number', required: true, zodSchema: z.coerce.number({ error: '请输入数字' }).min(18, '年龄至少18岁').max(65, '年龄最多65岁') }
 ]
 
 const originalSnap = structuredClone(rawData)
 
-// SolidJS
-<Intable
-  class='w-full h-600px'
-  columns={columns}  data={data}
-  onColumnsChange={setColumns}  onDataChange={setData}
-  rowKey='id' index border stickyHeader
-  resizable={{ col: { enable: true } }} colDrag rowDrag
-  plugins={plugins}
-  filter={{ autoMatch: true }}
-  diff={{ enable: true, data: originalSnap, onCommit: changes => submit(changes) }}
-/>
+let store: any = null
+
+const handleValidate = async () => {
+  if (store) {
+    try {
+      await store.validate()
+      alert('验证通过！')
+    } catch (error) {
+      console.error('验证失败:', error)
+    }
+  }
+}
+
+<div>
+  <div class='flex justify-between items-center mb-2'>
+    <p>全功能表格示例</p>
+    <button onClick={handleValidate}>验证所有</button>
+  </div>
+  <Intable
+    class='w-full h-600px'
+    store={s => store = s}
+    columns={columns}  data={data}
+    onColumnsChange={setColumns}  onDataChange={setData}
+    rowKey='id' index border stickyHeader
+    resizable={{ col: { enable: true } }} colDrag rowDrag
+    plugins={plugins}
+    filter={{ autoMatch: true }}
+    diff={{ enable: true, data: originalSnap, onCommit: changes => submit(changes) }}
+    validator={(value, data, col) => {
+      // 表级别的验证
+      if (String(value ?? '').includes('敏感词')) {
+        throw new Error('不能包含敏感词')
+      }
+    }}
+  />
+</div>
 ```
 
 ---

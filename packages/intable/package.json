@@ -46,6 +46,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "diff": "^8.0.2"
+    "diff": "^8.0.2",
+    "xlsx": "^0.18.5"
   }
 }

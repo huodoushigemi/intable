@@ -105,7 +105,7 @@ export interface TableProps {
 }
 
 export type THProps = { x: number; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number; style?: any }
-export type TDProps = { x: number; y: number; data: any; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number }
+export type TDProps = { x: number; y: number; data: any; col: TableColumn; value?: any; children?: JSX.Element; rowspan?: number; colspan?: number }
 
 type Obj = Record<string | symbol, any>
 
@@ -232,9 +232,7 @@ const TBody = () => {
       <props.EachRows each={props.data}>{(row, rowIndex) => (
         <props.Tr y={rowIndex()} data={row()}>
           <props.EachCells each={props.columns}>{(col, colIndex) => (
-            <props.Td col={col()} x={colIndex()} y={rowIndex()} data={row()}>
-              {row()[col().id]}
-            </props.Td>
+            <props.Td col={col()} x={colIndex()} y={rowIndex()} data={row()} value={row()[col().id]} />
           )}</props.EachCells>
         </props.Tr>
       )}</props.EachRows>

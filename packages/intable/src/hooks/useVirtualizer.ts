@@ -147,12 +147,12 @@ export function useVirtualizer(opt: VirtualizerOptions) {
     if (opt.extras) {
       arr.push(...(opt.extras(startIdx(), endIdx())?.map(i => getItem(i)) || []))
       arr = uniqBy(arr, e => e.index)
+      arr.sort((a, b) => a.index - b.index)
     }
     return arr
   })
 
   return {
-    tree,
     options: opt,
     startIdx,
     endIdx,
@@ -179,11 +179,11 @@ export function useVirtualizer(opt: VirtualizerOptions) {
       const keyed = createMemo(() => keyBy(items2(), e => e.index))
       return (i: number) => keyed()[i]
     })(),
-    scrollToIndex: (i: number) => {
+    scrollToIndex: (i: number, center?: boolean) => {
       const el = opt.getScrollElement()
       const offset = tree.sum(i - 1)
-      if (opt.horizontal) el.scrollTo({ left: offset, behavior: 'instant' })
-      else el.scrollTo({ top: offset, behavior: 'instant' })
+      if (opt.horizontal) el.scrollTo({ left: offset + (center ? -el.offsetWidth / 2 : 0), behavior: 'instant' })
+      else el.scrollTo({ top: offset + (center ? -el.offsetHeight / 2 : 0), behavior: 'instant' })
     },
   }
 }

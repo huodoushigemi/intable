@@ -1,6 +1,6 @@
 import { mergeProps, type JSX } from 'solid-js'
 import { component } from 'undestructure-macros'
-import { type Plugin, type TD } from '../..'
+import { type Plugin, type TDProps } from '../..'
 import { Checkbox, Files } from './components'
 import { resolveOptions, toArr } from '../../utils'
 import { renderComponent, solidComponent } from '../../components/utils'
@@ -11,8 +11,7 @@ declare module '../../index' {
   }
   interface TableColumn {
     type?: string
-    // render?: string | Render
-    render?: Render
+    render?: string | Render
     enum?: Record<string, any> | { label?: string; value: any }[]
   }
   interface TableStore {
@@ -20,7 +19,7 @@ declare module '../../index' {
   }
 }
 
-export type RenderProps = Parameters<TD>[0] & { onChange: (v) => void }
+export type RenderProps = TDProps & { onChange: (v) => void }
 export type Render = (props: RenderProps) => JSX.Element | any
 
 export const RenderPlugin: Plugin = {
@@ -35,7 +34,7 @@ export const RenderPlugin: Plugin = {
         <Td {...o}>
           {(() => {
             let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type) || text
-            return renderComponent(Comp, mergeProps(o, { onChange: v => store.commands.rowChange({ ...o.data, [o.col.id]: v }, o.y) }), store)
+            return renderComponent(Comp, mergeProps(o, { onChange: v => store.commands.rowChange({ ...o.data, [o.col.id]: v }) }), store)
           })()}
         </Td>
       )
@@ -43,11 +42,9 @@ export const RenderPlugin: Plugin = {
   }
 }
 
-const text: Render = component(({ data, col, onChange }) => {
+const text: Render = component(({ value, col }) => {
   return <>{
-    (v =>
-      col.enum ? toArr(v).map(v => resolveOptions(col.enum!).find(e => e.value == v)?.label ?? v).join(', ') : v
-    )(data[col.id])
+    col.enum ? toArr(value).map(v => resolveOptions(col.enum!).find(e => e.value == v)?.label ?? v).join(', ') : value
   }</>
 })
 
@@ -55,19 +52,15 @@ const number = text
 
 const date = text
 
-const checkbox: Render = component(({ data, col, onChange }) => {
-  return (
-    <div class='flex items-center h-full'>
-      <Checkbox class='' value={data[col.id]} onChange={onChange} />
-    </div>
-  )
-})
+const checkbox: Render = component(({ value, onChange }) => (
+  <div class='flex items-center h-full'>
+    <Checkbox class='' value={value} onChange={onChange} />
+  </div>
+))
 
-const file: Render = component(({ data, col, onChange }) => {
-  return (
-    <Files value={data[col.id]} onChange={onChange} disabled />
-  )
-})
+const file: Render = component(({ value, onChange }) => (
+  <Files value={value} onChange={onChange} disabled />
+))
 
 export const renders = {
   text,
