@@ -331,11 +331,7 @@ const [selected, setSelected] = useState([])
 <Intable
   expand={{
     enable: true,
-    render: ({ data }) => (
-      <div class='p-4 bg-gray-50'>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-      </div>
-    ),
+    render: ({ data }) => <pre>{JSON.stringify(data, null, 2)}</pre>,
   }}
   ...
 />
