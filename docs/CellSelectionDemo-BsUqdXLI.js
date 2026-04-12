@@ -1,0 +1,1 @@
+import{bt as e,o as t}from"./index-DZhAItI-.js";import{i as n,n as r,r as i}from"./helpers-CkkM9Il7.js";var a=r(8),o=i(30,8),s=()=>e(t,{class:`w-full h-60vh`,columns:a,onColumnsChange:e=>n(a,e),data:o,onDataChange:e=>n(o,e),index:!0,border:!0,stickyHeader:!0,size:`small`});export{s as t};

@@ -1,1 +1,0 @@
-import{t as e}from"./VirtualScrollPlugin-DaufRcHG.js";import{a as t,vt as n}from"./index-Qt4OSfDv.js";import{i as r,n as i,r as a}from"./helpers-C5YFjho2.js";var o=i(50,{width:80}),s=a(1e3,50),c=()=>n(t,{class:`h-60vh`,columns:o,onColumnsChange:e=>r(o,e),data:s,onDataChange:e=>r(s,e),index:!0,border:!0,stickyHeader:!0,size:`small`,plugins:[e]});export{c as t};

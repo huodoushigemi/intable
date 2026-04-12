@@ -1,0 +1,1 @@
+import{M as e,Z as t,vt as n}from"./index-DZhAItI-.js";function r(n,r){let i=e(r).map(e=>`col_`+e);return t(e(n).map((e,t)=>Object.fromEntries([[`id`,t],...i.map(e=>[e,`${e}_${t+1}`])])))}function i(n,r){return t(e(n).map(e=>({id:`col_`+e,name:`Col `+e,width:100,...r})))}function a(e,t){n(()=>{e.length=0,e.push(...t)})}var o=()=>{};export{a as i,i as n,r,o as t};
