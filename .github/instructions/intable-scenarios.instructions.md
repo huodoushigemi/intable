@@ -539,7 +539,81 @@ const handleValidate = async () => {
 
 ---
 
-### 场景 19：主题切换
+### 场景 19：Excel 导出导入
+
+> 关键词：导出、导入、Excel、xlsx、下载、上传
+
+```tsx
+import { ImportExportPlugin } from 'intable/plugins/ImportExportPlugin'
+
+// SolidJS
+let store: any = null
+
+const handleExport = async () => {
+  await store.commands.exportExcel() // 下载 data.xlsx
+}
+
+const handleImport = async () => {
+  const importedData = await store.commands.readExcel()
+  console.log('Imported data:', importedData)
+  // 处理导入的数据
+  setData(importedData)
+}
+
+<div>
+  <div class='flex gap-2 mb-2'>
+    <button onClick={handleExport}>Export Excel</button>
+    <button onClick={handleImport}>Import Excel</button>
+  </div>
+  <Intable
+    store={s => store = s}
+    columns={columns}
+    data={data}
+    plugins={[ImportExportPlugin]}
+  />
+</div>
+
+// React
+import { useState } from 'react'
+const [store, setStore] = useState(null)
+
+// 用法同上，store 通过 setStore 获取
+
+// Vue
+<template>
+  <div>
+    <div class='flex gap-2 mb-2'>
+      <button @click="handleExport">Export Excel</button>
+      <button @click="handleImport">Import Excel</button>
+    </div>
+    <intable :store="storeRef" :columns="columns" :data="data" :plugins="[ImportExportPlugin]" />
+  </div>
+</template>
+<script setup>
+import { ref } from 'vue'
+const storeRef = ref(null)
+
+const handleExport = async () => {
+  await storeRef.value.commands.exportExcel()
+}
+
+const handleImport = async () => {
+  const importedData = await storeRef.value.commands.readExcel()
+  console.log('Imported:', importedData)
+  // 处理导入的数据
+  data.value = importedData
+}
+</script>
+```
+
+**注意：**
+- 导出时会自动过滤内部列（如索引、选择列等）
+- 导入时会通过列名自动匹配数据
+- 需要安装 `xlsx` 依赖：`pnpm add xlsx`
+
+---
+
+### 场景 20：主题切换
 
 > 关键词：主题、样式、风格、深色、dark、暗色、shadcn、material、stripe、github
 
@@ -593,3 +667,5 @@ import 'intable/theme/github.css'    // 选一个即可
   plugins, filter, diff, loadMore,
   editable, validator }
 ```
+
+为保持代码简洁，columns 中的每列都只用一行代码定义，复杂的 validator 可单独定义。

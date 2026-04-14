@@ -1,14 +1,13 @@
 import { z } from 'zod'
-import { createMutable } from 'solid-js/store'
+import { createSignal } from 'solid-js'
 import { range } from 'es-toolkit'
-import { Intable } from '../../../packages/intable/src'
+import { Intable, type TableStore } from '../../../packages/intable/src'
 import { VirtualScrollPlugin } from '../../../packages/intable/src/plugins/VirtualScrollPlugin'
 import { HistoryPlugin } from '../../../packages/intable/src/plugins/HistoryPlugin'
 import { DiffPlugin } from '../../../packages/intable/src/plugins/DiffPlugin'
 import { FilterPlugin } from '../../../packages/intable/src/plugins/FilterPlugin'
 import { ZodValidatorPlugin } from '../../../packages/intable/src/plugins/ZodValidatorPlugin'
 import { ImportExportPlugin } from '../../../packages/intable/src/plugins/ImportExportPlugin'
-import { replaceArray } from './helpers'
 
 const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations']
 const positions = {
@@ -37,7 +36,7 @@ function randomSalary(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
-const cols = createMutable([
+const [cols, setCols] = createSignal([
   { id: 'name', name: 'Name', width: 120, editable: true, filterable: true, required: true, zodSchema: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name must be at most 50 characters') },
   { id: 'age', name: 'Age', width: 60, editable: true, type: 'number', filterable: true, required: true, zodSchema: z.coerce.number().min(18, 'Must be at least 18').max(100, 'Must be at most 100') },
   { id: 'department', name: 'Department', width: 120, editable: true, type: 'select', enum: departments, filterable: true, required: true },
@@ -80,12 +79,12 @@ function generateEmployee(i: number) {
   }
 }
 
-const data = createMutable(range(200).map((_, i) => generateEmployee(i)))
+const [data, setData] = createSignal(range(200).map((_, i) => generateEmployee(i)))
 
-cols.at(-1)!.fixed = 'right'
+cols()[cols().length - 1].fixed = 'right'
 
 export default () => {
-  let store: any = null
+  let store: TableStore
   
   const handleValidate = async () => {
     if (store) {
@@ -98,41 +97,61 @@ export default () => {
     }
   }
   
+  const handleExportExcel = async () => {
+    await store.commands.exportExcel()
+  }
+  
+  const handleImportExcel = async () => {
+    const importedData = await store.commands.readExcel()
+    if (importedData && importedData.length > 0) {
+      console.log('Imported data:', importedData)
+      setData(importedData)
+    }
+  }
+  
   return (
-    <div>
-      <div class='flex justify-between items-center mb-2'>
-        <p class='text-sm c-gray'>All features enabled: header groups, virtual scroll, editable, expand, row selection, resize, drag, history, diff, index, border, filters.</p>
-        <button 
-          class='px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600'
-          onClick={handleValidate}
-        >
+    <div class=''>
+      <p class='text-sm c-gray mt-4'>All features enabled: header groups, virtual scroll, editable, expand, row selection, resize, drag, history, diff, index, border, filters.</p>
+      
+      <div class='flex flex-wrap justify-end gap-2 mb-3'>
+        <button class='px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-1.5 text-sm' onClick={handleExportExcel}>
+          Export Excel
+        </button>
+        <button class='px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-1.5 text-sm' onClick={handleImportExcel}>
+          Import Excel
+        </button>
+        <button  class='px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-1.5 text-sm' onClick={handleValidate}>
           Validate All
         </button>
       </div>
-      <Intable
-        class='w-full h-60vh'
-        store={s => store = s}
-        columns={cols}
-        onColumnsChange={v => replaceArray(cols, v)}
-        data={data}
-        onDataChange={v => replaceArray(data, v)}
-        newRow={i => generateEmployee(data.length)}
-        index
-        border
-        stickyHeader
-        size='small'
-        colDrag
-        rowDrag
-        resizable={{ col: { enable: true }, row: { enable: true } }}
-        expand={{ enable: true, render: ({ data }) => <div class='p-2 c-blue'>{JSON.stringify(data)}</div> }}
-        rowSelection={{ enable: true, multiple: true }}
-        plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, FilterPlugin, ZodValidatorPlugin, ImportExportPlugin]}
-        diff={{ onCommit: (d) => console.log('commit', d) }}
-        filter={{ autoMatch: true }}
-        validator={(value) => {
-          if (String(value ?? '').toLowerCase().includes('invalid')) throw Error('Value must not contain "invalid"')
-        }}
-      />
+      
+      <div class='bg-white rounded-lg shadow-md overflow-hidden'>
+        <Intable
+          class='w-full h-[60vh]'
+          store={s => store = s}
+          columns={cols()}
+          onColumnsChange={setCols}
+          data={data()}
+          onDataChange={setData}
+          // onDataChange={v => console.log('dataChange', v)}
+          newRow={i => generateEmployee(data().length)}
+          index
+          border
+          stickyHeader
+          size='small'
+          colDrag
+          rowDrag
+          resizable={{ col: { enable: true }, row: { enable: true } }}
+          expand={{ enable: true, render: ({ data }) => <div class='p-3 bg-blue-50 rounded'>{JSON.stringify(data)}</div> }}
+          rowSelection={{ enable: true, multiple: true }}
+          plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, FilterPlugin, ZodValidatorPlugin, ImportExportPlugin]}
+          diff={{ onCommit: (d) => console.log('commit', d) }}
+          filter={{ autoMatch: true }}
+          validator={(value) => {
+            if (String(value ?? '').toLowerCase().includes('invalid')) throw Error('Value must not contain "invalid"')
+          }}
+        />
+      </div>
     </div>
   )
 }

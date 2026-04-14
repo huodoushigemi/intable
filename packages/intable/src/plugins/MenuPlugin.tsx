@@ -21,7 +21,7 @@ declare module '../index' {
   interface Commands {
     rowEquals: (a, b) => boolean
     rowIndexOf: (data: any[], row) => number
-    rowChange: (row, i?) => void
+    rowChange: (row) => void
     rowsChange: (rows) => void
     // 
     addRows: (i: number, rows: any[], before?: boolean) => void
@@ -92,11 +92,9 @@ export const MenuPlugin: Plugin = {
     rowIndexOf(data, row) {
       return data.findIndex(e => store.commands.rowEquals(e, row))
     },
-    rowChange(row, i) {
+    rowChange(row) {
       const data = [...store.rawProps.data || []]
-      i = i != null
-        ? data.findIndex(ee => store.commands.rowEquals(ee, store.props.data[i]))
-        : store.commands.rowIndexOf(data, row)
+      const i = store.commands.rowIndexOf(data, row)
       if (i > -1) {
         data[i] = row
         store.props.onDataChange?.(data)

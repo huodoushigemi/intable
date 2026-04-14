@@ -59,7 +59,7 @@ export const ImportExportPlugin: Plugin = {
       const XLSX = await import("xlsx")
       const workbook = XLSX.read(buffer, { type: 'array' })
       const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[]
+      const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[]
       
       if (jsonData.length < 1) return
       

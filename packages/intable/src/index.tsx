@@ -143,7 +143,7 @@ export const Intable = (props: TableProps) => {
   const owner = getOwner()!
 
   const store = createMutable({
-    get rawProps() { return props },
+    get rawProps() { return (props[$PROXY] ||= props) },
     get plugins() { return plugins() }
   } as TableStore)
 

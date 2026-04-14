@@ -143,7 +143,7 @@ export const DemoApp = () => {
   onCleanup(() => document.getElementById(STYLE_ID)?.remove())
 
   return (
-    <div class='flex h-100vh'>
+    <div class='flex h-100vh bg-#fff'>
       {/* sidebar */}
       <nav class='w-52 shrink-0 of-y-auto b-r-(1 solid #e5e7eb) p-2 bg-#fafafa flex flex-col gap-1 [&>*]:flex-shrink-0'>
         <h2 class='font-bold text-lg px-2 py-1'>Plugin Demos</h2>
