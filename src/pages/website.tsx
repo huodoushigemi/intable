@@ -200,9 +200,9 @@ function Navbar(props: { isDark: () => boolean; toggleDark: () => void }) {
           </a>
           {/* Desktop nav */}
           <nav class="hidden md:flex items-center gap-1">
-            {(['功能', '插件', '快速开始'] as const).map(item => (
+            {(['功能', '插件', '快速开始', 'Copilot'] as const).map(item => (
               <a
-                href={`#${item}`}
+                href={`#${item === 'Copilot' ? 'copilot' : item}`}
                 class="px-4 py-2 text-sm text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors duration-150 cursor-pointer"
               >
                 {item}
@@ -271,9 +271,9 @@ function Navbar(props: { isDark: () => boolean; toggleDark: () => void }) {
       {/* Mobile menu */}
       <Show when={open()}>
           <div class="md:hidden border-b border-white/5 px-4 pb-4 backdrop-blur-xl" style="background:var(--wt-mobile-menu-bg)">
-          {(['功能', '插件', '快速开始'] as const).map(item => (
+          {(['功能', '插件', '快速开始', 'Copilot'] as const).map(item => (
             <a
-              href={`#${item}`}
+              href={`#${item === 'Copilot' ? 'copilot' : item}`}
               class="block px-3 py-3 text-sm text-slate-400 hover:text-white border-b border-white/5 last:border-0 cursor-pointer"
               onClick={() => setOpen(false)}
             >
@@ -610,6 +610,88 @@ function TableDemo() {
   )
 }
 
+function CopilotSection() {
+  const cmd = `mkdir -p .github/instructions\n\ncurl -o .github/instructions/intable.instructions.md \\\\\n  https://raw.githubusercontent.com/huodoushigemi/intable/main/.github/instructions/intable-scenarios.instructions.md`
+
+  const [copied, setCopied] = createSignal(false)
+  const copy = () => {
+    navigator.clipboard.writeText(cmd.replace(/\\n/g, '\n').replace(/\\\\/g, '\\'))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <section id="copilot" class="py-24 sm:py-32 relative overflow-hidden">
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div class="wt-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-violet-600/8 rounded-full blur-[120px]" />
+      </div>
+
+      <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <p class="text-sm font-mono text-violet-400 mb-3 tracking-widest uppercase">GitHub Copilot</p>
+          <h2 class="text-3xl sm:text-4xl font-mono font-bold text-white mb-4">让 Copilot 理解 intable</h2>
+          <p class="text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            安装 intable 的 instruction 文件后，Copilot 会自动识别你的使用场景，给出正确的组件代码与插件用法，无需反复查文档。
+          </p>
+        </div>
+
+        {/* Feature pills */}
+        <div class="flex flex-wrap justify-center gap-3 mb-10">
+          {[
+            '识别需求场景（虚拟滚动 / 编辑 / 筛选…）',
+            '自动选择正确插件',
+            '生成完整可运行代码',
+            '支持 SolidJS / React / Vue',
+          ].map(t => (
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono border border-white/10 text-slate-300" style="background:var(--wt-card-bg)">
+              <span class="w-1.5 h-1.5 rounded-full bg-violet-400" />
+              {t}
+            </span>
+          ))}
+        </div>
+
+        {/* Install card */}
+        <div class="wt-code rounded-2xl border border-white/8 overflow-hidden shadow-2xl shadow-black/40">
+          {/* Title bar */}
+          <div class="flex items-center justify-between px-4 py-3 border-b border-white/5" style="background:#0f0f1a">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-red-500/70" />
+              <span class="w-3 h-3 rounded-full bg-amber-500/70" />
+              <span class="w-3 h-3 rounded-full bg-green-500/70" />
+              <span class="ml-3 text-xs font-mono text-slate-500">Terminal</span>
+            </div>
+            <button
+              onClick={copy}
+              class="flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-lg border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+            >
+              <Show when={copied()} fallback={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                </svg>
+              }>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 text-emerald-400">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </Show>
+              {copied() ? '已复制' : '复制'}
+            </button>
+          </div>
+          {/* Code */}
+          <div class="p-5" style="background:#0a0a12">
+            <pre class="text-sm font-mono leading-loose text-slate-300">{`mkdir -p .github/instructions\n\ncurl -o .github/instructions/intable.instructions.md \\\n  https://raw.githubusercontent.com/huodoushigemi/intable/main/.github/instructions/intable-scenarios.instructions.md`}</pre>
+          </div>
+        </div>
+
+        {/* After install hint */}
+        <p class="mt-6 text-center text-sm text-slate-500 font-mono">
+          安装后，在项目中描述需求（如 "加虚拟滚动"），Copilot 会自动生成正确代码 ✨
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function Footer() {
   return (
     <footer class="border-t border-white/5 py-12 mt-8">
@@ -688,6 +770,7 @@ export const Website = () => {
         <TableDemo />
         <PluginsSection />
         <CodeSection />
+        <CopilotSection />
       </main>
       <Footer />
     </div>

@@ -6,6 +6,7 @@ import { ElCheckbox, ElColorPicker, ElDatePicker, ElInput, ElInputNumber, ElRate
 import { type Component, h, mergeProps, ref, render } from 'vue'
 
 export const ElementPlusPlugin: Plugin = {
+  name: 'element-plus',
   store(store) {
     store.editors.text = createEditor(ElInput)
     store.editors.number = createEditor(ElInputNumber)
@@ -40,13 +41,6 @@ export const createEditor = (Comp: Component, extra?, isSelector?): Editor => {
       ref: elref,
       modelValue: v.value,
       'onUpdate:modelValue': (val) => v.value = val,
-      onPointerdown: (e: Event) => e.stopPropagation(),
-      onMousedown: (e: Event) => e.stopPropagation(),
-      onKeydown: (e: KeyboardEvent) => {
-        e.stopPropagation()
-        if (e.key === 'Enter') ok()
-        if (e.key === 'Escape') cancel()
-      },
       ...isSelector ? {
         onChange: val => !Array.isArray(val) && ok(),
         options: resolveOptions(col.enum ?? []),

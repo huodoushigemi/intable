@@ -61,17 +61,10 @@ export const createEditor = (Comp: FC<any>, opts = v => v, isSelector?: boolean)
       isSelector && !Array.isArray(currentValue) && setTimeout(ok, 100)
     }
     
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !e.shiftKey) ok()
-      if (e.key === 'Escape') cancel()
-    }
-    
     return h(Comp, opts({
       ref,
       value: val,
       onChange: handleChange,
-      onPointerDown: (e: any) => e.stopPropagation(),
-      onKeyDown: handleKeyDown,
       open: true,
 
       // select

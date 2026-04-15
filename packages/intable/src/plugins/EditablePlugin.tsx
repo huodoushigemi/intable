@@ -131,7 +131,16 @@ export const EditablePlugin: Plugin = {
       return (
         <Td {...o}>
           {editorState()?.[1]?.el
-            ? <div class='in-cell-edit-wrapper' tabindex={-1} on:keydown={e => e.stopPropagation()}>
+            ? <div
+                class='in-cell-edit-wrapper'
+                tabindex={-1}
+                on:pointerdown={e => e.stopPropagation()}
+                on:keydown={(e: KeyboardEvent) => {
+                  e.stopPropagation()
+                  e.key == 'Enter' && !e.shiftKey && editorState()?.[0].ok()
+                  e.key == 'Escape' && editorState()?.[0].cancel()
+                }}
+              >
                 {editorState()?.[1]?.el}
                 {validating() && <span class='cell-validating' />}
               </div>
@@ -170,12 +179,6 @@ const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
       value={v()}
       onInput={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()))}
       onChange={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()), isSelector && ok())}
-      on:pointerdown={e => e.stopPropagation()}
-      on:keydown={(e: KeyboardEvent) => {
-        e.stopPropagation()
-        e.key == 'Enter' && !e.shiftKey && ok()
-        e.key == 'Escape' && cancel()
-      }}
       options={col.enum ? resolveOptions(col.enum ?? []) : undefined}
       {...extra}
       {...props}
