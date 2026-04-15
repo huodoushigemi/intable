@@ -84,6 +84,7 @@ const [data, setData] = createSignal(range(200).map((_, i) => generateEmployee(i
 cols()[cols().length - 1].fixed = 'right'
 
 export default () => {
+  const rawData = data()
   let store: TableStore
   
   const handleValidate = async () => {
@@ -145,7 +146,7 @@ export default () => {
           expand={{ enable: true, render: ({ data }) => <div class='p-3 bg-blue-50 rounded'>{JSON.stringify(data)}</div> }}
           rowSelection={{ enable: true, multiple: true }}
           plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, FilterPlugin, ZodValidatorPlugin, ImportExportPlugin]}
-          diff={{ onCommit: (d) => console.log('commit', d) }}
+          diff={{ data: rawData, onCommit: (d) => console.log('commit', d) }}
           filter={{ autoMatch: true }}
           validator={(value) => {
             if (String(value ?? '').toLowerCase().includes('invalid')) throw Error('Value must not contain "invalid"')

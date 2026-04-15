@@ -161,7 +161,51 @@ const data = Array.from({ length: 10_000 }, (_, i) => ({ id: i, name: `Row ${i}`
 
 ---
 
-### 场景 5：列筛选 / 搜索
+### 场景 5：列排序
+
+> 关键词：排序、升序、降序、sort、点击表头排序
+
+排序功能为内置，无需额外插件。在列上设置 `sortable: true` 即可，点击表头循环切换 升序→降序→取消。
+
+```tsx
+// SolidJS
+const columns = [
+  { id: 'name',   name: '姓名', width: 130, sortable: true },
+  { id: 'age',    name: '年龄', width: 80,  sortable: true },
+  { id: 'salary', name: '薪资', width: 100, sortable: true },
+  { id: 'dept',   name: '部门', width: 130 },  // 不设 sortable，不可排序
+]
+
+// 基础：单列排序（默认）
+<Intable columns={columns} data={data} />
+
+// 多列排序
+<Intable
+  columns={columns} data={data}
+  sort={{ multiple: true }}
+/>
+
+// 监听排序变化（如用于服务端排序）
+<Intable
+  columns={columns} data={data}
+  sort={{
+    autoSort: false,              // 关闭客户端排序
+    onChange: sorts => fetchData(sorts),  // sorts: [{ field, order }][]
+  }}
+/>
+
+// React / Vue：用法完全相同，框架用 useState/ref 包裹数据即可
+```
+
+| `sort` 选项 | 说明 | 默认 |
+|---|---|---|
+| `multiple` | 允许同时对多列排序 | `false` |
+| `autoSort` | 客户端自动排序 | `true` |
+| `onChange` | 排序键变化回调 `(sorts: SortKey[]) => void` | — |
+
+---
+
+### 场景 6：列筛选 / 搜索
 
 > 关键词：筛选、过滤、搜索、filter、条件查询
 
@@ -200,7 +244,7 @@ const columns = [
 
 ---
 
-### 场景 6：撤销 / 重做（Ctrl+Z）
+### 场景 7：撤销 / 重做（Ctrl+Z）
 
 > 关键词：撤销、重做、undo、redo、历史记录
 
@@ -213,7 +257,7 @@ import { HistoryPlugin } from 'intable/plugins/HistoryPlugin'
 
 ---
 
-### 场景 7：变更比对 / 高亮修改
+### 场景 8：变更比对 / 高亮修改
 
 > 关键词：diff、比对、高亮变更、对比原始数据、提交修改
 
@@ -238,7 +282,7 @@ const originalData = structuredClone(rawData)   // 保存原始快照
 
 ---
 
-### 场景 8：滚动到底部加载更多（无限加载）
+### 场景 9：滚动到底部加载更多（无限加载）
 
 > 关键词：分页、加载更多、infinite scroll、下拉加载、滚动加载
 
@@ -300,7 +344,7 @@ const loadMore = async () => {
 
 ---
 
-### 场景 9：行选择 / 勾选行批量操作
+### 场景 10：行选择 / 勾选行批量操作
 
 > 关键词：勾选、行选择、多选、批量删除、批量操作
 
@@ -322,7 +366,7 @@ const [selected, setSelected] = useState([])
 
 ---
 
-### 场景 10：行展开（展示详情）
+### 场景 11：行展开（展示详情）
 
 > 关键词：展开、展开行、详情、折叠、accordion
 
@@ -342,7 +386,7 @@ const [selected, setSelected] = useState([])
 
 ---
 
-### 场景 11：树形数据（父子层级）
+### 场景 12：树形数据（父子层级）
 
 > 关键词：树形、树、父子、层级、children、子节点
 
@@ -362,7 +406,7 @@ const data = [
 
 ---
 
-### 场景 12：行分组
+### 场景 13：行分组
 
 > 关键词：分组、按部门分组、按类型分组、group by
 
@@ -375,7 +419,7 @@ const data = [
 
 ---
 
-### 场景 13：列宽拖拽 / 列拖拽排序
+### 场景 14：列宽拖拽 / 列拖拽排序
 
 > 关键词：调整列宽、拖拽、列排序、resize、drag
 
@@ -392,7 +436,7 @@ const data = [
 
 ---
 
-### 场景 14：固定列
+### 场景 15：固定列
 
 > 关键词：固定列、锁列、sticky、冻结
 
@@ -406,7 +450,7 @@ const columns = [
 
 ---
 
-### 场景 15：自定义单元格渲染
+### 场景 16：自定义单元格渲染
 
 > 关键词：自定义显示、渲染、图片、链接、按钮、标签、badge
 
@@ -447,7 +491,7 @@ const columns = ref([{
 
 ---
 
-### 场景 16：Ant Design 编辑器（React）
+### 场景 17：Ant Design 编辑器（React）
 
 > 关键词：antd、ant design、Select、DatePicker 单元格编辑
 
@@ -461,7 +505,7 @@ import 'antd/dist/reset.css'
 
 ---
 
-### 场景 17：Element Plus 编辑器（Vue）
+### 场景 18：Element Plus 编辑器（Vue）
 
 > 关键词：element plus、el-select、el-date-picker 单元格编辑
 
@@ -475,7 +519,7 @@ import 'element-plus/dist/index.css'
 
 ---
 
-### 场景 18：全功能表格（编辑 + 筛选 + 历史 + 虚拟滚动）
+### 场景 19：全功能表格（编辑 + 筛选 + 历史 + 虚拟滚动）
 
 > 关键词：完整功能、全功能、Excel-like
 
@@ -539,7 +583,7 @@ const handleValidate = async () => {
 
 ---
 
-### 场景 19：Excel 导出导入
+### 场景 20：Excel 导出导入
 
 > 关键词：导出、导入、Excel、xlsx、下载、上传
 
@@ -613,7 +657,7 @@ const handleImport = async () => {
 
 ---
 
-### 场景 20：主题切换
+### 场景 21：主题切换
 
 > 关键词：主题、样式、风格、深色、dark、暗色、shadcn、material、stripe、github
 
@@ -651,10 +695,11 @@ import 'intable/theme/github.css'    // 选一个即可
 ## 常用 TableColumn 字段速查
 
 ```ts
-{ id, name, width, fixed, type, editable, editor, enum, filterable, render, class, style }
+{ id, name, width, fixed, type, editable, editor, enum, filterable, sortable, sortComparator, render, class, style }
 // fixed: 'left' | 'right'
 // type: 'text' | 'number' | 'date' | 'enum' | 'checkbox'
 // editor: 'text' | 'number' | 'date' | 'select' | 'checkbox' | 'range' | 'color'
+// sortable: true 可排序；sortComparator: (a, b) => number 自定义排序逻辑
 ```
 
 ## 常用 TableProps 字段速查
@@ -664,6 +709,7 @@ import 'intable/theme/github.css'    // 选一个即可
   index, border, stickyHeader, size,   // size: 'small' | 'default' | 'large'
   rowSelection, expand, tree, rowGroup,
   resizable, colDrag, rowDrag,
+  sort,    // { multiple?, autoSort?, onChange? } — 列排序（内置）
   plugins, filter, diff, loadMore,
   editable, validator }
 ```

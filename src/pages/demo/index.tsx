@@ -25,6 +25,7 @@ import ReactDemo from './ReactDemo'
 import ReactAntd from './ReactAntd'
 import FilterDemo from './FilterDemo'
 import LoadMoreDemo from './LoadMoreDemo'
+import SortDemo from './SortDemo'
 
 // ── Theme CSS (equivalent to: import 'intable/theme/*') ──────────────────────
 import antdCss         from '../../../packages/intable/src/theme/antd.scss?inline'
@@ -126,6 +127,7 @@ const demos = [
   { name: 'History',         comp: HistoryDemo,         desc: 'Undo / Redo (Ctrl+Z / Ctrl+Y)' },
   { name: 'Diff',            comp: DiffDemo,            desc: 'Track changes & commit (Ctrl+S)' },
   { name: 'Filter',          comp: FilterDemo,          desc: 'Per-column text filter with live filtering' },
+  { name: 'Sort',            comp: SortDemo,            desc: 'Click column headers to sort (asc → desc → reset), multi-column support' },
   { name: 'LoadMore',        comp: LoadMoreDemo,        desc: 'Auto load next page when scrolled to bottom' },
   { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' },
   { name: 'ReactAntd',       comp: ReactAntd,           desc: 'React Antd integration demo' },

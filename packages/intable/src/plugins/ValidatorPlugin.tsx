@@ -25,6 +25,7 @@ declare module '../index' {
 
 export const ValidatorPlugin: Plugin = {
   name: 'validator',
+  priority: -1,
   store: (store) => ({
     cellValidationErrors: {} as { [row: Key]: { [col: Key]: string | null } | null },
 

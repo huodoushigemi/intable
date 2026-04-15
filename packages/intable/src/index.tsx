@@ -22,6 +22,7 @@ import { DragPlugin } from './plugins/DragPlugin'
 import { renderComponent, solidComponent } from './components/utils'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
+import { SortPlugin } from './plugins/SortPlugin'
 import { CellMergePlugin } from './plugins/CellMergePlugin'
 import { TreePlugin } from './plugins/TreePlugin'
 import { HeaderGroupPlugin } from './plugins/HeaderGroup'
@@ -333,8 +334,8 @@ function BasePlugin(): Plugin$0 {
             <div class='data-table--scroll-view h-full max-h-inherit' ref={el => store.scroll_el = el}>
               {o.children}
               <store.props.Footer />
+              {!store.props.data.length && <div class='data-table__empty'>No data</div>}
             </div>
-            {!store.props.data.length && <div class='data-table__empty'>No data</div>}
           </Scroll>
         )
       },
@@ -421,7 +422,9 @@ function BasePlugin(): Plugin$0 {
     },
     layers: [
       function Loading(store) {
-        return store.props.loading ? <div class='data-table__loading'><IStreamlineUltimateLoadingBold class='text-2xl animate-spin' /></div> : null
+        return <>{
+          store.props.loading ? <div class='data-table__loading'><IStreamlineUltimateLoadingBold class='text-2xl animate-spin' /></div> : null
+        }</>
       }
     ]
   }
@@ -516,6 +519,7 @@ export const defaultsPlugins = [
   ExpandPlugin,
   RowSelectionPlugin,
   IndexPlugin,
+  SortPlugin,
   ValidatorPlugin,
   EditablePlugin,
   CellMergePlugin,
