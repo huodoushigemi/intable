@@ -5,6 +5,7 @@ import { createLazyMemo } from '@solid-primitives/memo'
 import { createElementSize, createResizeObserver, makeResizeObserver } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { difference, isEqual, memoize, sumBy } from 'es-toolkit'
+import { renderComponent, solidComponent } from './components/utils'
 import { log, unFn } from './utils'
 
 import 'virtual:uno.css'
@@ -19,7 +20,6 @@ import { CommandPlugin } from './plugins/CommandPlugin'
 import { RowSelectionPlugin } from './plugins/RowSelectionPlugin'
 import { ResizePlugin } from './plugins/ResizePlugin'
 import { DragPlugin } from './plugins/DragPlugin'
-import { renderComponent, solidComponent } from './components/utils'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
 import { SortPlugin } from './plugins/SortPlugin'
@@ -27,6 +27,10 @@ import { CellMergePlugin } from './plugins/CellMergePlugin'
 import { TreePlugin } from './plugins/TreePlugin'
 import { HeaderGroupPlugin } from './plugins/HeaderGroup'
 import { ValidatorPlugin } from './plugins/ValidatorPlugin'
+import { AggregatePlugin } from './plugins/AggregatePlugin'
+import { AutoFillPlugin } from './plugins/AutoFillPlugin'
+import { FilterPlugin } from './plugins/FilterPlugin'
+import { ImportExportPlugin } from './plugins/ImportExportPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -527,4 +531,8 @@ export const defaultsPlugins = [
   FitColWidthPlugin,
   RowGroupPlugin,
   ResizePlugin,
+  AggregatePlugin,
+  AutoFillPlugin,
+  FilterPlugin,
+  ImportExportPlugin,
 ]

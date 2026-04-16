@@ -18,7 +18,7 @@
   --select-area-bg: #5292f71a;
   
 
-  @apply relative text-[14px] c-[--table-c] b-[--table-b-c];
+  @apply relative text-[14px] c-[--table-c] b-[--table-b-c] bg-[--table-bg];
 
   &--table {
     @apply table-fixed w-max border-collapse b-0 outline-0 c-[--table-c];

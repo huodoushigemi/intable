@@ -22,7 +22,7 @@ export function Popover(attrs: FloatingProps) {
 }
 
 type FloatingProps = {
-  reference: ReferenceType
+  reference: ReferenceType | JSX.Element
   floating?: JSX.Element | (() => JSX.Element)
   portal?: HTMLElement
   trigger?: 'click' | 'hover'

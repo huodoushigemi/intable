@@ -152,7 +152,7 @@ const App = () => {
 
 ## 插件
 
-插件通过 `plugins` 属性传入，部分插件需从对应路径手动引入。
+其他插件通过 `plugins` 属性传入，需从对应路径手动引入。
 
 ---
 
@@ -377,3 +377,88 @@ const columns = [
 ### CopyPastePlugin — 复制粘贴
 
 `Ctrl+C` 复制选中区域为 TSV 格式，`Ctrl+V` 粘贴。
+
+---
+
+### FilterPlugin — 列筛选（**内置**）
+
+在 Column 上设置 `filterable: true` 开启筛选，点击表头图标弹出筛选面板。
+
+```jsx
+const columns = [
+  { id: 'name', name: '姓名', type: 'text',   filterable: true },
+  { id: 'dept', name: '部门', type: 'enum',   filterable: true, enum: { eng: '工程', design: '设计' } },
+  { id: 'age',  name: '年龄', type: 'number', filterable: true },
+]
+
+// 客户端实时过滤
+<Intable columns={columns} data={data} filter={{ autoMatch: true }} />
+
+// 服务端过滤
+<Intable
+  filter={{
+    autoMatch: false,
+    onChange: filters => fetchData(filters),
+  }}
+/>
+```
+
+每列 `type` 决定可用操作符：`text`、`number`、`date`、`enum`、`checkbox`。
+
+---
+
+### AggregatePlugin — 汇总行（**内置**）
+
+在列上设置 `aggregate` 字段，表格底部自动显示汇总行。
+
+```jsx
+const columns = [
+  { id: 'name',   name: '姓名',   width: 140 },
+  { id: 'age',    name: '年龄',   width: 80,  aggregate: 'avg' },
+  { id: 'salary', name: '薪资',   width: 110, aggregate: 'sum' },
+  { id: 'bonus',  name: '奖金',   width: 100, aggregate: values => values.reduce((s, v) => s + v, 0) },
+]
+
+<Intable
+  columns={columns} data={data}
+  aggregate={{
+    label: '合计',
+    formatter: (val, type) => type === 'sum' ? `$${Number(val).toLocaleString()}` : val,
+  }}
+/>
+```
+
+`aggregate` 列字段：`'sum'` | `'avg'` | `'min'` | `'max'` | `'count'` | `(values, col, data) => any`。
+
+---
+
+### AutoFillPlugin — Excel 填充手柄（**内置，默认关闭**）
+
+选中单元格后，选区右下角出现小方块手柄，拖拽即可向四个方向填充。双击手柄可自动向下填充至相邻列最后一个非空行。
+
+```jsx
+// 传入 autoFill={true} 开启，需要 onDataChange 接收写入操作
+<Intable data={data} onDataChange={setData} columns={columns} autoFill={true} />
+```
+
+填充规则：数字等差、日期递增、其他循环复制；单个数字默认步长为 1。
+
+---
+
+### ImportExportPlugin — Excel 导入 / 导出（**内置**）
+
+需要安装依赖：`pnpm add xlsx`
+
+```jsx
+let store
+
+const handleExport = () => store.commands.exportExcel()  // 下载 data.xlsx
+const handleImport = async () => {
+  const rows = await store.commands.readExcel()
+  setData(rows)
+}
+
+<Intable store={s => store = s} columns={columns} data={data} />
+```
+
+导出自动过滤内部列（如序号、勾选列）；导入通过列名自动匹配数据。

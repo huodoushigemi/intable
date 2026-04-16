@@ -5,9 +5,7 @@ import { Intable, type TableStore } from '../../../packages/intable/src'
 import { VirtualScrollPlugin } from '../../../packages/intable/src/plugins/VirtualScrollPlugin'
 import { HistoryPlugin } from '../../../packages/intable/src/plugins/HistoryPlugin'
 import { DiffPlugin } from '../../../packages/intable/src/plugins/DiffPlugin'
-import { FilterPlugin } from '../../../packages/intable/src/plugins/FilterPlugin'
 import { ZodValidatorPlugin } from '../../../packages/intable/src/plugins/ZodValidatorPlugin'
-import { ImportExportPlugin } from '../../../packages/intable/src/plugins/ImportExportPlugin'
 
 const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations']
 const positions = {
@@ -134,7 +132,6 @@ export default () => {
           onColumnsChange={setCols}
           data={data()}
           onDataChange={setData}
-          // onDataChange={v => console.log('dataChange', v)}
           newRow={i => generateEmployee(data().length)}
           index
           border
@@ -142,10 +139,11 @@ export default () => {
           size='small'
           colDrag
           rowDrag
+          autoFill
           resizable={{ col: { enable: true }, row: { enable: true } }}
           expand={{ enable: true, render: ({ data }) => <div class='p-3 bg-blue-50 rounded'>{JSON.stringify(data)}</div> }}
           rowSelection={{ enable: true, multiple: true }}
-          plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, FilterPlugin, ZodValidatorPlugin, ImportExportPlugin]}
+          plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]}
           diff={{ data: rawData, onCommit: (d) => console.log('commit', d) }}
           filter={{ autoMatch: true }}
           validator={(value) => {

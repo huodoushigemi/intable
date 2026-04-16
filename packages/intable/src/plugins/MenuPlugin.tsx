@@ -1,10 +1,9 @@
-import { batch, createEffect, createMemo, createSignal, mapArray, on } from 'solid-js'
-import { combineProps } from '@solid-primitives/props'
+import { batch, createMemo, createSignal, mapArray } from 'solid-js'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { delay, range, remove } from 'es-toolkit'
 import { autoPlacement, computePosition } from '@floating-ui/dom'
 import { type Plugin, type TableStore } from '..'
-import { useMemoAsync, useTinykeys } from '../hooks'
+import { useMemoAsync } from '../hooks'
 import { Menu } from '../components/Menu'
 import { tree } from '../utils'
 
@@ -36,49 +35,41 @@ export const MenuPlugin: Plugin = {
   store: (store) => ({
 
   }),
-  rewriteProps: {
-    Table: ({ Table }, { store }) => o => {
-      const [menuEl, setMenuEl] = createSignal<HTMLElement>()
+  layers: [store => {
+    const [menuEl, setMenuEl] = createSignal<HTMLElement>()
 
-      const _menus = mapArray(() => store.plugins || [], plugin => createMemo(() => plugin.menus?.(store)))
-      const menus = createMemo(() => _menus().flatMap(e => e() || []))
+    const _menus = mapArray(() => store.plugins || [], plugin => createMemo(() => plugin.menus?.(store)))
+    const menus = createMemo(() => _menus().flatMap(e => e() || []))
 
-      const [pos, setPos] = createSignal<{ x: number; y: number }>()
-      function onContextMenu(e: PointerEvent) {
-        e.preventDefault()
-        if (store.table.contains(e.target)) setPos({ x: e.x, y: e.y })
-      }
+    const [pos, setPos] = createSignal<{ x: number; y: number }>()
+    createEventListener(() => store.table, 'contextmenu', onContextMenu)
+    function onContextMenu(e: PointerEvent) {
+      e.preventDefault()
+      if (store.table.contains(e.target)) setPos({ x: e.x, y: e.y })
+    }
 
-      createEventListener(document, 'pointerdown', e => {
-        menuEl()?.contains(e.target as Element) || setPos()
+    createEventListener(document, 'pointerdown', e => {
+      menuEl()?.contains(e.target as Element) || setPos()
+    })
+
+    const style = useMemoAsync(() => {
+      const mel = menuEl()
+      if (!mel) return
+      return computePosition({ getBoundingClientRect: () => DOMRect.fromRect(pos()) }, mel, {
+        strategy: 'fixed',
+        placement: 'top-start',
+        middleware: [autoPlacement({ boundary: document.body, alignment: 'start' })]
       })
-
-      const style = useMemoAsync(() => {
-        const mel = menuEl()
-        if (!mel) return
-        return computePosition({ getBoundingClientRect: () => DOMRect.fromRect(pos()) }, mel, {
-          strategy: 'fixed',
-          placement: 'top-start',
-          middleware: [autoPlacement({ boundary: document.body, alignment: 'start' })]
-        })
-          .then(({ x, y }) => ({
-            position: 'fixed',
-            transform: `translate(${x}px, ${y}px)`,
-            top: 0,
-            left: 0,
-            'z-index': 10
-          }))
-      })
-
-      o = combineProps({ tabindex: -1, onContextMenu }, o)
-      return (
-        <Table {...o}>
-          {pos() && <Menu ref={setMenuEl} style={style() || 'position: fixed'} items={menus()} onAction={() => setPos()} />}
-          {o.children}
-        </Table>
-      )
-    },
-  },
+        .then(({ x, y }) => ({
+          position: 'fixed',
+          transform: `translate(${x}px, ${y}px)`,
+          top: 0,
+          left: 0,
+          'z-index': 10
+        }))
+    })
+    return <>{pos() && <Menu ref={setMenuEl} class='pointer-events-auto' style={style() || 'position: fixed'} items={menus()} onAction={() => setPos()} />}</>
+  }],
   menus: (store) => [
     { label: '新增行 ↑', cb: () => store.commands.addRows(store.selected.end[1], [store.props.newRow(store.selected.end[1])]) },
     { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props.newRow(store.selected.end[1])], false) },

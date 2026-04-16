@@ -1,7 +1,6 @@
 import { createEffect, createSignal } from 'solid-js'
 import { createMutable } from 'solid-js/store'
 import { Intable } from '../../../packages/intable/src'
-import { FilterPlugin } from '../../../packages/intable/src/plugins/FilterPlugin'
 import { replaceArray } from './helpers'
 import type { TableColumn } from '../../../packages/intable/src'
 import { AndOrFields } from '../../../packages/intable/src/components/AndOrFields'
@@ -77,7 +76,6 @@ export default () => {
         border
         stickyHeader
         size='small'
-        plugins={[FilterPlugin]}
         filter={{
           onChange: v => console.log('Filters changed:', v),
         }}

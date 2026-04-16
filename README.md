@@ -16,6 +16,9 @@
 - **单元格编辑** — `editable: true` + `editor` 字段，开箱即用，支持 text / number / date / select / checkbox / range / color
 - **列排序** — 内置 `SortPlugin`，点击表头循环切换升序/降序/取消，支持多列排序
 - **列筛选** — `FilterPlugin` 支持 text / number / date / enum 类型操作符
+- **列显隐** — `ColumnVisibilityPlugin`，☰ 按钮控制每列可见性，支持 `defaultHidden` 初始配置
+- **汇总行** — `AggregatePlugin`，每列独立配置 sum / avg / min / max / count，支持自定义函数和格式化
+- **Excel 填充** — `AutoFillPlugin`，拖拽选区右下角小方块，自动推断数字/日期等差序列
 - **撤销/重做** — `HistoryPlugin` 完整撤销/重做栈（Ctrl+Z / Ctrl+Y）
 - **Excel 复制粘贴** — 多单元格选区 TSV 复制粘贴，兼容 Excel / 飞书
 - **数据校验** — `ZodValidatorPlugin` 集成 Zod schema 校验
@@ -164,12 +167,15 @@ const data = ref([{ id: 1, name: 'Alice', age: 28 }])
 | 插件 | 说明 | 是否内置 |
 |---|---|---|
 | `SortPlugin` | 点击表头排序，支持多列 | ✅ 内置 |
-| `FilterPlugin` | 列筛选，支持多种操作符 | 按需引入 |
+| `ColumnVisibilityPlugin` | ☰ 按钮切换列显隐，支持默认隐藏配置 | 按需引入 |
+| `AggregatePlugin` | 汇总行：sum / avg / min / max / count / 自定义函数 | ✅ 内置 |
+| `AutoFillPlugin` | 拖拽填充手柄，自动推断数字/日期等差序列 | ✅ 内置 |
+| `FilterPlugin` | 列筛选，支持多种操作符 | ✅ 内置 |
 | `VirtualScrollPlugin` | 虚拟滚动，支持大数据量 | 按需引入 |
 | `HistoryPlugin` | 撤销/重做（Ctrl+Z / Ctrl+Y） | 按需引入 |
 | `DiffPlugin` | 变更高亮 + Ctrl+S 提交 | 按需引入 |
 | `ZodValidatorPlugin` | Zod schema 数据校验 | 按需引入 |
-| `ImportExportPlugin` | Excel 导出/导入 | 按需引入 |
+| `ImportExportPlugin` | Excel 导出/导入 | ✅ 内置 |
 | `LoadMorePlugin` | 滚动到底加载更多 | 按需引入 |
 | `ResizePlugin` | 拖拽调整列宽/行高 | ✅ 内置 |
 | `DragPlugin` | 拖拽排序列/行 | ✅ 内置 |

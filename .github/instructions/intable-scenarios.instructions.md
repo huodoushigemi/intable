@@ -210,26 +210,21 @@ const columns = [
 > 关键词：筛选、过滤、搜索、filter、条件查询
 
 ```tsx
-import { FilterPlugin } from 'intable/plugins/FilterPlugin'
-
 const columns = [
-  { id: 'name', name: '姓名', type: 'text',     width: 140, filterable: true },
-  { id: 'dept', name: '部门', type: 'enum',     width: 140, filterable: true,
-    enum: { eng: '工程', design: '设计' } },
-  { id: 'age',  name: '年龄', type: 'number',   width: 100, filterable: true },
-  { id: 'date', name: '日期', type: 'date',     width: 140, filterable: true },
+  { id: 'name', name: '姓名', type: 'text',   width: 140, filterable: true },
+  { id: 'dept', name: '部门', type: 'enum',   width: 140, filterable: true, enum: { eng: '工程', design: '设计' } },
+  { id: 'age',  name: '年龄', type: 'number', width: 100, filterable: true },
+  { id: 'date', name: '日期', type: 'date',   width: 140, filterable: true },
 ]
 
 // SolidJS
 <Intable
   columns={columns} data={data}
-  plugins={[FilterPlugin]}
   filter={{ autoMatch: true }}  // 客户端实时过滤
 />
 
 // 后端过滤（autoMatch: false）
 <Intable
-  plugins={[FilterPlugin]}
   filter={{
     autoMatch: false,
     onChange: filters => fetchData(filters),  // filters 变化时请求接口
@@ -525,13 +520,12 @@ import 'element-plus/dist/index.css'
 
 ```tsx
 import { VirtualScrollPlugin } from 'intable/plugins/VirtualScrollPlugin'
-import { FilterPlugin }        from 'intable/plugins/FilterPlugin'
 import { HistoryPlugin }       from 'intable/plugins/HistoryPlugin'
 import { DiffPlugin }          from 'intable/plugins/DiffPlugin'
 import { ZodValidatorPlugin }  from 'intable/plugins/ZodValidatorPlugin'
 import { z } from 'zod'
 
-const plugins = [VirtualScrollPlugin, FilterPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]
+const plugins = [VirtualScrollPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]
 
 const columns = [
   { id: 'name', name: '姓名', width: 140, editable: true, filterable: true, type: 'text', required: true, zodSchema: z.string().min(2, '姓名至少2个字符').max(50, '姓名最多50个字符'), validator: (value: string) => { const reserved = ['admin', 'root']; if (reserved.includes(value.toLowerCase())) throw new Error('姓名不能使用保留词'); } },
@@ -587,9 +581,9 @@ const handleValidate = async () => {
 
 > 关键词：导出、导入、Excel、xlsx、下载、上传
 
-```tsx
-import { ImportExportPlugin } from 'intable/plugins/ImportExportPlugin'
+> 需要安装依赖：`pnpm add xlsx`
 
+```tsx
 // SolidJS
 let store: any = null
 
@@ -613,7 +607,6 @@ const handleImport = async () => {
     store={s => store = s}
     columns={columns}
     data={data}
-    plugins={[ImportExportPlugin]}
   />
 </div>
 
@@ -630,7 +623,7 @@ const [store, setStore] = useState(null)
       <button @click="handleExport">Export Excel</button>
       <button @click="handleImport">Import Excel</button>
     </div>
-    <intable :store="storeRef" :columns="columns" :data="data" :plugins="[ImportExportPlugin]" />
+    <intable :store="storeRef" :columns="columns" :data="data" />
   </div>
 </template>
 <script setup>
@@ -654,6 +647,108 @@ const handleImport = async () => {
 - 导出时会自动过滤内部列（如索引、选择列等）
 - 导入时会通过列名自动匹配数据
 - 需要安装 `xlsx` 依赖：`pnpm add xlsx`
+
+---
+
+### 场景 21：列显隐控制
+
+> 关键词：隐藏列、显示列、列切换、列选择器
+
+无需额外插件，使用 `ColumnVisibilityPlugin` 即可。表格右上角会出现一个☰ 按鈕，点击弹出列切换面板。
+
+```tsx
+import { ColumnVisibilityPlugin } from 'intable/plugins/ColumnVisibilityPlugin'
+
+// 实现所有列可隐藏
+const columns = [
+  { id: 'name',  name: '姓名',  width: 130 },
+  { id: 'email', name: '邮箱',  width: 200 },
+  { id: 'dept',  name: '部门',  width: 120 },
+]
+
+// SolidJS
+<Intable
+  columns={columns} data={data}
+  plugins={[ColumnVisibilityPlugin]}
+  columnVisibility={{
+    defaultHidden: ['email'],   // 初始隐藏的列
+    onChange: hidden => console.log('Hidden:', hidden),
+  }}
+/>
+
+// React / Vue：用法相同
+```
+
+| `columnVisibility` 选项 | 说明 |
+|---|---|
+| `defaultHidden` | 初始隐藏的列 ID 数组 |
+| `onChange` | 隐藏列变化回调 `(hiddenIds: string[]) => void` |
+
+---
+
+### 场景 22：汇总行（列统计）
+
+> 关键词：汇总、总计、平均、求和、最大小值、计数、footer row、统计行
+
+```tsx
+const columns = [
+  { id: 'name',   name: '姓名',   width: 140 },
+  { id: 'age',    name: '年龄',   width: 80,  aggregate: 'avg'   },  // 平均
+  { id: 'salary', name: '薪资',   width: 110, aggregate: 'sum'   },  // 求和
+  { id: 'sales',  name: '销售额', width: 110, aggregate: 'max'   },  // 最大
+  { id: 'score',  name: '评分',   width: 80,  aggregate: 'min'   },  // 最小
+  { id: 'active', name: '状态',   width: 80,  aggregate: 'count' },  // 计数
+  // 自定义汇总函数
+  { id: 'bonus',  name: '奖金',   width: 100, aggregate: (values) => `共 $${values.reduce((s,v)=>s+v,0).toLocaleString()}` },
+]
+
+<Intable
+  columns={columns} data={data}
+  aggregate={{
+    label: '合计',          // 汇总行第一列显示的标签
+    formatter: (val, type) =>  // 格式化显示内容
+      type === 'sum' ? `$${Number(val).toLocaleString()}` : val,
+  }}
+/>
+```
+
+| `aggregate` 列字段 | 说明 |
+|---|---|
+| `'sum'` | 各行求和（忽略 NaN） |
+| `'avg'` | 平均小数点后两位 |
+| `'min'` / `'max'` | 最小 / 最大小数字值 |
+| `'count'` | 非空单元格数量 |
+| `(values, col, data) => any` | 自定义函数 |
+
+---
+
+### 场景 23：Excel 填充（AutoFill）
+
+> 关键词：拖拽填充、自动填充、序列生成、填充手柄、Excel 副加号
+
+> **传入 `autoFill={true}` 开启。**
+
+选中单元格后，选区右下角出现小方块填充手柄，支持四向拖拽和双击快速填充。
+
+```tsx
+const columns = [
+  { id: 'rank',  name: '排名',   width: 70,  editable: true },
+  { id: 'score', name: '分数',   width: 80,  editable: true },
+  { id: 'date',  name: '日期',   width: 120, editable: true },
+  { id: 'name',  name: '姓名',   width: 120, editable: true },
+]
+
+// 需要 onDataChange 来接收写入操作
+const [data, setData] = createSignal([...])
+<Intable columns={columns} data={data()} onDataChange={setData} autoFill={true} />
+```
+
+**填充规则**：
+- 数字列：`[10, 20]` 拖两行 → `30, 40, 50…`（等差数列）；单个数字默认步长为 1
+- 日期列：`['2024-01-01', '2024-01-08']` 拖两行 → `'2024-01-15', '2024-01-22'…`
+- 其他列：循环复制源列内容
+- 支持向上 / 向左拖拽（反向填充）
+- 双击手柄：自动向下填充至相邻列最后一个非空行（Excel 双击行为）
 
 ---
 
@@ -695,11 +790,12 @@ import 'intable/theme/github.css'    // 选一个即可
 ## 常用 TableColumn 字段速查
 
 ```ts
-{ id, name, width, fixed, type, editable, editor, enum, filterable, sortable, sortComparator, render, class, style }
+{ id, name, width, fixed, type, editable, editor, enum, filterable, sortable, sortComparator, aggregate, render, class, style }
 // fixed: 'left' | 'right'
 // type: 'text' | 'number' | 'date' | 'enum' | 'checkbox'
 // editor: 'text' | 'number' | 'date' | 'select' | 'checkbox' | 'range' | 'color'
 // sortable: true 可排序；sortComparator: (a, b) => number 自定义排序逻辑
+// aggregate: 'sum' | 'avg' | 'min' | 'max' | 'count' | fn 列汇总
 ```
 
 ## 常用 TableProps 字段速查
@@ -709,7 +805,10 @@ import 'intable/theme/github.css'    // 选一个即可
   index, border, stickyHeader, size,   // size: 'small' | 'default' | 'large'
   rowSelection, expand, tree, rowGroup,
   resizable, colDrag, rowDrag,
-  sort,    // { multiple?, autoSort?, onChange? } — 列排序（内置）
+  sort,              // { multiple?, autoSort?, onChange? } — 列排序（内置）
+  columnVisibility,  // { defaultHidden?, onChange? } — 列显隐
+  aggregate,         // { label?, formatter? } — 汇总行（内置）
+  autoFill,          // true | { enable? } — 开启填充手柄（内置，默认关闭）
   plugins, filter, diff, loadMore,
   editable, validator }
 ```

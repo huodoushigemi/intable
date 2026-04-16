@@ -28,7 +28,8 @@ export default defineConfig({
     
     (await import('unocss/vite')).default({
       content: {
-        filesystem: ['src/**/*.{ts,tsx,html}'],
+        filesystem: ['src/**/*.{ts,tsx,html}', 'packages/intable/src/**/*.{ts,tsx}'],
+        // filesystem: ['packages/intable/src/**/*.{ts,tsx}'],
       },
       presets: [
         // (await import('@ameinhardt/unocss-preset-daisy')).presetDaisy({ base: true, utils: true, logs: true, styled: true }),

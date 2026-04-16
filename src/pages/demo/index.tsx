@@ -26,6 +26,9 @@ import ReactAntd from './ReactAntd'
 import FilterDemo from './FilterDemo'
 import LoadMoreDemo from './LoadMoreDemo'
 import SortDemo from './SortDemo'
+import ColumnVisibilityDemo from './ColumnVisibilityDemo'
+import AggregateDemo from './AggregateDemo'
+import AutoFillDemo from './AutoFillDemo'
 
 // ── Theme CSS (equivalent to: import 'intable/theme/*') ──────────────────────
 import antdCss         from '../../../packages/intable/src/theme/antd.scss?inline'
@@ -128,6 +131,9 @@ const demos = [
   { name: 'Diff',            comp: DiffDemo,            desc: 'Track changes & commit (Ctrl+S)' },
   { name: 'Filter',          comp: FilterDemo,          desc: 'Per-column text filter with live filtering' },
   { name: 'Sort',            comp: SortDemo,            desc: 'Click column headers to sort (asc → desc → reset), multi-column support' },
+  { name: 'ColumnVisibility',comp: ColumnVisibilityDemo,desc: 'Toggle column visibility via the ☰ button in the table header' },
+  { name: 'Aggregate',       comp: AggregateDemo,       desc: 'Aggregate footer row: sum, avg, min, max, count per column' },
+  { name: 'AutoFill',        comp: AutoFillDemo,        desc: 'Excel-style fill handle: drag to extend numeric / date / text series' },
   { name: 'LoadMore',        comp: LoadMoreDemo,        desc: 'Auto load next page when scrolled to bottom' },
   { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' },
   { name: 'ReactAntd',       comp: ReactAntd,           desc: 'React Antd integration demo' },

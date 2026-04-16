@@ -10,9 +10,7 @@ import { A } from '@solidjs/router'
 import 'virtual:uno.css'
 import './website.scss'
 import { Intable } from '../../packages/intable/src'
-import { CellSelectionPlugin } from '../../packages/intable/src/plugins/CellSelectionPlugin'
 import { HistoryPlugin } from '../../packages/intable/src/plugins/HistoryPlugin'
-import { ClipboardPlugin } from '../../packages/intable/src/plugins/CopyPastePlugin'
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
@@ -602,7 +600,8 @@ function TableDemo() {
             border
             stickyHeader
             size="small"
-            plugins={[CellSelectionPlugin, HistoryPlugin, ClipboardPlugin]}
+            autoFill
+            plugins={[HistoryPlugin]}
           />
         </div>
       </div>
