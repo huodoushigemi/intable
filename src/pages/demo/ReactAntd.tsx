@@ -95,9 +95,8 @@ export default component(() => {
     },
     plugins,
     diff: {
-      enable: true,
       data: diffdata,
-      onCommit: (_, opt) => console.log('Diff commit:', opt),
+      onCommit: (opt) => console.log('Diff commit:', opt),
     }
   })
 })

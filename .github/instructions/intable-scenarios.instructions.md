@@ -91,20 +91,30 @@ const data = ref([{ id: 1, name: 'Alice', age: 28 }])
 
 编辑功能为内置，无需额外插件。双击单元格进入编辑，Enter 提交，Esc 取消。
 
+`type` | `editor` 都可用来指定编辑器类型，通常情况下推荐使用 `type`，如果需要更细粒度的控制，可以使用 `editor` 明确指定编辑器组件。
+
 ```tsx
-// SolidJS — columns 上加 editable: true
+// columns 上加 editable: boolean | ((tdprops) => boolean) 来动态控制是否可编辑
 const columns = [
   { id: 'name',   name: '姓名', width: 140, editable: true },                    // text（默认）
   { id: 'age',    name: '年龄', width: 80,  editable: true, editor: 'number' },  // 数字
-  { id: 'joined', name: '入职', width: 140, editable: true, editor: 'date' },    // 日期
-  { id: 'dept',   name: '部门', width: 140, editable: true, editor: 'select', enum: { eng: '工程', design: '设计', pm: '产品' } }, // 下拉
-  { id: 'active', name: '在职', width: 80,  editable: true, editor: 'checkbox' }, // 复选框
-  { id: 'score',  name: '评分', width: 100, editable: true, editor: 'range' },    // 滑块
-  { id: 'color',  name: '颜色', width: 80,  editable: true, editor: 'color' },    // 颜色
+  { id: 'joined', name: '入职', width: 140, editable: true, type: 'date' },    // 日期
+  { id: 'dept',   name: '部门', width: 140, editable: true, enum: { eng: '工程', design: '设计', pm: '产品' } }, // 下拉
+  { id: 'active', name: '在职', width: 80,  editable: true, type: 'checkbox' }, // 复选框
+  { id: 'score',  name: '评分', width: 100, editable: true, type: 'range' },    // 滑块
+  { id: 'color',  name: '颜色', width: 80,  editable: true, type: 'color' },    // 颜色
 ]
 // React / Vue: 同样字段，框架用 useState / ref 包裹 columns 即可
 ```
 
+新增行：使用 Symbol 生成唯一 ID，确保新行的 rowKey 不重复。 Symbol 在网络传输时会自动删除，因此无需手动处理。
+
+```tsx
+const [data, setData] = useState([])
+
+<button onClick={() => setData(prev => [{ id: Symbol() }, ...prev])}>新增一行</button>
+<Intable columns={columns} data={data} onDataChange={setData} rowKey='id' />
+```
 ---
 
 ### 场景 3：数据校验
@@ -117,7 +127,7 @@ import { z } from 'zod'   // pnpm add zod
 
 const columns = [
   { id: 'name',  name: '姓名', editable: true, zodSchema: z.string().min(1, '不能为空').max(50) },
-  { id: 'age',   name: '年龄', editable: true, editor: 'number', zodSchema: z.coerce.number().int().min(0).max(150) },
+  { id: 'age',   name: '年龄', editable: true, type: 'number', zodSchema: z.coerce.number().int().min(0).max(150) },
   { id: 'email', name: '邮箱', editable: true, zodSchema: z.string().email('请输入有效邮箱') },
 ]
 
@@ -264,11 +274,10 @@ const originalData = structuredClone(rawData)   // 保存原始快照
 <Intable
   plugins={[DiffPlugin]}
   diff={{
-    enable: true,
     data: originalData,      // 基准数据（不随编辑变化）
-    onCommit: changes => {   // Ctrl+S 触发提交
-      console.log(changes)   // [{ row, col, oldVal, newVal }]
-      submitToApi(changes)
+    onCommit: ({ added, changed, removed }) => {   // Ctrl+S 触发提交
+      console.log({ added, changed, removed })
+      submitToApi({ added, changed, removed })
     },
   }}
 />
@@ -529,7 +538,7 @@ const plugins = [VirtualScrollPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlu
 
 const columns = [
   { id: 'name', name: '姓名', width: 140, editable: true, filterable: true, type: 'text', required: true, zodSchema: z.string().min(2, '姓名至少2个字符').max(50, '姓名最多50个字符'), validator: (value: string) => { const reserved = ['admin', 'root']; if (reserved.includes(value.toLowerCase())) throw new Error('姓名不能使用保留词'); } },
-  { id: 'dept', name: '部门', width: 140, editable: true, filterable: true, type: 'enum', editor: 'select', enum: { eng: '工程', design: '设计' }, required: true },
+  { id: 'dept', name: '部门', width: 140, editable: true, filterable: true, enum: { eng: '工程', design: '设计' }, required: true },
   { id: 'salary', name: '薪资', width: 100, editable: true, filterable: true, type: 'number', required: true, zodSchema: z.coerce.number({ error: '请输入数字' }).min(3000, '薪资至少3000').max(50000, '薪资最多50000') },
   { id: 'email', name: '邮箱', width: 180, editable: true, filterable: true, required: true, zodSchema: z.string().email('邮箱格式不正确') },
   { id: 'age', name: '年龄', width: 80, editable: true, filterable: true, type: 'number', required: true, zodSchema: z.coerce.number({ error: '请输入数字' }).min(18, '年龄至少18岁').max(65, '年龄最多65岁') }

@@ -330,7 +330,7 @@ import { DiffPlugin } from 'intable/plugins/DiffPlugin'
     added: true,    // 高亮新增行，默认 true
     removed: true,  // 高亮删除行，默认 true
     changed: true,  // 高亮修改行，默认 true
-    onCommit: (data, { added, removed, changed }) => save(data),
+    onCommit: ({ added, removed, changed }) => save(data),
   }}
 />
 ```

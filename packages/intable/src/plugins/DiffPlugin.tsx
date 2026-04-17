@@ -1,11 +1,7 @@
-import { unwrap } from 'solid-js/store'
-import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
-import { v4 as uuid } from 'uuid'
 import { diffArrays } from 'diff'
 import { isEqual, keyBy } from 'es-toolkit'
 import { type Plugin } from '..'
-import { log } from '../utils'
 import { createMemo } from 'solid-js'
 
 declare module '../index' {
@@ -19,7 +15,7 @@ declare module '../index' {
       removed?: boolean
       /** @default true */
       changed?: boolean
-      onCommit?: (data: any, opt: { added: any[], removed: any[], changed: any[] }) => any
+      onCommit?: (opt: { added: any[], removed: any[], changed: any[] }) => any
     }
   }
   interface TableStore {
@@ -27,7 +23,7 @@ declare module '../index' {
     diffDataKeyed: () => any
   }
   interface Commands {
-    diffCommit(data?: any[]): Promise<void>
+    diffCommit(): Promise<void>
   }
 }
 
@@ -42,7 +38,8 @@ export const DiffPlugin: Plugin = {
     diffDataKeyed: createLazyMemo(() => keyBy(store.diffData(), e => e[store.props!.rowKey]))
   }),
   commands: store => ({
-    async diffCommit(data = store.rawProps.data || []) {
+    async diffCommit() {
+      const data = store.rawProps.data || []
       const { rowKey } = store.props || {}
       const added = [], removed = [], changed = []
       const keyed = keyBy(data, e => e[rowKey])
@@ -54,13 +51,12 @@ export const DiffPlugin: Plugin = {
       for (const e of store.diffData()) {
         !keyed[e[rowKey]] && removed.push(e)
       }
-      await store.props!.diff?.onCommit?.(data, { added, removed, changed })
+      await store.props!.diff?.onCommit?.({ added, removed, changed })
       added[NEW] = 0
     }
   }),
   rewriteProps: {
     diff: ({ diff }) => ({
-      enable: false,
       added: true,
       removed: true,
       changed: true,

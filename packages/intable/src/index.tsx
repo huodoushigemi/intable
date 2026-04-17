@@ -136,7 +136,7 @@ export interface TableStore extends Obj {
   trs: Nullable<Element>[]
   trSizes: Nullable<{ width: number; height: number }>[]
   internal: symbol
-  raw: symbol
+  raw: any
   props: TableProps2
   rawProps: TableProps
   ID: string
@@ -302,7 +302,11 @@ function BasePlugin(): Plugin$0 {
     rewriteProps: {
       data: ({ data = [] }) => data,
       columns: ({ columns = [] }) => columns,
-      newRow: ({ newRow = () => ({}) }) => newRow,
+      newRow: ({ newRow }, { store }) => function () {
+        const ret = newRow?.(...arguments) || {}
+        ret[store.props.rowKey] ??= Symbol()
+        return ret
+      },
       Scroll: ({ Scroll = scroll }, { store }) => o => {
         const pos = createScrollPosition(() => store.scroll_el)
         const size = createElementSize(() => store.scroll_el)
@@ -385,7 +389,7 @@ function BasePlugin(): Plugin$0 {
           { ref: setEl },
           { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
           { get class() { return o.col.class }, get style() { return o.col.style } },
-          { get style() { return o.col.width ? `width: ${o.col.width}px` : '' } },
+          { get style() { return o.col.width ? `width: ${o.col.width}px; max-width: ${o.col.width}px` : '' } },
         )
 
         createEffect(() => {
@@ -408,7 +412,7 @@ function BasePlugin(): Plugin$0 {
           o,
           { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
           { get class() { return o.col.class }, get style() { return o.col.style } },
-          { get style() { return o.col.width ? `width: ${o.col.width}px` : '' } },
+          { get style() { return o.col.width ? `width: ${o.col.width}px; max-width: ${o.col.width}px` : '' } },
           // () => o.col.props?.(o) ?? {}
         )
         return <Td {...mProps}>{o.children}</Td>
