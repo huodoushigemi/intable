@@ -126,7 +126,7 @@ export default () => {
       
       <div class='bg-white rounded-lg shadow-md overflow-hidden'>
         <Intable
-          class='w-full h-[60vh]'
+          class='h-[60vh]'
           store={s => store = s}
           columns={cols()}
           onColumnsChange={setCols}

@@ -12,7 +12,7 @@ export default () => (
   <div>
     <p class='text-sm c-gray mb-2'>Select cells → Ctrl+C to copy → click target cell → Ctrl+V to paste.</p>
     <Intable
-      class='w-full h-50vh'
+      class='h-50vh'
       columns={cols}
       onColumnsChange={v => replaceArray(cols, v)}
       data={data}

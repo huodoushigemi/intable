@@ -32,6 +32,10 @@ declare module '../index' {
 const COL = Symbol('col_size')
 const ROW = Symbol('row_size')
 
+const findParentEl = (el: HTMLElement, cb) => {
+  while (el = el.parentElement!) if (cb(el)) return el
+}
+
 const ColHandle = (o: THProps) => {
   const { props, store } = useContext(Ctx)
   let el!: HTMLDivElement
@@ -40,7 +44,7 @@ const ColHandle = (o: THProps) => {
       e.stopPropagation()
       const i = o.x
       const { min, max }  = props.resizable!.col
-      const th = el.parentElement as HTMLTableColElement
+      const th = findParentEl(el, (el) => el.tagName === 'TH')
       const sw = th.offsetWidth
       move((e, { ox }) => store[COL][o.x] = clamp(sw + ox, min, max))
       end(() => {
@@ -66,7 +70,7 @@ const RowHandle = (o: TDProps) => {
       e.stopPropagation()
       const i = o.y
       const { min, max }  = props.resizable!.row
-      const th = el.parentElement as HTMLTableColElement
+      const th = findParentEl(el, (el) => el.tagName === 'TD')
       const sh = th.offsetHeight
       move((e, { oy }) => store[ROW][o.y] = clamp(sh + oy, min, max))
       end(() => {

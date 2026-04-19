@@ -67,7 +67,7 @@ export default () => {
     <>
       <Intable
         store={setStore}
-        class='w-full h-40vh'
+        class='h-40vh'
         columns={cols}
         onColumnsChange={v => replaceArray(cols, v)}
         data={data}

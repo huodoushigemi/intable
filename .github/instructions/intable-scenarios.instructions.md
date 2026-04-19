@@ -45,7 +45,7 @@ const data = [
 
 export default () => (
   <Intable
-    class='w-full h-400px'
+    class='h-400px'
     columns={columns}
     data={data}
     rowKey='id'
@@ -159,7 +159,7 @@ import { VirtualScrollPlugin } from 'intable/plugins/VirtualScrollPlugin'
 const data = Array.from({ length: 10_000 }, (_, i) => ({ id: i, name: `Row ${i}` }))
 
 <Intable
-  class='w-full h-600px'   // 必须固定高度
+  class='h-600px'   // 必须固定高度
   columns={columns}
   data={data}
   plugins={[VirtualScrollPlugin]}
@@ -565,7 +565,7 @@ const handleValidate = async () => {
     <button onClick={handleValidate}>验证所有</button>
   </div>
   <Intable
-    class='w-full h-600px'
+    class='h-600px'
     store={s => store = s}
     columns={columns}  data={data}
     onColumnsChange={setColumns}  onDataChange={setData}

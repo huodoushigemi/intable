@@ -9,7 +9,7 @@ const data = makeData(20, 6)
  */
 export default () => (
   <Intable
-    class='w-full h-60vh'
+    class='h-60vh'
     columns={cols}
     onColumnsChange={v => replaceArray(cols, v)}
     data={data}

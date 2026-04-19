@@ -27,7 +27,7 @@ export default component(() => {
   }))
   
   return h(Intable, {
-    className: 'w-full h-60vh',
+    className: 'h-60vh',
     columns: cols,
     onColumnsChange: v => setCols(v),
     data: data,
