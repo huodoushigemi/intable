@@ -1,10 +1,11 @@
-import { Show } from 'solid-js'
+import { mergeProps, Show } from 'solid-js'
 import type { Plugin, TableColumn } from '..'
 import { Filter } from '../components/Filter'
 import type { FilterRule } from '../components/Filter'
 import type { AndOrNode, RuleNode } from '../components/AndOr'
 import { normalizeType } from '../components/AndOrFields'
 import { toArr } from '../utils'
+import { useControlled } from '../hooks/useControlled'
 
 declare module '../index' {
   interface TableProps {
@@ -177,10 +178,10 @@ export const FilterPlugin: Plugin = {
     filters: {},
   }),
   rewriteProps: {
-    filter: ({ filter }) => ({
+    filter: ({ filter }) => mergeProps({
       autoMatch: true,
-      ...filter,
-    }),
+      ...filter
+    }, useControlled(filter)),
     newRow: ({ newRow }, { store }) => function (...args) {
       // 根据 filters 生成一个默认值满足过滤条件的行，如果 filters 有多层嵌套则暂不处理
       const row = newRow(...args)
