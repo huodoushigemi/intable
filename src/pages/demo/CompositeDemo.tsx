@@ -36,7 +36,8 @@ function randomSalary(min: number, max: number): number {
 
 const [cols, setCols] = createSignal([
   { id: 'name', name: 'Name', width: 120, editable: true, filterable: true, required: true, zodSchema: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name must be at most 50 characters') },
-  { id: 'age', name: 'Age', width: 60, editable: true, type: 'number', filterable: true, required: true, zodSchema: z.coerce.number().min(18, 'Must be at least 18').max(100, 'Must be at most 100') },
+  // todo aggregate: 'avg', 
+  { id: 'age', name: 'Age', width: 80, editable: true, type: 'number', filterable: true, sortable: true, required: true, zodSchema: z.coerce.number().min(18, 'Must be at least 18').max(100, 'Must be at most 100') },
   { id: 'department', name: 'Department', width: 120, editable: true, type: 'select', enum: departments, filterable: true, required: true },
   { id: 'position', name: 'Position', width: 130, editable: true, type: 'select', enum: Object.values(positions).flat(), filterable: true, required: true },
   { id: 'status', name: 'Status', width: 100, editable: true, type: 'select', enum: statuses, filterable: true, required: true },
@@ -141,7 +142,7 @@ export default () => {
         autoFill
         resizable={{ col: { enable: true }, row: { enable: true } }}
         expand={{ enable: true, render: ({ data }) => <div class='p-3 bg-blue-50 rounded'>{JSON.stringify(data)}</div> }}
-        rowSelection={{ enable: true, multiple: true }}
+        rowSelection={{ enable: true, multiple: true, onChange: v => console.log(v) }}
         plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]}
         diff={{ data: rawData, onCommit: (d) => console.log('commit', d) }}
         filter={{ autoMatch: true }}

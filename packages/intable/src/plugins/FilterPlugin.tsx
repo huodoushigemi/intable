@@ -1,6 +1,6 @@
 import { mergeProps, Show } from 'solid-js'
 import { keyBy } from 'es-toolkit'
-import type { Plugin, TableColumn } from '..'
+import type { Plugin, TableColumn, TableStore } from '..'
 import { Filter, firstRule, isRuleNode } from '../components/Filter'
 import type { AndOrNode, RuleNode } from '../components/AndOr'
 import { normalizeType, type RuleOp } from '../components/AndOrFields'
@@ -164,18 +164,17 @@ function passesFilters(row: any, filters: AndOrNode[], columns: TableColumn[]) {
 
 export const FilterPlugin: Plugin = {
   name: 'filter',
-  store: () => ({
-    filters: [],
-  }),
-  onInit: (store) => {
-    store.filter = useControlled(mergeProps(() => store.props.filter))
-  },
   rewriteProps: {
-    filter: ({ filter }) => mergeProps({
-      autoMatch: true,
-      initialValue: [],
-      ...filter
-    }),
+    filter: ({ filter }, { store }) => (
+      filter = mergeProps({
+        autoMatch: true,
+        initialValue: [],
+        ...filter,
+      }, filter),
+      store.filter ??= useControlled(filter, store.owner),
+      store.filter.$setOpt(filter),
+      store.filter
+    ),
     newRow: ({ newRow }, { store }) => function (...args) {
       // 根据 filters 生成一个默认值满足过滤条件的行，如果 filters 有多层嵌套则暂不处理
       const row = newRow(...args)
@@ -206,10 +205,10 @@ export const FilterPlugin: Plugin = {
     },
     data: ({ data }, { store }) => {
       if (!data) return data
-      const { columns, filter } = store.props
-      if (!filter!.autoMatch) return data
-      if (!store.filter?.value?.some(hasActiveTree)) return data
-      return data.filter(row => passesFilters(row, store.filter?.value, columns))
+      const { columns } = store.props, filter = store.props.filter as TableStore['filter']
+      if (!filter.autoMatch) return data
+      if (!filter.value!.some(hasActiveTree)) return data
+      return data.filter(row => passesFilters(row, filter.value, columns))
     },
     Th: ({ Th }, { store }) => o => {
       const isFilterable = () => !!o.col.filterable && !o.col[store.internal]
@@ -219,14 +218,13 @@ export const FilterPlugin: Plugin = {
           <Show when={isFilterable()}>
             <Filter
               col={o.col}
-              tree={findret(store.filter.value, e => firstRule(e)?.field === o.col.id ? e : null)}
+              tree={findret(store.props.filter!.value!, e => firstRule(e)?.field === o.col.id ? e : null)}
               setTree={node => {
-                let val = [...store.filter.value]
-                const i = val?.findIndex(t => firstRule(t)?.field == o.col.id)
+                let val = [...store.props.filter!.value!]
+                const i = val.findIndex(t => firstRule(t)?.field == o.col.id)
                 if (!node) i > -1 && val.splice(i, 1)
                 else i > -1 ? val[i] = node : val.push(node)
-                store.filter?.onChange?.(val)
-                store.filters = val
+                store.props.filter?.onChange?.(val)
               }}
             />
           </Show>

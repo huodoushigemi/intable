@@ -2,7 +2,7 @@ import { AndOrFields, isValueFreeOp, newRule, RuleValueEditor, type Field } from
 import type { AndOrNode, RuleNode } from './AndOr'
 import { Popover } from './Popover'
 import { autoPlacement, offset } from 'floating-ui-solid'
-import { Show } from 'solid-js'
+import { $PROXY, Show } from 'solid-js'
 import { isEqual } from 'es-toolkit'
 
 type FilterProps = {
@@ -43,7 +43,7 @@ export const Filter = (props: FilterProps) => {
     }
     const r = firstRule(tree())
     if (!r) return
-    r.value = value
+    r[$PROXY].value = value
     props.setTree(tree())
   }
 

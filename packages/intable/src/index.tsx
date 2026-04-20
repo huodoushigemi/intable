@@ -1,4 +1,4 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY } from 'solid-js'
+import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner } from 'solid-js'
 import { createMutable, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
@@ -142,6 +142,7 @@ export interface TableStore extends Obj {
   rawProps: TableProps
   ID: string
   plugins: Plugin[]
+  owner: Owner
 }
 
 export const Intable = (props: TableProps) => {
@@ -150,7 +151,8 @@ export const Intable = (props: TableProps) => {
 
   const store = createMutable({
     get rawProps() { return (props[$PROXY] ||= props) },
-    get plugins() { return plugins() }
+    get plugins() { return plugins() },
+    owner: getOwner(),
   } as TableStore)
 
   const unplugin = memoize((e: Plugin$0) => runWithOwner(owner, () => unFn(e, store)) as Plugin)

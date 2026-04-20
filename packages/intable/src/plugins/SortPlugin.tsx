@@ -1,8 +1,9 @@
 import { mergeProps, Show } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
-import { type Plugin } from '..'
+import { type Plugin, type TableStore } from '..'
 import { useControlled } from '../hooks/useControlled'
 import { toReactive } from '../hooks'
+import { log } from '../utils'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -110,32 +111,31 @@ export const SortPlugin: Plugin = {
   // Run after FilterPlugin (priority 0) so we sort the already-filtered rows.
   priority: -1,
 
-  store: (store) => ({
-    
-  }),
-
-  onInit: (store) => {
-    store.sort = useControlled(mergeProps(() => store.props.sort)) as any
-  },
-
   rewriteProps: {
     // Apply defaults so consumers can always read sort.multiple / sort.autoSort.
-    sort: ({ sort }, { store }) => mergeProps({
-      multiple: false,
-      autoSort: true,
-      initialValue: [],
-    }, sort),
+    sort: ({ sort }, { store }) => (
+      sort = mergeProps({
+        multiple: false,
+        autoSort: true,
+        initialValue: [],
+      }, sort),
+      store.sort ??= useControlled(sort, store.owner),
+      store.sort.$setOpt(sort),
+      store.sort
+    ),
+    // 
 
     data: ({ data }, { store }) => {
-      if (!store.sort?.value?.length) return data
-      if (!store.sort.autoSort) return data
+      const sort = store.props.sort as TableStore['sort']
+      if (!sort.value?.length) return data
+      if (!sort.autoSort) return data
       // Build a field→column map for custom comparators
       const colMap = Object.fromEntries(store.props.columns.map(c => [c.id, c]))
-      return applySort(data, store.sort.value, colMap)
+      return applySort(data, sort.value, colMap)
     },
 
     Th: ({ Th }, { store }) => o => {
-      const { sort } = store
+      const sort = store.props.sort as TableStore['sort']
       const isSortable = () => !!o.col.sortable && !o.col[store.internal]
       const sortKey = () => isSortable() ? sort.value.find(k => k.field === o.col.id) : undefined
 
@@ -161,7 +161,7 @@ export const SortPlugin: Plugin = {
           ret = next ? [{ field, order: next }] : []
         }
 
-        store.sort.onChange([...ret])
+        sort.onChange([...ret])
       }
 
       const thProps = combineProps(o, { get class() { return isSortable() ? 'cursor-pointer select-none' : '' }, onClick: handleClick })
@@ -172,7 +172,7 @@ export const SortPlugin: Plugin = {
             {o.children}
             <Show when={isSortable()}>
               <Show when={sortKey()} fallback={<IconUnsorted />}>
-                {sk => sk().order == 'asc' ? <IconAsc /> : <IconDesc />}
+                {sk => <>{sk().order == 'asc' ? <IconAsc /> : <IconDesc />}</>}
               </Show>
             </Show>
           </div>

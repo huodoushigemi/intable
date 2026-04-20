@@ -59,7 +59,7 @@ const ColHandle = (o: THProps) => {
       })
     },
   })
-  return <div ref={el} class={`in-cell__resize-handle absolute top-0 right-0 flex justify-center w-10px! ${o.x == props.columns.length - 1 ? 'justify-end!' : 'w-10px! translate-x-1/2'} after:w-1 cursor-w-resize z-1`} />
+  return <div ref={el} class={`in-cell__resize-handle absolute top-0 right-0 flex justify-center w-10px! ${o.x == props.columns.length - 1 ? 'justify-end!' : 'w-10px! translate-x-1/2'} after:w-1 cursor-w-resize z-1`} onClick={e => e.stopPropagation()} />
 }
 
 const RowHandle = (o: TDProps) => {
