@@ -1,6 +1,8 @@
-import { Show } from 'solid-js'
+import { mergeProps, Show } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { type Plugin } from '..'
+import { useControlled } from '../hooks/useControlled'
+import { toReactive } from '../hooks'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -16,6 +18,9 @@ export interface SortKey {
 declare module '../index' {
   interface TableProps {
     sort?: {
+      value?: SortKey[]
+      defaultValue?: SortKey[]
+      initialValue?: SortKey[]
       /**
        * Allow sorting by multiple columns simultaneously.
        * @default false
@@ -39,7 +44,7 @@ declare module '../index' {
   }
   interface TableStore {
     /** Current sort state. Read to render indicators; mutate to programmatically set sort. */
-    sortKeys: SortKey[]
+    sort: ReturnType<typeof useControlled<Exclude<TableProps['sort'], undefined>>>
   }
 }
 
@@ -80,19 +85,19 @@ function applySort(data: any[], sortKeys: SortKey[], colMap: Record<string, any>
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
 const IconUnsorted = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 opacity-50 shrink-0 flex-none">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 opacity-50 shrink-0 flex-none ml-1">
     <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4M16 15l-4 4-4-4" />
   </svg>
 )
 
 const IconAsc = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none" style="color:var(--c-primary,#6366f1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--c-primary,#6366f1)">
     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
   </svg>
 )
 
 const IconDesc = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none" style="color:var(--c-primary,#6366f1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--c-primary,#6366f1)">
     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
   </svg>
 )
@@ -105,29 +110,34 @@ export const SortPlugin: Plugin = {
   // Run after FilterPlugin (priority 0) so we sort the already-filtered rows.
   priority: -1,
 
-  store: () => ({
-    sortKeys: [] as SortKey[],
+  store: (store) => ({
+    
   }),
+
+  onInit: (store) => {
+    store.sort = useControlled(mergeProps(() => store.props.sort)) as any
+  },
 
   rewriteProps: {
     // Apply defaults so consumers can always read sort.multiple / sort.autoSort.
-    sort: ({ sort }) => ({
+    sort: ({ sort }, { store }) => mergeProps({
       multiple: false,
       autoSort: true,
-      ...sort,
-    }),
+      initialValue: [],
+    }, sort),
 
     data: ({ data }, { store }) => {
-      if (!store.sortKeys.length) return data
-      if (!store.props.sort?.autoSort) return data
+      if (!store.sort?.value?.length) return data
+      if (!store.sort.autoSort) return data
       // Build a field→column map for custom comparators
       const colMap = Object.fromEntries(store.props.columns.map(c => [c.id, c]))
-      return applySort(data, store.sortKeys, colMap)
+      return applySort(data, store.sort.value, colMap)
     },
 
     Th: ({ Th }, { store }) => o => {
+      const { sort } = store
       const isSortable = () => !!o.col.sortable && !o.col[store.internal]
-      const sortKey = () => isSortable() ? store.sortKeys.find(k => k.field === o.col.id) : undefined
+      const sortKey = () => isSortable() ? sort.value.find(k => k.field === o.col.id) : undefined
 
       const handleClick = () => {
         if (!isSortable()) return
@@ -135,22 +145,23 @@ export const SortPlugin: Plugin = {
         const current = sortKey()
         const next = !current ? 'asc' : current.order === 'asc' ? 'desc' : null
 
-        const multiple = store.props.sort?.multiple
+        const multiple = sort.multiple
+        let ret = [...sort.value]
 
         if (multiple) {
           if (next === null) {
-            store.sortKeys = store.sortKeys.filter(k => k.field !== field)
+            ret = sort.value.filter(k => k.field !== field)
           } else if (current) {
-            const idx = store.sortKeys.findIndex(k => k.field === field)
-            store.sortKeys[idx] = { field, order: next }
+            const idx = sort.value.findIndex(k => k.field === field)
+            ret[idx] = sort.value[idx] = { field, order: next }
           } else {
-            store.sortKeys = [...store.sortKeys, { field, order: 'asc' }]
+            ret = [...sort.value, { field, order: 'asc' }]
           }
         } else {
-          store.sortKeys = next ? [{ field, order: next }] : []
+          ret = next ? [{ field, order: next }] : []
         }
 
-        store.props.sort?.onChange?.([...store.sortKeys])
+        store.sort.onChange([...ret])
       }
 
       const thProps = combineProps(o, { get class() { return isSortable() ? 'cursor-pointer select-none' : '' }, onClick: handleClick })

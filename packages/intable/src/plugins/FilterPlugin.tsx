@@ -1,16 +1,19 @@
 import { mergeProps, Show } from 'solid-js'
+import { keyBy } from 'es-toolkit'
 import type { Plugin, TableColumn } from '..'
-import { Filter } from '../components/Filter'
-import type { FilterRule } from '../components/Filter'
+import { Filter, firstRule, isRuleNode } from '../components/Filter'
 import type { AndOrNode, RuleNode } from '../components/AndOr'
-import { normalizeType } from '../components/AndOrFields'
-import { toArr } from '../utils'
+import { normalizeType, type RuleOp } from '../components/AndOrFields'
+import { findret, log, toArr } from '../utils'
 import { useControlled } from '../hooks/useControlled'
 
 declare module '../index' {
   interface TableProps {
     filter?: {
-      // value: AndOrNode[]
+      value?: AndOrNode[]
+      defaultValue?: AndOrNode[]
+      initialValue?: AndOrNode[]
+      
       onChange?: (value: AndOrNode[]) => void
 
       /** @default true */
@@ -21,7 +24,7 @@ declare module '../index' {
     filterable?: boolean
   }
   interface TableStore {
-    filters: Record<string, AndOrNode>
+    filter: ReturnType<typeof useControlled<Exclude<TableProps['filter'], undefined>>>
   }
 }
 
@@ -62,10 +65,6 @@ function toPair(v: any): [any, any] {
   return [arr[0], arr[1]]
 }
 
-function isRuleNode(node: AndOrNode): node is RuleNode {
-  return 'field' in node
-}
-
 function hasActiveRule(node: RuleNode) {
   return !!node.op
 }
@@ -77,7 +76,7 @@ function hasActiveTree(node?: AndOrNode) {
 }
 
 function matchFilter(raw: any, ruleNode: RuleNode, type: string) {
-  const rule = ruleNode.op as FilterRule
+  const rule = ruleNode.op as RuleOp
   if (rule === 'blank') return isBlank(raw)
   if (rule === 'noblank') return !isBlank(raw)
   if (rule === 'true') return toBool(raw)
@@ -145,10 +144,10 @@ function matchFilter(raw: any, ruleNode: RuleNode, type: string) {
   return text.includes(needle)
 }
 
-function evaluateFilterTree(raw: any, node: AndOrNode, type: string): boolean {
+function evaluateFilterTree(raw: any, node: AndOrNode, type: (e: RuleNode) => string): boolean {
   if (isRuleNode(node)) {
     if (!hasActiveRule(node)) return true
-    return matchFilter(raw, node, type)
+    return matchFilter(raw[node.field], node, type(node))
   }
 
   const children = node.children ?? []
@@ -158,30 +157,25 @@ function evaluateFilterTree(raw: any, node: AndOrNode, type: string): boolean {
   return activeChildren.every(child => evaluateFilterTree(raw, child, type))
 }
 
-function passesFilters(
-  row: any,
-  filters: Record<string, AndOrNode>,
-  columns: TableColumn[],
-  internal: symbol,
-): boolean {
-  return columns.every(col => {
-    if (col[internal] || !(col.filterable)) return true
-    const tree = filters[col.id]
-    if (!tree || !hasActiveTree(tree)) return true
-    return evaluateFilterTree(row[col.id], tree, normalizeType(col))
-  })
+function passesFilters(row: any, filters: AndOrNode[], columns: TableColumn[]) { 
+  const colmap = keyBy(columns, c => c.id)
+  return evaluateFilterTree(row, { op: 'and', children: filters }, e => normalizeType(colmap[e.field]))
 }
 
 export const FilterPlugin: Plugin = {
   name: 'filter',
   store: () => ({
-    filters: {},
+    filters: [],
   }),
+  onInit: (store) => {
+    store.filter = useControlled(mergeProps(() => store.props.filter))
+  },
   rewriteProps: {
     filter: ({ filter }) => mergeProps({
       autoMatch: true,
+      initialValue: [],
       ...filter
-    }, useControlled(filter)),
+    }),
     newRow: ({ newRow }, { store }) => function (...args) {
       // 根据 filters 生成一个默认值满足过滤条件的行，如果 filters 有多层嵌套则暂不处理
       const row = newRow(...args)
@@ -212,11 +206,10 @@ export const FilterPlugin: Plugin = {
     },
     data: ({ data }, { store }) => {
       if (!data) return data
-      const { filters } = store
       const { columns, filter } = store.props
       if (!filter!.autoMatch) return data
-      if (!Object.values(filters).some(hasActiveTree)) return data
-      return data.filter(row => passesFilters(row, filters, columns, store.internal))
+      if (!store.filter?.value?.some(hasActiveTree)) return data
+      return data.filter(row => passesFilters(row, store.filter?.value, columns))
     },
     Th: ({ Th }, { store }) => o => {
       const isFilterable = () => !!o.col.filterable && !o.col[store.internal]
@@ -226,11 +219,14 @@ export const FilterPlugin: Plugin = {
           <Show when={isFilterable()}>
             <Filter
               col={o.col}
-              tree={store.filters[o.col.id]}
-              setTree={tree => {
-                if (!tree) delete store.filters[o.col.id]
-                else store.filters[o.col.id] = tree
-                store.props.filter?.onChange?.(Object.values(store.filters))
+              tree={findret(store.filter.value, e => firstRule(e)?.field === o.col.id ? e : null)}
+              setTree={node => {
+                let val = [...store.filter.value]
+                const i = val?.findIndex(t => firstRule(t)?.field == o.col.id)
+                if (!node) i > -1 && val.splice(i, 1)
+                else i > -1 ? val[i] = node : val.push(node)
+                store.filter?.onChange?.(val)
+                store.filters = val
               }}
             />
           </Show>

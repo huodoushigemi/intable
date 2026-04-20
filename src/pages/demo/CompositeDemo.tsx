@@ -123,34 +123,32 @@ export default () => {
           Validate All
         </button>
       </div>
-      
-      <div class='bg-white rounded-lg shadow-md overflow-hidden'>
-        <Intable
-          class='h-[60vh]'
-          store={s => store = s}
-          columns={cols()}
-          onColumnsChange={setCols}
-          data={data()}
-          onDataChange={setData}
-          newRow={i => generateEmployee(data().length)}
-          index
-          border
-          stickyHeader
-          size='small'
-          colDrag
-          rowDrag
-          autoFill
-          resizable={{ col: { enable: true }, row: { enable: true } }}
-          expand={{ enable: true, render: ({ data }) => <div class='p-3 bg-blue-50 rounded'>{JSON.stringify(data)}</div> }}
-          rowSelection={{ enable: true, multiple: true }}
-          plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]}
-          diff={{ data: rawData, onCommit: (d) => console.log('commit', d) }}
-          filter={{ autoMatch: true }}
-          validator={(value) => {
-            if (String(value ?? '').toLowerCase().includes('invalid')) throw Error('Value must not contain "invalid"')
-          }}
-        />
-      </div>
+    
+      <Intable
+        class='h-[60vh]'
+        store={s => store = s}
+        columns={cols()}
+        onColumnsChange={setCols}
+        data={data()}
+        onDataChange={setData}
+        newRow={i => generateEmployee(data().length)}
+        index
+        border
+        stickyHeader
+        size='small'
+        colDrag
+        rowDrag
+        autoFill
+        resizable={{ col: { enable: true }, row: { enable: true } }}
+        expand={{ enable: true, render: ({ data }) => <div class='p-3 bg-blue-50 rounded'>{JSON.stringify(data)}</div> }}
+        rowSelection={{ enable: true, multiple: true }}
+        plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]}
+        diff={{ data: rawData, onCommit: (d) => console.log('commit', d) }}
+        filter={{ autoMatch: true }}
+        validator={(value) => {
+          if (String(value ?? '').toLowerCase().includes('invalid')) throw Error('Value must not contain "invalid"')
+        }}
+      />
     </div>
   )
 }

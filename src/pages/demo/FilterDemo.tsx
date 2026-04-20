@@ -2,7 +2,7 @@ import { createEffect, createSignal } from 'solid-js'
 import { createMutable } from 'solid-js/store'
 import { Intable } from '../../../packages/intable/src'
 import { replaceArray } from './helpers'
-import type { TableColumn } from '../../../packages/intable/src'
+import type { TableColumn, TableStore } from '../../../packages/intable/src'
 import { AndOrFields } from '../../../packages/intable/src/components/AndOrFields'
 
 const DEPARTMENTS = ['Engineering', 'Design', 'Product', 'Marketing', 'Sales']
@@ -50,17 +50,10 @@ const data = createMutable(
 )
 
 export default () => {
-  const [store, setStore] = createSignal()
+  const [store, setStore] = createSignal<TableStore>()
 
   createEffect(() => {
     if (!store()) return
-    store().filters = {
-      name: { op: 'or', children: [
-        { field: 'name', op: 'contains', value: 'a' },
-        { field: 'name', op: 'contains', value: 'e' },
-      ] },
-      department: { field: 'department', op: 'eq', value: 'Design' },
-    }
   })
 
   return (
@@ -77,6 +70,13 @@ export default () => {
         stickyHeader
         size='small'
         filter={{
+          initialValue: [
+            { op: 'or', children: [
+              { field: 'name', op: 'contains', value: 'a' },
+              { field: 'name', op: 'contains', value: 'e' },
+            ] },
+            { field: 'department', op: 'eq', value: 'Design' },
+          ],
           onChange: v => console.log('Filters changed:', v),
         }}
       />
@@ -87,9 +87,9 @@ export default () => {
         <AndOrFields
           class={'pointer-events-none'}
           fields={cols}
-          value={{ op: 'and', children: Object.values(store()?.filters || {}) }}
+          value={{ op: 'and', children: store()?.filter.value }}
         />
-        <pre class='of-auto bg-#f0f0f0 p-2'>{Object.values(store()?.filters || []).map(e => JSON.stringify(e, null, 2)).join('\n')}</pre>
+        <pre class='of-auto bg-#f0f0f0 p-2'>{store()?.filter.value.map(e => JSON.stringify(e, null, 2)).join('\n')}</pre>
       </div>
     </>
   )

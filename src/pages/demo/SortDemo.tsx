@@ -61,6 +61,9 @@ export default () => {
         stickyHeader
         size='small'
         sort={{
+          initialValue: [
+            { field: 'department', order: 'asc' },
+          ],
           multiple: multiple(),
           onChange: setSorts,
         }}

@@ -209,6 +209,9 @@ const columns = [
 
 | `sort` 选项 | 说明 | 默认 |
 |---|---|---|
+| `value` | 当前排序状态，受控用 | `SortKey[]` |
+| `defaultValue` | 默认排序状态，非受控用 | `SortKey[]` |
+| `initialValue` | 初始排序状态（仅首次渲染生效） | `SortKey[]` |
 | `multiple` | 允许同时对多列排序 | `false` |
 | `autoSort` | 客户端自动排序 | `true` |
 | `onChange` | 排序键变化回调 `(sorts: SortKey[]) => void` | — |
@@ -243,9 +246,29 @@ const columns = [
 ```
 
 每列 `type` 决定可用操作符：
-- `text`: contains / eq / in / startwith / endwith / blank
+- `text` / `textarea`: contains / eq / in / startwith / endwith / blank
 - `number` / `date`: + lt / gt / between / not_between
 - `enum` / `checkbox`: eq / in / blank
+
+| `filter` 选项 | 说明 | 默认 |
+|---|---|---|
+| `value` | 当前过滤状态，受控用 | `any[]` |
+| `defaultValue` | 默认过滤状态，非受控用 | `any[]` |
+| `initialValue` | 初始过滤状态（仅首次渲染生效） | `any[]` |
+| `autoMatch` | 客户端自动过滤 | `true` |
+| `onChange` | 过滤键变化回调 `(filters: any[]) => void` | — |
+
+**filters 结构：**
+```ts
+[
+  { field: 'name', op: 'contains', value: 'Alice' },
+  { field: 'age', op: 'gt', value: 30 },
+  { op: 'and', children: [
+    { field: 'date', op: 'eq', value: '2020-10-10' },
+    { field: 'date', op: 'between', value: ['2023-01-01', '2023-12-31'] },
+  ]},
+]
+```
 
 ---
 
@@ -504,7 +527,7 @@ import { AntdPlugin } from '@intable/react/plugins/antd'
 import 'antd/dist/reset.css'
 
 <Intable plugins={[AntdPlugin]} ... />
-// 支持 editor: 'select' | 'date' | 'time' | 'datetime' | 'rate' | 'switch' | 'color'
+// 支持 editor: 'textarea' | 'select' | 'date' | 'time' | 'datetime' | 'rate' | 'switch' | 'color'
 ```
 
 ---
@@ -518,7 +541,7 @@ import { ElementPlusPlugin } from '@intable/vue/plugins/element-plus'
 import 'element-plus/dist/index.css'
 
 // plugins: [ElementPlusPlugin]
-// 支持 editor: 'select' | 'date' | 'time' | 'datetime' | 'rate' | 'switch' | 'color'
+// 支持 editor: 'textarea' | 'select' | 'date' | 'time' | 'datetime' | 'rate' | 'switch' | 'color'
 ```
 
 ---
@@ -801,8 +824,8 @@ import 'intable/theme/github.css'    // 选一个即可
 ```ts
 { id, name, width, fixed, type, editable, editor, enum, filterable, sortable, sortComparator, aggregate, render, class, style }
 // fixed: 'left' | 'right'
-// type: 'text' | 'number' | 'date' | 'enum' | 'checkbox'
-// editor: 'text' | 'number' | 'date' | 'select' | 'checkbox' | 'range' | 'color'
+// type: 'text' | 'textarea' | 'number' | 'date' | 'enum' | 'checkbox'
+// editor: 'text' | 'textarea' | 'number' | 'date' | 'select' | 'checkbox' | 'range' | 'color'
 // sortable: true 可排序；sortComparator: (a, b) => number 自定义排序逻辑
 // aggregate: 'sum' | 'avg' | 'min' | 'max' | 'count' | fn 列汇总
 ```

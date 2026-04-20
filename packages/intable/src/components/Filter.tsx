@@ -11,12 +11,12 @@ type FilterProps = {
   setTree: (tree?: AndOrNode) => void
 }
 
-function isRuleNode(node?: AndOrNode): node is RuleNode {
-  if (!node) return false
-  return 'field' in node
+
+export function isRuleNode(node?: AndOrNode): node is RuleNode {
+  return node != null && node.op !== 'and' && node.op !== 'or'
 }
 
-function firstRule(node?: AndOrNode): RuleNode | undefined {
+export function firstRule(node?: AndOrNode): RuleNode | undefined {
   if (!node) return
   if (isRuleNode(node)) return node
   for (const child of node.children ?? []) {

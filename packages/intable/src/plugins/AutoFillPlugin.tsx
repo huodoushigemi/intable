@@ -2,6 +2,8 @@ import { createMemo, createSignal, type Component } from 'solid-js'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { type Plugin, type TableStore } from '..'
 import { usePointerDrag } from '../hooks'
+import { useFloating } from '../components/Popover'
+import { offset } from 'floating-ui-solid'
 
 declare module '..' {
   interface TableProps {
@@ -116,17 +118,6 @@ const FillHandleLayer: Component<TableStore> = (store) => {
     return o === true || (o as any)?.enable === true
   })
 
-  const handleStyle = createMemo(() => {
-    if (!enabled()) return 'display:none;position:absolute'
-    const r = selRect()
-    if (!r) return 'display:none;position:absolute'
-    const { colR, rowB } = px()
-    const x = colR(r.xs[1]), y = rowB(r.ys[1])
-    return `position:absolute;left:${x - 4}px;top:${y - 4}px;width:8px;height:8px;` +
-      `background:var(--c-primary);border:2px solid var(--table-bg);` +
-      `border-radius:1px;box-shadow:0 0 0 1px var(--c-primary);z-index:3;cursor:crosshair`
-  })
-
   const [fillDrag, setFillDrag] = createSignal<{ axis: 'v' | 'h'; delta: number } | null>(null)
 
   const previewStyle = createMemo(() => {
@@ -152,7 +143,7 @@ const FillHandleLayer: Component<TableStore> = (store) => {
       `border:1.5px dashed var(--c-primary);background:rgba(99,102,241,0.08);pointer-events:none;z-index:3`
   })
 
-  let handleEl!: HTMLDivElement
+  const [handleEl, setHandleEl] = createSignal<HTMLElement>()
 
   // Apply fills and sync selection in one place
   const commit = (xs: [number, number], ys: [number, number], axis: 'v' | 'h', delta: number) => {
@@ -163,6 +154,13 @@ const FillHandleLayer: Component<TableStore> = (store) => {
       store.selected.end = newEnd
     }
   }
+
+  useFloating({
+    reference: () => enabled() ? (store.ths[selRect()?.xs[1]], store.trs[selRect()?.ys[1]!]?.querySelector(`[x="${selRect()?.xs[1]}"]`)) : null,
+    floating: handleEl,
+    placement: 'bottom-end',
+    middleware: [offset({ crossAxis: 5, mainAxis: -5 })],
+  })
 
   const handleDblClick = (e: MouseEvent) => {
     e.stopPropagation()
@@ -185,7 +183,7 @@ const FillHandleLayer: Component<TableStore> = (store) => {
     commit(xs, ys, 'v', fillTo - ys[1])
   }
 
-  usePointerDrag(() => handleEl, {
+  usePointerDrag(handleEl, {
     start(e, move, end) {
       e.stopPropagation(); e.preventDefault()
       const r = selRect()
@@ -195,9 +193,9 @@ const FillHandleLayer: Component<TableStore> = (store) => {
 
       move((_, { ox, oy }) => {
         if (Math.abs(oy) >= Math.abs(ox)) {
-          axis = 'v'; delta = Math.round(oy / (store.trSizes?.[ys[1]]?.height ?? 28))
+          axis = 'v'; delta = _.composedPath().find(e => e.tagName == 'TD')?.getAttribute('y') - ys[1]
         } else {
-          axis = 'h'; delta = Math.round(ox / (store.thSizes?.[xs[1]]?.width ?? 100))
+          axis = 'h'; delta = _.composedPath().find(e => e.tagName == 'TD')?.getAttribute('x') - xs[1]
         }
         setFillDrag(delta ? { axis, delta } : null)
       })
@@ -212,7 +210,7 @@ const FillHandleLayer: Component<TableStore> = (store) => {
   return (
     <>
       <div style={previewStyle()} />
-      <div ref={handleEl} style={handleStyle() + ';pointer-events:auto'} title='Drag to fill' onDblClick={handleDblClick} />
+      <div ref={setHandleEl} title='Drag to fill' class='pointer-events-auto w-2.5 h-2.5 bg-[--c-primary] b-(2px solid) b-[--table-bg] cursor-crosshair' onDblClick={handleDblClick} />
     </>
   )
 }

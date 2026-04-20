@@ -57,6 +57,7 @@ export interface Plugin {
   store?: (store: TableStore) => Partial<TableStore> | void
   rewriteProps?: ProcessProps
   layers?: Component<TableStore>[]
+  onInit?: (store: TableStore) => void
   onMount?: (store: TableStore) => void
   /**
    * Declare keyboard shortcuts for this plugin.
@@ -183,6 +184,8 @@ export const Intable = (props: TableProps) => {
       get(o, k, r) { return k == $PROXY ? r : get(k)() }
     }) as TableProps2
   })()
+
+  createComputed(mapArray(plugins, e => e.onInit?.(store)))
 
   // on mount
   onMount(() => {

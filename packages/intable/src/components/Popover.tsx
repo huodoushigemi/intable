@@ -1,9 +1,11 @@
-import { children, createEffect, createMemo, createSignal, type JSX, splitProps } from 'solid-js'
+import { type Accessor, children, createEffect, createMemo, createSignal, type JSX, splitProps } from 'solid-js'
 import { Portal } from 'solid-js/web'
 import { autoUpdate, createFloating, type createFloatingProps, type ReferenceType } from 'floating-ui-solid'
 import type { AutoUpdateOptions } from '@floating-ui/dom'
-import { delay } from 'es-toolkit'
+import { delay, mapValues } from 'es-toolkit'
 import { useClicked, useHover, useMemoAsync } from '../hooks'
+import { createLazyMemo } from '@solid-primitives/memo'
+import { log } from '../utils'
 
 export function Popover(attrs: FloatingProps) {
   const [_, props] = splitProps(attrs, ['reference', 'floating'])
@@ -22,29 +24,17 @@ export function Popover(attrs: FloatingProps) {
 }
 
 type FloatingProps = {
-  reference: ReferenceType | JSX.Element
-  floating?: JSX.Element | (() => JSX.Element)
+  reference: Accessor<ReferenceType | JSX.Element>
+  floating?: Accessor<JSX.Element>
   portal?: HTMLElement
   trigger?: 'click' | 'hover'
 } & createFloatingProps
 
-export function Floating(attrs: FloatingProps & { update?: Partial<AutoUpdateOptions> }) {
-  const [_, props] = splitProps(attrs, ['reference', 'floating'])
-  const reference = children(() => attrs.reference)
-  const floating = children(() => attrs.floating)
-
-  const style = createMemo(() => floating() ? createFloating({
-    whileElementsMounted(ref, float, update) {
-      return autoUpdate(ref, float, update, { ancestorResize: true, elementResize: true, layoutShift: true, ancestorScroll: true, ...attrs.update })
-    },
-    ...props,
-    elements: { reference, floating },
-  }).floatingStyles : void 0)
-
-  createEffect(() => {
-    // console.log(props.floating)
-    floating() && Object.assign(floating().style, style()?.() ?? {})
-  })
+export function Floating(props: FloatingProps & { update?: Partial<AutoUpdateOptions> }) {
+  const reference = children(() => props.reference)
+  const floating = children(() => props.floating)
+  
+  useFloating(props)
 
   return (
     <>
@@ -52,4 +42,26 @@ export function Floating(attrs: FloatingProps & { update?: Partial<AutoUpdateOpt
       {props.portal && floating() ? <Portal mount={props.portal}>{floating()}</Portal> : floating()}
     </>
   )
+}
+
+export const useFloating = (attrs: FloatingProps & { update?: Partial<AutoUpdateOptions> }) => {
+  const [_, props] = splitProps(attrs, ['reference', 'floating'])
+  const reference = children(() => attrs.reference)
+  const floating = children(() => attrs.floating)
+
+  const style = createLazyMemo(() => floating() && reference() ? createFloating({
+    whileElementsMounted(ref, float, update) {
+      return autoUpdate(ref, float, update, { ancestorResize: true, elementResize: true, layoutShift: true, ancestorScroll: true, ...attrs.update })
+    },
+    ...props,
+    elements: { reference, floating },
+  }).floatingStyles : void 0)
+
+  createEffect(prev => {
+    prev = mapValues(prev ?? {}, () => null)
+    let sty = style()?.()
+    if (!sty) sty = { display: 'none' }
+    floating() && Object.assign(floating().style, prev, sty)
+    return sty
+  })
 }
