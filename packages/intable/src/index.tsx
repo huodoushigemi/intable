@@ -373,8 +373,10 @@ function BasePlugin(): Plugin$0 {
           store.trs[y] = el()
           store.trObs.observe(el())
           onCleanup(() => {
-            store.trSizes[y] = store.trs[y] = void 0
             store.trObs.unobserve(el())
+            store.trs[y] = void 0
+            if (store.props.data.length > y) return // 处理虚拟滚动
+            store.trSizes[y] = void 0
           })
         })
 
@@ -399,8 +401,10 @@ function BasePlugin(): Plugin$0 {
           store.ths[x] = el()
           store.thObs.observe(el())
           onCleanup(() => {
-            store.thSizes[x] = store.ths[x] = void 0
             store.thObs.unobserve(el())
+            store.ths[x] = void 0
+            if (store.props.columns.length > x) return // 处理虚拟滚动
+            store.thSizes[x] = void 0
           })
         })
         
