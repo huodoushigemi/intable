@@ -79,10 +79,6 @@ function normalizeNode(node: AndOrNode): AndOrNode {
   return node
 }
 
-function normalizeTree(root: AndOrNode): AndOrNode {
-  return normalizeNode(root)
-}
-
 function addByCurrentGroup(root: AndOrNode, target: AndOrNode, op: 'and' | 'or', next: RuleNode): { next: AndOrNode; found: boolean } {
   if (root === target) {
     if (!isGroupNode(root)) return { next: createGroup(op, [root, next]), found: true }
@@ -156,7 +152,7 @@ export const AndOr = (_props: AndOrProps) => {
   const state = createMutable({ tree: props.value! as AndOrNode })
 
   const emit = (v: AndOrNode) => {
-    const next = normalizeTree(v)
+    const next = normalizeNode(v)
     state.tree = next 
     props.onChange?.(next)
   }

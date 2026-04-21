@@ -43,7 +43,8 @@ export const Filter = (props: FilterProps) => {
     }
     const r = firstRule(tree())
     if (!r) return
-    r[$PROXY].value = value
+    if (r[$PROXY]) r[$PROXY].value = value
+    else r.value = value
     props.setTree(tree())
   }
 
