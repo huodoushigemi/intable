@@ -1,11 +1,9 @@
 import { createMemo, createSignal } from 'solid-js'
-import { createMutable } from 'solid-js/store'
 import { Intable } from '../../../packages/intable/src'
 import type { TableColumn } from '../../../packages/intable/src'
 import { LoadMorePlugin } from '../../../packages/intable/src/plugins/LoadMorePlugin'
-import { replaceArray } from './helpers'
 
-const cols = createMutable<TableColumn[]>([
+const [cols] = createSignal<TableColumn[]>([
   { id: 'col_0', name: 'Name', width: 140 },
   { id: 'col_1', name: 'Team', width: 120 },
   { id: 'col_2', name: 'Role', width: 140 },
@@ -32,32 +30,31 @@ function buildRow(i: number) {
 const total = 120
 const pageSize = 20
 
-const data = createMutable(Array.from({ length: pageSize }, (_, i) => buildRow(i)))
+const [data, setData] = createSignal(Array.from({ length: pageSize }, (_, i) => buildRow(i)))
 
 export default () => {
   const [loading, setLoading] = createSignal(false)
-  const hasMore = createMemo(() => data.length < total)
+  const hasMore = createMemo(() => data().length < total)
 
   const loadMore = async () => {
     if (loading() || !hasMore()) return
     setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 1000))
-    const start = data.length
+    const start = data().length
     const end = Math.min(start + pageSize, total)
-    data.push(...Array.from({ length: end - start }, (_, i) => buildRow(start + i)))
+    setData(prev => [...prev, ...Array.from({ length: end - start }, (_, i) => buildRow(start + i))])
     setLoading(false)
   }
 
   return (
     <div class='space-y-2'>
       <div class='text-sm c-gray'>
-        Rows: {data.length} / {total} {loading() ? '(loading...)' : ''}
+        Rows: {data().length} / {total} {loading() ? '(loading...)' : ''}
       </div>
       <Intable
         class='h-60vh'
-        columns={cols}
-        onColumnsChange={v => replaceArray(cols, v)}
-        data={data}
+        columns={cols()}
+        data={data()}
         index
         border
         stickyHeader

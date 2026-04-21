@@ -114,9 +114,10 @@ const FillHandleLayer: Component<TableStore> = (store) => {
   })
 
   const enabled = createMemo(() => {
-    if (!selRect()) return
-    const { xs, ys } = selRect()!
-    if (store.props.columns[xs[1]][store.internal] || store.props.data[ys[1]][store.internal]) return
+    const r = selRect()
+    if (!r) return
+    const { xs, ys } = r
+    if (store.props.columns[xs[1]]?.[store.internal] || store.props.data[ys[1]]?.[store.internal]) return
     const o = store.props.autoFill
     return o === true || (o as any)?.enable === true
   })

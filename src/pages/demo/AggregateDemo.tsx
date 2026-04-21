@@ -1,4 +1,4 @@
-import { createMutable } from 'solid-js/store'
+import { createSignal } from 'solid-js'
 import { Intable, type TableColumn } from '../../../packages/intable/src'
 
 const columns: TableColumn[] = [
@@ -13,7 +13,7 @@ const columns: TableColumn[] = [
   { id: 'joined',  name: 'Joined',     width: 110 },
 ]
 
-const data = createMutable([
+const [data] = createSignal([
   { id: 1, name: 'Alice',  dept: 'Eng',     age: 28, salary: 90000, bonus: 9000,  sales: 420000, score: 92, active: true,  joined: '2021-03-15' },
   { id: 2, name: 'Bob',    dept: 'Mkt',     age: 34, salary: 72000, bonus: 5400,  sales: 310000, score: 78, active: true,  joined: '2019-07-01' },
   { id: 3, name: 'Carol',  dept: 'Eng',     age: 31, salary: 105000,bonus: 15750, sales: 580000, score: 95, active: true,  joined: '2020-11-22' },
@@ -34,7 +34,7 @@ export default () => (
     <Intable
       class='h-300px'
       columns={columns}
-      data={data}
+      data={data()}
       rowKey='id'
       index
       border

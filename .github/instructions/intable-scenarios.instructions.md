@@ -596,7 +596,7 @@ const handleValidate = async () => {
     resizable={{ col: { enable: true } }} colDrag rowDrag
     plugins={plugins}
     filter={{ autoMatch: true }}
-    diff={{ enable: true, data: originalSnap, onCommit: changes => submit(changes) }}
+    diff={{ data: originalSnap, onCommit: changes => submit(changes) }}
     validator={(value, data, col) => {
       // 表级别的验证
       if (String(value ?? '').includes('敏感词')) {

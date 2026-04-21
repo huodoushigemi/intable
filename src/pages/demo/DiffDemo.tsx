@@ -1,11 +1,12 @@
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
 import { DiffPlugin } from '../../../packages/intable/src/plugins/DiffPlugin'
-import { makeCols, makeData, replaceArray } from './helpers'
+import { makeCols, makeData } from './helpers'
 
-const cols = makeCols(5, { editable: true })
-const data = makeData(15, 5)
+const [cols, setCols] = createSignal(makeCols(5, { editable: true }))
+const [data, setData] = createSignal(makeData(15, 5))
 
-const diffData = [...data]
+const diffData = [...data()]
 diffData.splice(1, 1, { col_0: 'xxx', col_1: '123' })
 
 /**
@@ -18,10 +19,10 @@ export default () => (
     <p class='text-sm c-gray mb-2'>Edit cells to see change highlights. Ctrl+S to commit.</p>
     <Intable
       class='h-50vh'
-      columns={cols}
-      onColumnsChange={v => replaceArray(cols, v)}
-      data={data}
-      onDataChange={v => replaceArray(data, v)}
+      columns={cols()}
+      onColumnsChange={setCols}
+      data={data()}
+      onDataChange={setData}
       index
       border
       stickyHeader

@@ -1,32 +1,31 @@
 /**
  * Shared helpers for demo data generation.
  */
-import { createMutable } from 'solid-js/store'
 import { batch } from 'solid-js'
 import { range } from 'es-toolkit'
 
 /** Generate flat tabular data */
 export function makeData(rows: number, colCount: number) {
   const colIds = range(colCount).map(i => 'col_' + i)
-  return createMutable(
+  return (
     range(rows).map((_, i) =>
       Object.fromEntries([
         ['id', i],
         ...colIds.map(id => [id, `${id}_${i + 1}`]),
       ]),
-    ),
+    )
   )
 }
 
 /** Generate column definitions */
 export function makeCols(count: number, extra?: Partial<{ width: number; editable: boolean }>) {
-  return createMutable(
+  return (
     range(count).map(i => ({
       id: 'col_' + i,
       name: 'Col ' + i,
       width: 100,
       ...extra,
-    })),
+    }))
   )
 }
 

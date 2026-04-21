@@ -1,5 +1,4 @@
 import { createSignal } from 'solid-js'
-import { createMutable } from 'solid-js/store'
 import { Intable } from '../../../packages/intable/src'
 import { type SortKey } from '../../../packages/intable/src/plugins/SortPlugin'
 import type { TableColumn } from '../../../packages/intable/src'
@@ -7,16 +6,16 @@ import type { TableColumn } from '../../../packages/intable/src'
 const DEPARTMENTS = ['Engineering', 'Design', 'Product', 'Marketing', 'Sales']
 const NAMES = ['Alice', 'Bob', 'Carol', 'Dave', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy']
 
-const cols: TableColumn[] = [
+const [cols, setCols] = createSignal<TableColumn[]>([
   { id: 'name',       name: 'Name',       width: 130, sortable: true },
   { id: 'department', name: 'Department', width: 130, sortable: true },
   { id: 'age',        name: 'Age',        width: 80,  sortable: true },
   { id: 'salary',     name: 'Salary',     width: 100, sortable: true },
   { id: 'joinDate',   name: 'Join Date',  width: 120, sortable: true },
   { id: 'active',     name: 'Active',     width: 80,  sortable: false },
-]
+])
 
-const data = createMutable(
+const [data, setData] = createSignal(
   Array.from({ length: 20 }, (_, i) => ({
     id: i,
     name:       NAMES[i % NAMES.length],
@@ -54,8 +53,8 @@ export default () => {
 
       <Intable
         class='h-60vh'
-        columns={cols}
-        data={data}
+        columns={cols()}
+        data={data()}
         index
         border
         stickyHeader

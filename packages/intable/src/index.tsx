@@ -4,7 +4,7 @@ import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
 import { createElementSize, createResizeObserver, makeResizeObserver } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
-import { difference, isEqual, memoize, sumBy } from 'es-toolkit'
+import { difference, isEqual, memoize, sumBy, uniq } from 'es-toolkit'
 import { renderComponent, solidComponent } from './components/utils'
 import { log, unFn } from './utils'
 
@@ -159,11 +159,11 @@ export const Intable = (props: TableProps) => {
   const unplugin = memoize((e: Plugin$0) => runWithOwner(owner, () => unFn(e, store)) as Plugin)
 
   const plugins = createMemo(prev => {
-    const ret = [
+    const ret = uniq([
       ...defaultsPlugins,
       ...props.plugins || [],
       RenderPlugin
-    ].map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0))
+    ].map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0)))
 
     // init store
     const added = difference(ret, prev)

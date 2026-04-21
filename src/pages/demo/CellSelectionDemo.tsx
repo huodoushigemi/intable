@@ -1,8 +1,9 @@
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
-import { makeCols, makeData, replaceArray } from './helpers'
+import { makeCols, makeData } from './helpers'
 
-const cols = makeCols(8)
-const data = makeData(30, 8)
+const [cols, setCols] = createSignal(makeCols(8))
+const [data, setData] = createSignal(makeData(30, 8))
 
 /**
  * CellSelection is auto-loaded.
@@ -12,10 +13,10 @@ const data = makeData(30, 8)
 export default () => (
   <Intable
     class='h-60vh'
-    columns={cols}
-    onColumnsChange={v => replaceArray(cols, v)}
-    data={data}
-    onDataChange={v => replaceArray(data, v)}
+    columns={cols()}
+    onColumnsChange={setCols}
+    data={data()}
+    onDataChange={setData}
     index
     border
     stickyHeader

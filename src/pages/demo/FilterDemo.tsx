@@ -1,7 +1,5 @@
 import { createEffect, createSignal } from 'solid-js'
-import { createMutable } from 'solid-js/store'
 import { Intable } from '../../../packages/intable/src'
-import { replaceArray } from './helpers'
 import type { TableColumn, TableStore } from '../../../packages/intable/src'
 import { AndOrFields } from '../../../packages/intable/src/components/AndOrFields'
 
@@ -15,7 +13,7 @@ const NAMES = [
   'Peggy', 'Quinn', 'Rupert', 'Sybil', 'Trent',
 ]
 
-const cols = createMutable<TableColumn[]>([
+const [cols, setCols] = createSignal<TableColumn[]>([
   { id: 'name',       name: 'Name',       type: 'text',     width: 140, filterable: true },
   { id: 'department', name: 'Department', type: 'enum',     enum: DEPARTMENTS, width: 140, filterable: true },
   { id: 'role',       name: 'Role',       type: 'text',     width: 140, filterable: true },
@@ -34,7 +32,7 @@ const dateFrom = (offsetDays: number) => {
   return base.toISOString().slice(0, 10)
 }
 
-const data = createMutable(
+const [data, setData] = createSignal(
   Array.from({ length: 30 }, (_, i) => ({
     id: i,
     name: NAMES[i % NAMES.length],
@@ -61,10 +59,10 @@ export default () => {
       <Intable
         store={setStore}
         class='h-40vh'
-        columns={cols}
-        onColumnsChange={v => replaceArray(cols, v)}
-        data={data}
-        onDataChange={v => replaceArray(data, v)}
+        columns={cols()}
+        onColumnsChange={setCols}
+        data={data()}
+        onDataChange={setData}
         index
         border
         stickyHeader
@@ -86,7 +84,7 @@ export default () => {
       <div class='flex'>
         <AndOrFields
           class={'pointer-events-none'}
-          fields={cols}
+          fields={cols()}
           value={{ op: 'and', children: store()?.filter.value }}
         />
         <pre class='of-auto bg-#f0f0f0 p-2'>{store()?.filter.value.map(e => JSON.stringify(e, null, 2)).join('\n')}</pre>

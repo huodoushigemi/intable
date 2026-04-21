@@ -35,7 +35,7 @@ function randomSalary(min: number, max: number): number {
 }
 
 const [cols, setCols] = createSignal([
-  { id: 'name', name: 'Name', width: 120, editable: true, filterable: true, required: true, zodSchema: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name must be at most 50 characters') },
+  { id: 'name', name: 'Name', width: 120, editable: true, filterable: true, required: true, tooltip: true, class: 'truncate', zodSchema: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name must be at most 50 characters') },
   // todo aggregate: 'avg', 
   { id: 'age', name: 'Age', width: 80, editable: true, type: 'number', filterable: true, sortable: true, required: true, zodSchema: z.coerce.number().min(18, 'Must be at least 18').max(100, 'Must be at most 100') },
   { id: 'department', name: 'Department', width: 120, editable: true, type: 'select', enum: departments, filterable: true, required: true },
@@ -44,13 +44,13 @@ const [cols, setCols] = createSignal([
   { id: 'hireDate', name: 'Hire Date', width: 110, editable: true, type: 'date', filterable: true, required: true },
   { id: 'salary', name: 'Salary', width: 100, editable: true, type: 'number', filterable: true, required: true, zodSchema: z.coerce.number().min(30000, 'Must be at least 30,000').max(500000, 'Must be at most 500,000') },
   { id: 'city', name: 'City', width: 110, editable: true, filterable: true, required: true },
-  { id: 'email', name: 'Email', width: 180, editable: true, required: true, zodSchema: z.string().email('Invalid email format') },
+  { id: 'email', name: 'Email', width: 180, editable: true, required: true, tooltip: true, zodSchema: z.string().email('Invalid email format') },
   { id: 'phone', name: 'Phone', width: 130, editable: true, type: 'tel', required: true, zodSchema: z.string().min(10, 'Phone must be at least 10 characters') },
   { id: 'birthday', name: 'Birthday', width: 110, editable: true, type: 'date' },
   { id: 'rating', name: 'Rating', width: 100, editable: true, type: 'range', editorProps: { min: 1, max: 5, step: 0.5 }, zodSchema: z.coerce.number().min(1, 'Must be at least 1').max(5, 'Must be at most 5') },
   { id: 'active', name: 'Active', width: 70, editable: true, type: 'checkbox', filterable: true },
   { id: 'notes', name: 'Notes', width: 200, editable: true, type: 'textarea', zodSchema: z.string().max(500, 'Notes must be at most 500 characters') },
-  { id: 'avatar', name: 'Avatar', width: 80, editable: true, type: 'color' },
+  // { id: 'avatar', name: 'Avatar', width: 80, editable: true, type: 'color' },
   { id: 'file', name: 'File', width: 80, editable: true, type: 'file' },
 ] as any[])
 
@@ -78,7 +78,7 @@ function generateEmployee(i: number) {
   }
 }
 
-const [data, setData] = createSignal(range(200).map((_, i) => generateEmployee(i)))
+const [data, setData] = createSignal(range(20).map((_, i) => generateEmployee(i)))
 
 cols()[cols().length - 1].fixed = 'right'
 
@@ -142,7 +142,7 @@ export default () => {
         autoFill
         resizable={{ col: { enable: true }, row: { enable: true } }}
         expand={{ enable: true, render: ({ data }) => <div class='p-3 bg-blue-50 rounded'>{JSON.stringify(data)}</div> }}
-        rowSelection={{ enable: true, multiple: true, onChange: v => console.log(v) }}
+        rowSelection={{ enable: true, value: [data()[0]], multiple: true, onChange: v => console.log(v) }}
         plugins={[VirtualScrollPlugin, HistoryPlugin, DiffPlugin, ZodValidatorPlugin]}
         diff={{ data: rawData, onCommit: (d) => console.log('commit', d) }}
         filter={{ autoMatch: true }}

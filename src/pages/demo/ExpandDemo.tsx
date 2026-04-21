@@ -1,8 +1,9 @@
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
-import { makeCols, makeData, replaceArray } from './helpers'
+import { makeCols, makeData } from './helpers'
 
-const cols = makeCols(6)
-const data = makeData(20, 6)
+const [cols, setCols] = createSignal(makeCols(6))
+const [data, setData] = createSignal(makeData(20, 6))
 
 /**
  * Click the chevron on the left to expand a row.
@@ -11,10 +12,10 @@ const data = makeData(20, 6)
 export default () => (
   <Intable
     class='h-60vh'
-    columns={cols}
-    onColumnsChange={v => replaceArray(cols, v)}
-    data={data}
-    onDataChange={v => replaceArray(data, v)}
+    columns={cols()}
+    onColumnsChange={setCols}
+    data={data()}
+    onDataChange={setData}
     index
     border
     stickyHeader

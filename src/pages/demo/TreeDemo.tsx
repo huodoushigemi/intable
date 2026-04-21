@@ -1,14 +1,13 @@
-import { createMutable } from 'solid-js/store'
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
-import { replaceArray } from './helpers'
 
-const cols = createMutable([
+const [cols, setCols] = createSignal([
   { id: 'name',  name: 'Name',  width: 200 },
   { id: 'size',  name: 'Size',  width: 100 },
   { id: 'type',  name: 'Type',  width: 120 },
 ])
 
-const data = createMutable([
+const [data, setData] = createSignal([
   { id: 1, name: 'src',    size: '-', type: 'folder', children: [
     { id: 2, name: 'index.ts', size: '2KB',  type: 'file' },
     { id: 3, name: 'utils',    size: '-',    type: 'folder', children: [
@@ -31,10 +30,10 @@ const data = createMutable([
 export default () => (
   <Intable
     class='h-60vh'
-    columns={cols}
-    onColumnsChange={v => replaceArray(cols, v)}
-    data={data}
-    onDataChange={v => replaceArray(data, v)}
+    columns={cols()}
+    onColumnsChange={setCols}
+    data={data()}
+    onDataChange={setData}
     index
     border
     stickyHeader

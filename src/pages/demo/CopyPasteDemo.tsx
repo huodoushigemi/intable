@@ -1,8 +1,9 @@
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
-import { makeCols, makeData, replaceArray } from './helpers'
+import { makeCols, makeData } from './helpers'
 
-const cols = makeCols(6, { editable: true })
-const data = makeData(20, 6)
+const [cols, setCols] = createSignal(makeCols(6, { editable: true }))
+const [data, setData] = createSignal(makeData(20, 6))
 
 /**
  * Select a cell range then Ctrl+C to copy, Ctrl+V to paste.
@@ -13,10 +14,10 @@ export default () => (
     <p class='text-sm c-gray mb-2'>Select cells → Ctrl+C to copy → click target cell → Ctrl+V to paste.</p>
     <Intable
       class='h-50vh'
-      columns={cols}
-      onColumnsChange={v => replaceArray(cols, v)}
-      data={data}
-      onDataChange={v => replaceArray(data, v)}
+      columns={cols()}
+      onColumnsChange={setCols}
+      data={data()}
+      onDataChange={setData}
       index
       border
       stickyHeader

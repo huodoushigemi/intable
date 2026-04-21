@@ -1,9 +1,10 @@
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
 import { HistoryPlugin } from '../../../packages/intable/src/plugins/HistoryPlugin'
-import { makeCols, makeData, replaceArray } from './helpers'
+import { makeCols, makeData } from './helpers'
 
-const cols = makeCols(5, { editable: true })
-const data = makeData(15, 5)
+const [cols, setCols] = createSignal(makeCols(5, { editable: true }))
+const [data, setData] = createSignal(makeData(15, 5))
 
 /**
  * Edit cells then press Ctrl+Z to undo, Ctrl+Y to redo.
@@ -14,10 +15,10 @@ export default () => (
     <p class='text-sm c-gray mb-2'>Edit a cell, then Ctrl+Z to undo, Ctrl+Y to redo.</p>
     <Intable
       class='h-50vh'
-      columns={cols}
-      onColumnsChange={v => replaceArray(cols, v)}
-      data={data}
-      onDataChange={v => replaceArray(data, v)}
+      columns={cols()}
+      onColumnsChange={setCols}
+      data={data()}
+      onDataChange={setData}
       index
       border
       stickyHeader

@@ -1,24 +1,23 @@
-import { createMutable } from 'solid-js/store'
+import { createSignal } from 'solid-js'
 import { range } from 'es-toolkit'
 import { Intable } from '../../../packages/intable/src'
 import { CellMergePlugin } from '../../../packages/intable/src/plugins/CellMergePlugin'
-import { replaceArray } from './helpers'
 
-const cols = createMutable([
+const [cols, setCols] = createSignal([
   { id: 'group',  name: 'Group',  width: 100, mergeRow: true },
   { id: 'name',   name: 'Name',   width: 120 },
   { id: 'value',  name: 'Value',  width: 100 },
   { id: 'score',  name: 'Score',  width: 100 },
 ] as any[])
 
-const data = createMutable(
+const [data, setData] = createSignal(
   range(20).map(i => ({
     id: i,
     group: 'G' + Math.floor(i / 4),
     name: 'Item ' + i,
     value: (i * 7) % 100,
     score: (i * 13) % 100,
-  })),
+  }))
 )
 
 /**
@@ -28,10 +27,10 @@ const data = createMutable(
 export default () => (
   <Intable
     class='h-60vh'
-    columns={cols}
-    onColumnsChange={v => replaceArray(cols, v)}
-    data={data}
-    onDataChange={v => replaceArray(data, v)}
+    columns={cols()}
+    onColumnsChange={setCols}
+    data={data()}
+    onDataChange={setData}
     index
     border
     stickyHeader

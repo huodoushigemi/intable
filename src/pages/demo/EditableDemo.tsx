@@ -1,12 +1,12 @@
 import { z } from 'zod'
-import { createMutable } from 'solid-js/store'
+import { createSignal } from 'solid-js'
 import { Intable } from '../../../packages/intable/src'
 import { ZodValidatorPlugin } from '../../../packages/intable/src/plugins/ZodValidatorPlugin'
-import { makeData, replaceArray } from './helpers'
+import { makeData } from './helpers'
 
 const RESERVED = ['admin', 'root', 'null']
 
-const cols = createMutable([
+const [cols, setCols] = createSignal([
   {
     id: 'col_0', name: 'Text (1–20 chars, no reserved)', width: 180, editable: true,
     zodSchema: z.string().min(1, 'Required').max(20, 'Max 20 characters'),
@@ -31,7 +31,7 @@ const cols = createMutable([
   { id: 'col_8', name: 'Required', editable: true, required: true },
 ] as any[])
 
-const data = makeData(20, 8)
+const [data, setData] = createSignal(makeData(20, 8))
 
 /**
  * Double-click (or start typing) on an editable cell to enter edit mode.
@@ -45,10 +45,10 @@ const data = makeData(20, 8)
 export default () => (
   <Intable
     class='h-60vh'
-    columns={cols}
-    onColumnsChange={v => replaceArray(cols, v)}
-    data={data}
-    onDataChange={v => replaceArray(data, v)}
+    columns={cols()}
+    onColumnsChange={setCols}
+    data={data()}
+    onDataChange={setData}
     index
     border
     stickyHeader

@@ -1,5 +1,4 @@
 import { createSignal } from 'solid-js'
-import { createMutable } from 'solid-js/store'
 import { Intable } from '../../../packages/intable/src'
 import { ColumnVisibilityPlugin } from '../../../packages/intable/src/plugins/ColumnVisibilityPlugin'
 
@@ -14,7 +13,7 @@ const columns = [
   { id: 'joinDate',   name: 'Join Date',  width: 110 },
 ]
 
-const data = createMutable([
+const [data, setData] = createSignal([
   { id: 1, name: 'Alice',   department: 'Engineering', role: 'Frontend Dev',  age: 28, salary: 90000,  city: 'New York',    email: 'alice@example.com',  joinDate: '2021-03-15' },
   { id: 2, name: 'Bob',     department: 'Marketing',   role: 'SEO Specialist',age: 34, salary: 72000,  city: 'Chicago',     email: 'bob@example.com',    joinDate: '2019-07-01' },
   { id: 3, name: 'Carol',   department: 'Engineering', role: 'Backend Dev',   age: 31, salary: 105000, city: 'San Francisco',email: 'carol@example.com', joinDate: '2020-11-22' },
@@ -42,7 +41,7 @@ export default () => {
       <Intable
         class='h-280px'
         columns={columns}
-        data={data}
+        data={data()}
         rowKey='id'
         index
         border
