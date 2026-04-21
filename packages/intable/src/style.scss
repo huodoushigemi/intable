@@ -257,6 +257,13 @@ td.is-invalid {
   }
 }
 
+.tt-tooltip {
+  @apply px-3 py-2 rd-1 text-xs leading-snug shadow-md z-50 bg-gray-800 c-white break-words w-max select-text;
+  .dark & {
+    @apply bg-gray-100 c-gray-900;
+  }
+}
+
 // drag
 .col__guide-line, .row__guide-line {
   @apply fixed top-0 left-0 bg-[--c-primary] z-9 pointer-events-none;

@@ -784,6 +784,34 @@ const [data, setData] = createSignal([...])
 
 ---
 
+### 场景 24：单元格 Tooltip
+
+> 关键词：tip、tooltip、浮层提示、悉浮、hover 信息、辅助文字
+
+> **TooltipPlugin 已内置，无需手动添加到 `plugins`。**  
+> 在列上设置 `tooltip` 字段即可开启。
+
+```tsx
+const columns = [
+  // 1. tooltip: true —— hover 显示单元格原始字符串値
+  { id: 'salary', name: '薪资', width: 100, tooltip: true },
+
+  // 2. 固定字符串 —— 所有单元格显示同一文字
+  { id: 'dept',   name: '部门', width: 120, tooltip: '该成员所属团队' },
+
+  // 3. 函数 —— 动态计算，返回 undefined 则不显示
+  { id: 'note',   name: '备注', width: 180, class: 'truncate', tooltip: ({ value }) => value },
+]
+
+<Intable columns={columns} data={data} />
+```
+
+`tooltip` 列字段：
+- `true` —— 显示单元格字符串値
+- `string` —— 固定内容
+- `(o: { value, data, x, y, col }) => string | undefined` —— 动态计算
+---
+
 ### 场景 21：主题切换
 
 > 关键词：主题、样式、风格、深色、dark、暗色、shadcn、material、stripe、github

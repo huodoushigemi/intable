@@ -29,6 +29,7 @@ import SortDemo from './SortDemo'
 import ColumnVisibilityDemo from './ColumnVisibilityDemo'
 import AggregateDemo from './AggregateDemo'
 import AutoFillDemo from './AutoFillDemo'
+import TooltipDemo from './TooltipDemo'
 
 // ── Theme CSS (equivalent to: import 'intable/theme/*') ──────────────────────
 import antdCss         from '../../../packages/intable/src/theme/antd.scss?inline'
@@ -134,6 +135,7 @@ const demos = [
   { name: 'ColumnVisibility',comp: ColumnVisibilityDemo,desc: 'Toggle column visibility via the ☰ button in the table header' },
   { name: 'Aggregate',       comp: AggregateDemo,       desc: 'Aggregate footer row: sum, avg, min, max, count per column' },
   { name: 'AutoFill',        comp: AutoFillDemo,        desc: 'Excel-style fill handle: drag to extend numeric / date / text series' },
+  { name: 'Tooltip',         comp: TooltipDemo,         desc: 'Floating tooltip on cell hover — fixed, value, or computed' },
   { name: 'LoadMore',        comp: LoadMoreDemo,        desc: 'Auto load next page when scrolled to bottom' },
   { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' },
   { name: 'ReactAntd',       comp: ReactAntd,           desc: 'React Antd integration demo' },

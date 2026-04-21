@@ -1,4 +1,4 @@
-import { type Accessor, children, createEffect, createMemo, createSignal, type JSX, splitProps } from 'solid-js'
+import { type Accessor, children, createEffect, createMemo, createSignal, type JSX, onMount, splitProps } from 'solid-js'
 import { Portal } from 'solid-js/web'
 import { autoUpdate, createFloating, type createFloatingProps, type ReferenceType } from 'floating-ui-solid'
 import type { AutoUpdateOptions } from '@floating-ui/dom'
@@ -8,9 +8,9 @@ import { createLazyMemo } from '@solid-primitives/memo'
 import { log } from '../utils'
 
 export function Popover(attrs: FloatingProps) {
-  const [_, props] = splitProps(attrs, ['reference', 'floating'])
+  const [_, props] = splitProps(attrs, ['reference', 'floating', 'target'])
   
-  const show = (attrs.trigger == 'click' ? useClicked : useHover)(() => [reference(), floating()].filter(e => e))
+  const show = (attrs.trigger == 'click' ? useClicked : useHover)(() => [target() ?? reference(), floating()].filter(e => e))
   const show2 = useMemoAsync(() => (
     attrs.trigger == 'click'
       ? show()
@@ -18,14 +18,16 @@ export function Popover(attrs: FloatingProps) {
   ))
 
   const reference = children(() => attrs.reference as HTMLElement)
+  const target = children(() => attrs.target)
   const floating = children(() => show2() ? attrs.floating as HTMLElement : void 0)
 
-  return <Floating {...props} reference={reference} floating={floating} />
+  return <Floating {...props} reference={reference} floating={floating} target={target()} />
 }
 
-type FloatingProps = {
+export type FloatingProps = {
   reference: Accessor<ReferenceType | JSX.Element>
   floating?: Accessor<JSX.Element>
+  target?: Accessor<JSX.Element>
   portal?: HTMLElement
   trigger?: 'click' | 'hover'
 } & createFloatingProps
@@ -45,8 +47,10 @@ export function Floating(props: FloatingProps & { update?: Partial<AutoUpdateOpt
 }
 
 export const useFloating = (attrs: FloatingProps & { update?: Partial<AutoUpdateOptions> }) => {
-  const [_, props] = splitProps(attrs, ['reference', 'floating'])
-  const reference = children(() => attrs.reference)
+  const [_, props] = splitProps(attrs, ['reference', 'floating', 'target'])
+  const reference2 = children(() => attrs.reference)
+  const target = children(() => attrs.target)
+  const reference = () => target() ?? reference2()
   const floating = children(() => attrs.floating)
 
   const style = createLazyMemo(() => floating() && reference() ? createFloating({

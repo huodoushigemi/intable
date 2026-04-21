@@ -31,6 +31,7 @@ import { AggregatePlugin } from './plugins/AggregatePlugin'
 import { AutoFillPlugin } from './plugins/AutoFillPlugin'
 import { FilterPlugin } from './plugins/FilterPlugin'
 import { ImportExportPlugin } from './plugins/ImportExportPlugin'
+import { TooltipPlugin } from './plugins/TooltipPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -548,4 +549,5 @@ export const defaultsPlugins = [
   AutoFillPlugin,
   FilterPlugin,
   ImportExportPlugin,
+  TooltipPlugin,
 ]
