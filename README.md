@@ -27,10 +27,10 @@
 
 ## 🤖 AI 时代的工作流
 
-**安装 Copilot Skill：**
+**安装 Skill：**
+
 ```bash
-mkdir -p .github/instructions
-curl -o .github/instructions/intable.instructions.md https://raw.githubusercontent.com/huodoushigemi/intable/main/.github/instructions/intable-scenarios.instructions.md
+npx skills add huodoushigemi/intable -y --skill intable
 ```
 
 **效果：** 描述需求（如"加一个大数据量的可编辑表格"），Copilot 自动给出正确代码。
