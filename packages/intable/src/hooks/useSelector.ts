@@ -79,6 +79,13 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
     return (multiple ? Array.from(selected()) : Array.from(selected())[0]) as T
   })
 
+  const isAll = (data: T[]) => !!data.length && data.every(d => has(d))
+
+  const selectAll = (data: T[]) => {
+    setSelected(new Set2(data))
+    onChange?.(value())
+  }
+
   return {
     clear,
     set,
@@ -86,6 +93,8 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
     add,
     del,
     toggle,
+    isAll,
+    selectAll,
     get value() { return value() }
   }
 }

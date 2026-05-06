@@ -6,6 +6,7 @@ import { createMutable } from 'solid-js/store'
 import { Ctx, type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
 import { chooseFile, resolveOptions, unFn } from '../utils'
+import Textarea from '../components/Textarea'
 
 declare module '../index' {
   interface TableProps {
@@ -66,8 +67,8 @@ export const EditablePlugin: Plugin = {
       const editorState = createAsyncMemo(() => {
         if (editing()) {
           let canceled = false, initialValue = o.data[o.col.id]
-          const editor = (e => typeof e == 'string' ? store.editors[e] : e)(o.col.editor ?? o.col.type ?? 'text')
-          const opt = {
+          const editor = (e => typeof e == 'string' ? store.editors[e] : e)(o.col.editor ?? o.col.type ?? (o.col.enum ? 'select' : 'text'))
+          const opt: EditorOpt = {
             props: o.col.editorProps,
             col: o.col,
             eventKey,
@@ -137,7 +138,7 @@ export const EditablePlugin: Plugin = {
                 on:pointerdown={e => e.stopPropagation()}
                 on:keydown={(e: KeyboardEvent) => {
                   e.stopPropagation()
-                  e.key == 'Enter' && !e.shiftKey && editorState()?.[0].ok()
+                  e.key == 'Enter' && !e.shiftKey && (editorState()?.[0].ok(), e.preventDefault())
                   e.key == 'Escape' && editorState()?.[0].cancel()
                 }}
               >
@@ -183,6 +184,10 @@ const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
       {...extra}
       {...props}
     />)
+
+    setTimeout(() => {
+      isSelector && el?.showPicker?.()
+    }, 0);
     
     return {
       el,
@@ -197,7 +202,7 @@ const Input = o => <input {...o} />
 
 export const editors = {
   text: createEditor(Input),
-  textarea: createEditor(o => <textarea {...o} />),
+  textarea: createEditor(o => <Textarea autosize={{ minRows: 2, maxRows: 3 }} {...o} class={`${o.class} bg-[--table-bg] outline-(1.5px solid [--c-primary])`} />),
   number: createEditor(Input, { type: 'number' }),
   range: createEditor(Input, { type: 'range' }),
   date: createEditor(Input, { type: 'date' }, true),
@@ -215,5 +220,5 @@ export const editors = {
       <Checkbox {...o} ref={() => {}} onInput={() => {}} class='mx-3!' />
     </label>
   )),
-  select: createEditor(o => <select {...o}>{o.options?.map(e => <option value={e.value}>{e.label}</option>)}</select>, {}, true),
+  select: createEditor(o => <select {...o}><option value=''>-</option>{o.options?.map(e => <option value={e.value} selected={e.value === o.value}>{e.label}</option>)}</select>, {}, true),
 }

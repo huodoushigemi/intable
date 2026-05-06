@@ -2,7 +2,7 @@ import type { Plugin } from 'intable'
 import type { Editor } from 'intable/plugins/EditablePlugin'
 import { resolveOptions } from 'intable/utils'
 
-import { Checkbox, ColorPicker, DatePicker, Input, InputNumber, Rate, Select, Switch, TimePicker, version } from 'antd'
+import { Checkbox, DatePicker, Input, InputNumber, Rate, Select, Switch, TimePicker, version } from 'antd'
 import { useEffect, useRef, useState, createElement as h, type FC } from 'react'
 
 import dayjs from 'dayjs'
@@ -23,7 +23,6 @@ export const AntdPlugin: Plugin = {
     store.editors.rate = editor(Rate)
     store.editors.switch = editor(Switch)
     store.editors.checkbox = editor(Checkbox, o => ({ ...o, checked: o.value, onChange: e => o.onChange(e.target.checked) }))
-    store.editors.color = selector(ColorPicker, o => ({ ...o, onChange: undefined, onChangeComplete: v => o.onChange(v?.toHexString?.() || v) }))
     store.editors.select = selector(Select, o => ({ style: { width: '100%' }, ...o }))
     store.editors.date = selector(DatePicker, o => ({ ...o, value: o.value && dayjs(o.value), onChange: (_, v) => o.onChange(v) }))
     store.editors.time = selector(TimePicker, o => ({ ...o, value: o.value && dayjs(o.value, 'HH:mm:ss'), onChange: (_, v) => o.onChange(v) }))

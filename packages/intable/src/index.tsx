@@ -68,7 +68,7 @@ export interface Plugin {
   keybindings?: (store: TableStore) => Record<string, (e?: KeyboardEvent) => void>
 }
 
-export type Plugin$0 = Plugin | ((store: TableStore) => Plugin)
+export type Plugin$0 = Plugin | Plugin[] | ((store: TableStore) => Plugin)
 
 export interface TableProps {
   store?: { value: TableStore } | { current: TableStore } | ((store: TableStore) => void)
@@ -118,7 +118,7 @@ type Obj = Record<string | symbol, any>
 
 export interface TableColumn extends Obj {
   id: any
-  name?: string
+  name?: any
   width?: number
   fixed?: 'left' | 'right'
   class?: any
@@ -163,7 +163,7 @@ export const Intable = (props: TableProps) => {
       ...defaultsPlugins,
       ...props.plugins || [],
       RenderPlugin
-    ].map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0)))
+    ].flat().map(unplugin).sort((a, b) => (b.priority || 0) - (a.priority || 0)))
 
     // init store
     const added = difference(ret, prev)
@@ -537,6 +537,7 @@ export const defaultsPlugins = [
   ExpandPlugin,
   RowSelectionPlugin,
   IndexPlugin,
+  FilterPlugin,
   SortPlugin,
   ValidatorPlugin,
   EditablePlugin,
@@ -547,7 +548,6 @@ export const defaultsPlugins = [
   ResizePlugin,
   AggregatePlugin,
   AutoFillPlugin,
-  FilterPlugin,
   ImportExportPlugin,
   TooltipPlugin,
 ]

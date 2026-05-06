@@ -1,6 +1,6 @@
 import { mergeProps, Show } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
-import { type Plugin, type TableStore } from '..'
+import { type Plugin, type Plugin$0, type TableStore } from '..'
 import { useControlled } from '../hooks/useControlled'
 import { toReactive } from '../hooks'
 import { log } from '../utils'
@@ -105,7 +105,7 @@ const IconDesc = () => (
 
 // ─── Plugin ───────────────────────────────────────────────────────────────────
 
-export const SortPlugin: Plugin = {
+export const SortPlugin: Plugin$0 = [{
   name: 'sort',
 
   // Run after FilterPlugin (priority 0) so we sort the already-filtered rows.
@@ -133,7 +133,11 @@ export const SortPlugin: Plugin = {
       const colMap = Object.fromEntries(store.props.columns.map(c => [c.id, c]))
       return applySort(data, sort.value, colMap)
     },
+  },
+}, {
+  name: 'sort-th',
 
+  rewriteProps: {
     Th: ({ Th }, { store }) => o => {
       const sort = store.props.sort as TableStore['sort']
       const isSortable = () => !!o.col.sortable && !o.col[store.internal]
@@ -179,5 +183,5 @@ export const SortPlugin: Plugin = {
         </Th>
       )
     },
-  },
-}
+  }
+}]
