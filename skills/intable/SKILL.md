@@ -73,6 +73,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 |-----------|---------|
 | 基础表格、只读展示、行号、border、loading | `./scenes/01-basic.md` |
 | 编辑单元格、新增行、复制粘贴、单元格选区、列宽调整、自动填充、AntdPlugin、ElementPlusPlugin、富编辑器 | `./scenes/02-editing.md` |
+| 自定义编辑器、editor 函数、editorProps、createEditor、全局注册编辑器 | `./scenes/13-custom-editor.md` |
 | 校验、验证、必填、required、Zod | `./scenes/03-validation.md` |
 | 排序、sort、筛选、filter、过滤、搜索 | `./scenes/04-sort-filter.md` |
 | 行选择、复选框、展开、树形、行拖拽、行分组 | `./scenes/05-row.md` |

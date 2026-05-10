@@ -25,6 +25,7 @@ export const HistoryPlugin: Plugin = {
 
         for (const { path, value } of delta) {
           if (path.length == 0) {
+            // todo structuredClone
             clonedState = structuredClone(unwrap(value))
             // clonedState = [...value]
           } else {

@@ -178,12 +178,11 @@ export const FilterPlugin: Plugin = {
     newRow: ({ newRow }, { store }) => function (...args) {
       // 根据 filters 生成一个默认值满足过滤条件的行，如果 filters 有多层嵌套则暂不处理
       const row = newRow(...args)
-      const { filters, props } = store
-      const { columns } = props!
+      const { columns } = store.props
       
       columns.forEach(col => {
         if (col[store.internal] || !col.filterable) return
-        const tree = filters[col.id]
+        const tree = store.props.filter!.value!.find(t => isRuleNode(t) && t.field === col.id)
         // 这里只处理了简单的单层规则节点，复杂树结构暂不处理
         if (tree && isRuleNode(tree)) {
           row[col.id] = ({

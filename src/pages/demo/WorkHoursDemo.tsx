@@ -54,7 +54,7 @@ export default function WorkHoursDemo() {
       };
     });
     setData(fixed);
-  }
+  }†
 
   function addRow() {
     setData((prev) => [...prev, { id: Symbol(), date: "", project: "", domain: "", taskType: "", hours: 8, detail: "" }]);

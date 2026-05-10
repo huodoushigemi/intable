@@ -1,4 +1,4 @@
-import { splitProps } from "solid-js"
+import { For, splitProps, type Component,  } from "solid-js"
 import { Dynamic } from "solid-js/web"
 
 const unFn = (fn, ...arg) => typeof fn == 'function' ? fn(...arg) : fn
@@ -9,15 +9,16 @@ export function createRender({ is, processProps = e => e } = {}) {
     return (<>
       { (!('vIf' in reserve) || !!unFn(reserve.vIf)) &&
         <Dynamic component={reserve.is ?? is} {...attrs}>
-          {List(reserve.children)}
+          <List each={reserve.children} />
         </Dynamic>
       }
     </>)
   }
 
-  const List = children => (
-    Array.isArray(children) ? children.map(e => typeof e == 'object' ? Render(e) : e) :
-    children
+  const List: Component = ({ each }) => (
+    <>
+      {Array.isArray(each) ? <For each={each}>{e => typeof e == 'object' ? Render(e) : e}</For> : each}
+    </>
   )
 
   return Render

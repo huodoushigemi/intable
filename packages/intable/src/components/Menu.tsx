@@ -1,15 +1,14 @@
-import { children, createContext, createEffect, createMemo, createResource, createSignal, mergeProps, onMount, splitProps, useContext } from "solid-js"
-import { isEmpty } from 'es-toolkit/compat'
+import { children, createContext, createEffect, createMemo, createSignal, splitProps, useContext } from "solid-js"
 import { createRender } from "./Render"
-import { autoUpdate, createFloating, offset } from "floating-ui-solid"
+import { autoUpdate, createFloating } from "floating-ui-solid"
 import { combineProps } from '@solid-primitives/props'
 import { pointerHover } from "@solid-primitives/pointer"
 import { createMutable } from "solid-js/store"
 import { delay } from "es-toolkit"
-import { log, unFn } from "../utils"
-import { VDir } from "../hooks/useDir"
-import { Popover } from "./Popover"
+import { unFn } from "../utils"
 import { useSignle2 } from "../hooks"
+import { createLazyMemo } from "@solid-primitives/memo"
+import { VDir } from "../hooks/useDir"
 
 export function Menu(props) {
   const MenuCtx = createContext({ deep: 0 })
@@ -58,11 +57,11 @@ export function Menu(props) {
       }
     }
 
-    onMount(() => {
-      <Popover strategy='fixed' reference={el} portal={el} {..._e.popover} middleware={[offset({ mainAxis: 4 })]} />
-    })
+    // onMount(() => {
+    //   <Popover strategy='fixed' reference={el} portal={el} {..._e.popover} middleware={[offset({ mainAxis: 4 })]} />
+    // })
 
-    const child = children(() => e.children)
+    const child = createLazyMemo(() => children(() => e.children)())
     return (
       <div
         ref={el}
@@ -74,8 +73,7 @@ export function Menu(props) {
           {req.loading ? <IMyLoading /> : e.icon}
         </div>
         {e.label}
-        {/* {hover() && child() && <_Menu ref={setFloating}>{child()}</_Menu>} */}
-        {hover() && e.children && <_Menu ref={setFloating} class='z-1'>{e.children}</_Menu>}
+        {hover() && child() && <_Menu ref={setFloating}>{child()}</_Menu>}
       </div>
     )
   }
@@ -99,7 +97,7 @@ export function Menu(props) {
           use:VDir={e.usedir}
           on:click={e => e.stopPropagation()}
         >
-          {(el => isEmpty(el) ? <div class='px-4 py-2 op40'>无内容</div> : el)(e.children)}
+          {(el => el == null ? <div class='px-4 py-2 op40'>无内容</div> : el)(e.children)}
         </div>
       </MenuCtx.Provider>
     )

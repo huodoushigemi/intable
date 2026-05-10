@@ -29,6 +29,11 @@ declare module '../index' {
   }
 }
 
+let state = {
+  c1: 1,
+  c2: 1
+}
+
 export const MenuPlugin: Plugin = {
   name: 'menu',
   priority: Infinity,
@@ -71,8 +76,14 @@ export const MenuPlugin: Plugin = {
     return <>{pos() && <Menu ref={setMenuEl} class='pointer-events-auto' style={style() || 'position: fixed'} items={menus()} onAction={() => setPos()} />}</>
   }],
   menus: (store) => [
-    { label: '新增行 ↑', cb: () => store.commands.addRows(store.selected.end[1], [store.props.newRow(store.selected.end[1])]) },
-    { label: '新增行 ↓', cb: () => store.commands.addRows(store.selected.end[1], [store.props.newRow(store.selected.end[1])], false) },
+    {
+      label: () => <>↑ 新增 <input type='number' class='mx-2 p-0! w-8! h-5 text-center in-input bg-[--bg] input-no-spin' value={state.c1 = 1} onInput={e => state.c1 = +e.currentTarget.value} on:click={e => e.stopPropagation()} /> 行</>,
+      cb: () => store.commands.addRows(store.selected.end[1], Array(state.c1).fill(0).map(() => store.props.newRow(store.selected.end[1])))
+    },
+    {
+      label: () => <>↓ 新增 <input type='number' class='mx-2 p-0! w-8! h-5 text-center in-input bg-[--bg] input-no-spin' value={state.c2 = 1} onInput={e => state.c2 = +e.currentTarget.value} on:click={e => e.stopPropagation()} /> 行</>,
+      cb: () => store.commands.addRows(store.selected.end[1],  Array(state.c2).fill(0).map(() => store.props.newRow(store.selected.end[1])), false)
+    },
     { label: '删除行', cb: () => store.commands.deleteRows(range(...(e => [e[0], e[1] + 1])([store.selected.start[1], store.selected.end[1]].sort((a, b) => a - b)) as [number, number])) },
   ],
   commands: (store) => ({

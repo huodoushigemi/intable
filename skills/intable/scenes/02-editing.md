@@ -84,14 +84,14 @@ const rows = store.commands.getAreaRows()
 
 ---
 
-## AntdPlugin — React 富编辑器（可选）
+## AntdPlugin — React 编辑器（可选）
 
 用 Ant Design 组件替换内置编辑器，获得 DatePicker、Select、ColorPicker 等完整 UI。
 
 **安装依赖（antd 为业务项目自行安装的 peer dep）：**
 
 ```bash
-pnpm add antd
+pnpm add -S antd
 ```
 
 **使用：**
@@ -135,14 +135,14 @@ const columns = [
 
 ---
 
-## ElementPlusPlugin — Vue 3 富编辑器（可选）
+## ElementPlusPlugin — Vue 3 编辑器（可选）
 
 用 Element Plus 组件替换内置编辑器。
 
 **安装依赖：**
 
 ```bash
-pnpm add element-plus
+pnpm add -S element-plus
 ```
 
 **使用：**
