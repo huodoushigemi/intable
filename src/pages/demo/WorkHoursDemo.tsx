@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { Intable } from "../../../packages/intable/src";
+import { Intable, type TableStore } from "../../../packages/intable/src";
 
 const VACATION = "休假";
 
@@ -54,11 +54,13 @@ export default function WorkHoursDemo() {
       };
     });
     setData(fixed);
-  }†
+  }
 
   function addRow() {
     setData((prev) => [...prev, { id: Symbol(), date: "", project: "", domain: "", taskType: "", hours: 8, detail: "" }]);
   }
+
+  let store: TableStore
 
   return (
     <div class="flex flex-col gap-2 h-60vh">
@@ -69,15 +71,18 @@ export default function WorkHoursDemo() {
       </div>
       <Intable
         class="flex-1"
+        store={e => store = e}
         columns={columns}
         data={data()}
         onDataChange={handleDataChange}
         rowKey="id"
-        rowSelection={{ enable: true, multiple: true }}
+        // rowSelection={{ enable: true, multiple: true }}
+        index
         border
         stickyHeader
         size="small"
         autoFill
+        cellStyle={(o) => o.data && !store.props.editable(o) && !o.col[store.internal] ? 'background: repeat; background-image: linear-gradient(135deg,#6b728020 10%,#0000 0,#0000 50%,#6b728020 0,#6b728020 60%,#0000 0,#0000); background-size: 7.07px 7.07px' : ''}
       />
     </div>
   );

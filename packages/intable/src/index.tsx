@@ -1,4 +1,4 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner } from 'solid-js'
+import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner, createRenderEffect } from 'solid-js'
 import { createMutable, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
@@ -201,9 +201,8 @@ export const Intable = (props: TableProps) => {
   window.ctx = ctx
 
   // ref
-  createEffect(async () => {
+  createRenderEffect(() => {
     const ref = store.props.store
-    await Promise.resolve()
     if (ref) {
       if (typeof ref === 'function') ref(store)
       else if ('value' in ref) ref.value = store
