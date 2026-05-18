@@ -25,6 +25,9 @@ export default component(() => {
     }
     return row
   }))
+
+  const [_, fu] = useState([])
+  useEffect(() => { fu() }, [])
   
   return h(Intable, {
     className: 'h-60vh',

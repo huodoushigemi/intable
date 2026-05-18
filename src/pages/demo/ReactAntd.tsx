@@ -38,7 +38,7 @@ export default component(() => {
   ])
 
   const [data, setData] = useState([
-    { id: 1, text: null, num: 0, date: '2020-10-10', time: '00:00:01', datetime: '2020-10-10 00:00:01', color: '#000', bool: true, switch: true, select: 'A', select2: ['A', 'B'], range: 50, readonly: 'r' },
+    { id: 1, text: '', num: 0, date: '2020-10-10', time: '00:00:01', datetime: '2020-10-10 00:00:01', color: '#000', bool: true, switch: true, select: 'A', select2: ['A', 'B'], range: 50, readonly: 'r' },
     { id: 2, text: 'text', num: -1, date: '2020-10-10', color: '555', bool: false, select: 'B', select2: ['A'], range: 50, readonly: 'r' },
     { id: 3, text: 'text1', num: 101, date: '2020-10-10', color: '#444', bool: false, select: 'C', range: 50, readonly: 'r' },
     { id: 4, text: 'text11', num: 0, date: '2020-10-10', color: '#333', bool: false, select: 'A', range: 50, readonly: 'r' },

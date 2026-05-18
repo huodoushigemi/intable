@@ -1,6 +1,6 @@
 {
   "name": "@intable/react",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -28,7 +28,9 @@
   "devDependencies": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "antd": "^5.22.5"
+    "antd": "^5.22.5",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "publishConfig": {
     "access": "public",

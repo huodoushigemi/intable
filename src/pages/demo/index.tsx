@@ -30,7 +30,6 @@ import ColumnVisibilityDemo from './ColumnVisibilityDemo'
 import AggregateDemo from './AggregateDemo'
 import AutoFillDemo from './AutoFillDemo'
 import TooltipDemo from './TooltipDemo'
-import WorkHoursDemo from './WorkHoursDemo'
 
 // ── Theme CSS (equivalent to: import 'intable/theme/*') ──────────────────────
 import antdCss         from '../../../packages/intable/src/theme/antd.scss?inline'
@@ -137,7 +136,6 @@ const demos = [
   { name: 'Aggregate',       comp: AggregateDemo,       desc: 'Aggregate footer row: sum, avg, min, max, count per column' },
   { name: 'AutoFill',        comp: AutoFillDemo,        desc: 'Excel-style fill handle: drag to extend numeric / date / text series' },
   { name: 'Tooltip',         comp: TooltipDemo,         desc: 'Floating tooltip on cell hover — fixed, value, or computed' },
-  { name: 'WorkHours',       comp: WorkHoursDemo,       desc: '工时登记：休假项目自动锁定任务类型/详情/领域' },
   { name: 'LoadMore',        comp: LoadMoreDemo,        desc: 'Auto load next page when scrolled to bottom' },
   { name: 'React',           comp: ReactDemo,           desc: 'React integration demo' },
   { name: 'ReactAntd',       comp: ReactAntd,           desc: 'React Antd integration demo' },

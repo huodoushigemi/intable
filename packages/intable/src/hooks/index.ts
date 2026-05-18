@@ -222,11 +222,13 @@ export function useMemoState(fn) {
   // const state = createMutable({})
   const state = createShallowState({})
   createComputed(() => {
-    const val = { ...fn() }
-    untrack(() => batch(() => {
-      for (const k in state) k in val || (delete state[k])
-      Object.assign(state, val)
-    }))
+    batch(() => {
+      const val = { ...fn() }
+      untrack(() => {
+        for (const k in state) k in val || (delete state[k])
+        Object.assign(state, val)
+      })
+    })
   })
   return state
 }

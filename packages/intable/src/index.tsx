@@ -172,7 +172,7 @@ export const Intable = (props: TableProps) => {
     })
 
     return ret
-  }, [])
+  }, [], { equals: isEqual })
   
   // init rewriteProps
   store.props = (() => {
@@ -180,6 +180,7 @@ export const Intable = (props: TableProps) => {
     const map = {}
     const get = (k) => (map[k] ??= runWithOwner(owner, () => createMemo(() => fn(k))))
     function fn(k) {
+      // console.log(k)
       const arr = createMemo(() => plugins().map(e => e.rewriteProps?.[k]).filter(e => e), undefined, { equals: isEqual })
       return arr().reduce((o, e) => e({ [k]: o }, { store }), props[k])
     }

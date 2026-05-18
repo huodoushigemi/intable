@@ -18,6 +18,9 @@ const columns = [
 ]
 
 <Intable columns={columns} data={data} onDataChange={setData} rowKey='id' />
+
+// 全表可编辑 props.editable 也可传函数，控制每个单元格是否可编辑
+<Intable columns={columns} data={data} onDataChange={setData} rowKey='id' editable />
 ```
 
 可用 `type` 值：`'text'` | `'textarea'` | `'number'` | `'range'` | `'date'` | `'time'` | `'datetime'` | `'color'` | `'checkbox'` | `'select'`

@@ -38,8 +38,9 @@ export const component = <T extends Record<string, any>>(Comp: FC<T>) => {
 
     const root = createRoot(el)
 
-    createComputed(() => flushSync(() => root.render(typeof Comp === 'function' ? h(Comp, props) : Comp)))
-    onCleanup(() => root.unmount())
+    // createComputed(() => flushSync(() => root.render(typeof Comp === 'function' ? h(Comp, props) : Comp)))
+    createComputed(() => root.render(typeof Comp === 'function' ? h(Comp, props) : Comp))
+    onCleanup(() => queueMicrotask(() => root.unmount()))
 
     return el
   })

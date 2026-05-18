@@ -99,7 +99,7 @@ export const DiffPlugin: Plugin = {
         ].join(' ')
       })
       return <Td {...o} class={o.class + (clazz() ? ' relative z-1' : '')}>
-        {o.children}
+        {/*@once*/ o.children}
         {clazz() && <div class={clazz() + ' absolute inset-0 z--1 op-15 pointer-events-none'} />}
       </Td>
     },

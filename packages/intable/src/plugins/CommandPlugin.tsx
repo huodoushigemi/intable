@@ -2,8 +2,9 @@ import { createEffect, createMemo, getOwner, runWithOwner } from 'solid-js'
 import { createEventListener } from '@solid-primitives/event-listener'
 import { combineProps } from '@solid-primitives/props'
 import { createKeybindingsHandler } from 'tinykeys'
-import { type Commands, type Plugin } from '..'
 import { createLazyMemo } from '@solid-primitives/memo'
+import { difference } from 'es-toolkit'
+import { type Commands, type Plugin } from '..'
 
 declare module '../index' {
   interface TableProps {
@@ -26,11 +27,13 @@ export const CommandPlugin: Plugin = {
   name: 'command',
   priority: Infinity,
   store: (store) => {
-    const owner = getOwner()
+    const added = createLazyMemo(prev => difference(store.plugins, prev), [] as Plugin[])
     const commands = createLazyMemo(() => (
-      store.plugins.reduce((o, e) => (
-        Object.assign(o, runWithOwner(owner, () => e.commands?.(store, {...o})))
-      ), {} as Commands)
+      createMemo(prev => (
+        added().reduce((o, e) => (
+          Object.assign(o, runWithOwner(store.owner, () => e.commands?.(store, {...o})))
+        ), prev ?? {} as Commands)
+      ))()
     ))
     Object.defineProperty(store, 'commands', { get: () => commands() })
     return {

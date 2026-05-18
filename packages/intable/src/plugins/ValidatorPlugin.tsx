@@ -1,4 +1,3 @@
-import { combineProps } from '@solid-primitives/props'
 import type { Plugin } from '..'
 import { isEmpty } from '../utils'
 
@@ -94,10 +93,16 @@ export const ValidatorPlugin: Plugin = {
   rewriteProps: {
     Td: ({ Td }, { store }) => o => {
       const error = () => store.cellValidationErrors[o.data[store.props.rowKey]]?.[o.col.id]
+
       return (
         <Td {...o} class={o.class + ' ' + (error() != null ? 'is-invalid' : '')}>
           {/*@once*/ o.children}
-          {error() != null && <div class='cell-validation-error'>{error()}</div>}
+          
+          {error() != null && <div class='cell-validation-error'>{(() => {
+            const val = o.data[o.col.id]
+            queueMicrotask(() => store.validateCell(val, o.data, o.col).catch(() => {}))
+            return error()
+          })()}</div>}
         </Td>
       )
     },

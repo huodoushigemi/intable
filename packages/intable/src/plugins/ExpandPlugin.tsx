@@ -1,11 +1,9 @@
-import { createEffect, createMemo, useContext } from 'solid-js'
 import type { Component, JSX } from 'solid-js'
 import { defaultsDeep } from 'es-toolkit/compat'
 import { Ctx, type Plugin, type TableColumn, type TableProps, type TableStore } from '..'
 import { renderComponent, solidComponent } from '../components/utils'
 import { useSelector } from '../hooks/useSelector'
 import { combineProps } from '@solid-primitives/props'
-import { log } from '../utils'
 
 declare module '../index' {
   interface TableProps {

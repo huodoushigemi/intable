@@ -1,9 +1,10 @@
 /* @refresh reload */
-import { batch, createEffect, createMemo, createSignal, untrack } from 'solid-js'
+import { createEffect, createSignal, getOwner, runWithOwner } from 'solid-js'
 import { customElement, noShadowDOM } from 'solid-element'
-import { createMutable } from 'solid-js/store'
+import { isPlainObject, mapValues } from 'es-toolkit'
+import { createShallowState, useMemoState } from './hooks'
+import { change2 } from './utils'
 import { Intable } from './'
-import { useMemoState } from './hooks'
 
 const PROPS = {
   options: {},
@@ -15,7 +16,16 @@ const PROPS = {
 export const TableElement = customElement('wc-table', PROPS, (attrs, { element }) => {
   attrs.noShadow && noShadowDOM()
 
-  const props = useMemoState(() => attrs.options)
+  const owner = getOwner()
+  let cache = {} as any
+
+  const props = useMemoState(() => (
+    mapValues(attrs.options, (v, k) => {
+      if (!isPlainObject(v)) return v
+      runWithOwner(owner, () => cache[k] ??= createShallowState({}))
+      return change2(cache[k], v)
+    })
+  ))
   
   return (
     <Intable {...props} />

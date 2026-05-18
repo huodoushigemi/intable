@@ -138,3 +138,9 @@ export function throttlePromise(of) {
     return ret
   }
 }
+
+export function change2(o1, o2) {
+  for (const k in o1) k in o2 || (delete o1[k])
+  Object.assign(o1, o2)
+  return o1
+}
