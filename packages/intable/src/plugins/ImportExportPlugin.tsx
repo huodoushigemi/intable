@@ -20,14 +20,14 @@ function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 }
 
 function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url
+  a.href = URL.createObjectURL(blob)
   a.download = filename
   document.body.appendChild(a)
   a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  a.remove()
+  // Safari may start download asynchronously; revoking too early can break it.
+  setTimeout(() => URL.revokeObjectURL(a.href), 15 * 1000)
 }
 
 export const ImportExportPlugin: Plugin = {
@@ -47,7 +47,7 @@ export const ImportExportPlugin: Plugin = {
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
       
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
-      return new Blob([excelBuffer], { type: 'application/octet-stream' })
+      return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     },
     exportExcel: async (data = store.props!.data) => {
       const blob = await store.commands.createExcel(data)
@@ -61,7 +61,7 @@ export const ImportExportPlugin: Plugin = {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]]
       const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[]
       
-      if (jsonData.length < 1) return
+      if (jsonData.length < 1) return []
       
       const allCols = store.props!.columns.filter(col => !col[store.internal])
       
