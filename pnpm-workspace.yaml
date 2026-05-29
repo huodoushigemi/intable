@@ -1,5 +1,5 @@
 packages:
   - 'packages/*'
 allowBuilds:
-  '@parcel/watcher': false
-  vue-demi: false
+  '@parcel/watcher': true
+  vue-demi: true
