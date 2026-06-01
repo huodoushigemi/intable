@@ -83,7 +83,7 @@ export const RowGroupPlugin: Plugin = {
       }
       return row
     },
-    Td: ({ Td }, { store }) => o => {
+    Td: ({ Td }, { store }) => store.props?.rowGroup?.fields ? o => {
       // todo
       if (!o.data?.[GROUP]) return Td(o)
       
@@ -100,7 +100,7 @@ export const RowGroupPlugin: Plugin = {
           ) : o.children}
         </Td>
       )
-    },
+    } : Td,
   },
 }
 

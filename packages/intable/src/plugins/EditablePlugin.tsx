@@ -66,6 +66,12 @@ export const EditablePlugin: Plugin = {
 
       const editorState = createAsyncMemo(() => {
         if (editing()) {
+          const sss = createMemo(() => JSON.stringify(store.selected ?? '{}'))
+          createEffect(on(sss, () => setEditing(false), { defer: true }))
+
+          size.w = el.getBoundingClientRect().width
+          size.h = el.getBoundingClientRect().height
+
           let canceled = false, initialValue = o.data[o.col.id]
           const editor = (e => typeof e == 'string' ? store.editors[e] : e)(o.col.editor ?? o.col.type ?? (o.col.enum ? 'select' : 'text'))
           const opt: EditorOpt = {
@@ -82,6 +88,9 @@ export const EditablePlugin: Plugin = {
             onChange: v => editing() && validate(v).catch(() => {}) // Validate on each change but ignore errors until final submission
           }
           const ret = editor(opt)
+
+          queueMicrotask(() => ret.focus?.())
+          
           onCleanup(() => {
             if (!canceled && ret.getValue() !== initialValue) {
               store.commands.rowChange({ ...props.data[o.y], [o.col.id]: ret.getValue() })
@@ -105,20 +114,8 @@ export const EditablePlugin: Plugin = {
         }
       }
 
-      createEffect(() => {
-        editorState()?.[1]?.focus?.()
-      })
-      
-      createEffect(() => {
-        if (editing()) {
-          const sss = createMemo(() => JSON.stringify(store.selected ?? '{}'))
-          createEffect(on(sss, () => setEditing(false), { defer: true }))
-        }
-      })
-
       let input: HTMLInputElement
       const size = createMutable({ w: 0, h: 0 })
-      createComputed(() => editing() && (size.w = el.getBoundingClientRect().width, size.h = el.getBoundingClientRect().height))
       
       o = combineProps(o, {
         ref: v => el = v,

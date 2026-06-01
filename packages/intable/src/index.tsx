@@ -32,6 +32,7 @@ import { AutoFillPlugin } from './plugins/AutoFillPlugin'
 import { FilterPlugin } from './plugins/FilterPlugin'
 import { ImportExportPlugin } from './plugins/ImportExportPlugin'
 import { TooltipPlugin } from './plugins/TooltipPlugin'
+import { KeyEachPlugin } from './plugins/KeyEachPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -429,13 +430,6 @@ function BasePlugin(): Plugin$0 {
       },
       EachRows: ({ EachRows }) => EachRows || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
       EachCells: ({ EachCells }) => EachCells || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
-      // todo
-      // EachCells: ({ EachCells }, { store }) => EachCells || (o => {
-      //   const raws = createMemo(() => ({ list: o.each.map(e => e[store.raw]), map: new Map(o.each.map(e => [e[store.raw], e])) }))
-      //   return <For each={raws().list}>{(e, i) => o.children(() => raws().map.get(e), i)}</For>
-      // }),
-      // EachRows: ({ EachRows }) => EachRows || (o => <Index each={o.each}>{(e, i) => o.children(e, () => i)}</Index>),
-      // EachCells: ({ EachCells }) => EachCells || (o => <Index each={o.each}>{(e, i) => o.children(e, () => i)}</Index>),
       renderer: ({ renderer = a => a }) => renderer
     },
     layers: [
@@ -550,4 +544,5 @@ export const defaultsPlugins = [
   AutoFillPlugin,
   ImportExportPlugin,
   TooltipPlugin,
+  KeyEachPlugin,
 ]

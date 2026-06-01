@@ -52,10 +52,10 @@ export const ExpandPlugin: Plugin = {
       }</Tr>
     ) : Tr,
 
-    Td: ({ Td }, { store }) => o => {
+    Td: ({ Td }, { store }) => store.props.expand?.enable ? o => {
       o = combineProps(o, { onClick: () => o.col.id == store.expandCol.id && store.commands.expand.toggle(o.data) })
       return <Td {...o} />
-    },
+    } : Td,
     
     data: ({ data }, { store }) => (
       store.commands.expand.value.length

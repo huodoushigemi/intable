@@ -21,6 +21,7 @@ export const Intable: FC<TableProps> = (props) => {
     if (ref.current) {
       ref.current.options = {
         class: props.className,
+        useColKey: true,
         ...props,
         renderer: component,
       } as TableProps
