@@ -36,15 +36,14 @@ import { Intable } from '@intable/react'
 import '@intable/react/style.css'
 
 export default function App() {
-  const [columns] = useState([
-    { id: 'name', name: '姓名', width: 120 },
-    { id: 'age',  name: '年龄', width: 80  },
-  ])
   const [data] = useState([{ id: 1, name: 'Alice', age: 28 }])
   return (
     <Intable
       style={{ width: '100%', height: '400px' }}
-      columns={columns}
+      columns={[
+        { id: 'name', name: '姓名', width: 120 },
+        { id: 'age',  name: '年龄', width: 80  },
+      ]}
       data={data}
       rowKey='id'
       index border stickyHeader

@@ -25,7 +25,8 @@ export const KeyEachPlugin: Plugin = {
     columns: ({ columns }, { store }) => {
       if (!store.props.useColKey) return columns
       const keyed = untrack(() => keyBy(store[COLUMNS] ?? [], e => e.id))
-      return store[COLUMNS] = columns.map(e => keyed[e.id] ? change2(keyed[e.id], e) : { ...e })
+      store[COLUMNS] = columns.map(e => keyed[e.id] ? change2(keyed[e.id], e) : { ...e })
+      return store[COLUMNS]
     },
     EachRows: ({ EachRows }, { store }) => !store.props.useRowKey ? EachRows : o => {
       const raws = createMemo(() => ({ list: o.each.map(e => e[store.props.rowKey]), map: keyBy(o.each, e => e[store.props.rowKey]) }))
