@@ -33,8 +33,8 @@ export const RenderPlugin: Plugin = {
       return (
         <Td {...o}>
           {(() => {
-            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type) || text
-            return renderComponent(Comp, mergeProps(o, { onChange: v => store.commands.rowChange({ ...o.data, [o.col.id]: v }) }), store)
+            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type)
+            return Comp ? renderComponent(Comp, o, store) : text(o)
           })()}
         </Td>
       )
@@ -43,9 +43,7 @@ export const RenderPlugin: Plugin = {
 }
 
 const text: Render = component(({ value, col }) => {
-  return <>{
-    col.enum ? toArr(value).map(v => resolveOptions(col.enum!).find(e => e.value == v)?.label ?? v).join(', ') : value
-  }</>
+  return col.enum ? toArr(value).map(v => resolveOptions(col.enum!).find(e => e.value == v)?.label ?? v).join(', ') : value
 })
 
 const number = text

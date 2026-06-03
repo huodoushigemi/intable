@@ -1,12 +1,12 @@
 {
   "name": "intable-project",
-  "version": "0.0.43",
+  "version": "0.0.44",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:lib": "node scripts/build.js",
-    "publish:lib": "cp README.md packages/intable/ && pnpm build:lib && node scripts/publish.js",
+    "publish:lib": "pnpm build:lib && node scripts/publish.js",
     "preview": "vite preview"
   },
   "dependencies": {

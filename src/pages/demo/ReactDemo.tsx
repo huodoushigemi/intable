@@ -27,11 +27,22 @@ export default component(() => {
   }))
 
   const [_, fu] = useState([])
-  useEffect(() => { fu() }, [])
+  useEffect(() => { setInterval(() => fu([]), 1000) }, [])
   
   return h(Intable, {
     className: 'h-60vh',
-    columns: cols,
+    columns: [
+      { id: 'col_0', name: 'Column 1', width: 120, editable: true },
+      { name: 'HeaderGroup', children: [
+        { id: 'col_1', name: 'Column 2', width: 120, editable: true, render: (props) => h('div', { style: { color: 'red' } }, props.data[props.col.id]) },
+        { id: 'col_2', name: 'Column 3', width: 120, editable: true },
+      ] },
+      { id: 'col_3', name: 'Column 4', width: 120, editable: true, render: o => h('div', { style: { padding: 8 } }, 'asd') },
+      { id: 'col_4', name: 'Column 5', width: 120, editable: true },
+      { id: 'col_5', name: 'Column 6', width: 120, editable: true },
+      { id: 'col_6', name: 'Column 7', editable: true },
+      { id: 'col_7', name: 'Column 8', editable: true },
+    ],
     onColumnsChange: v => setCols(v),
     data: data,
     onDataChange: v => setData(v),

@@ -113,7 +113,13 @@ export interface TableProps {
 }
 
 export type THProps = { x: number; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number; style?: any }
-export type TDProps = { x: number; y: number; data: any; col: TableColumn; value?: any; children?: JSX.Element; rowspan?: number; colspan?: number }
+interface TDProps {
+  x: number; y: number;
+  data: any; col: TableColumn;
+  value?: any; onChange?: (v) => void
+  children?: JSX.Element;
+  rowspan?: number; colspan?: number
+}
 
 type Obj = Record<string | symbol, any>
 
@@ -238,13 +244,13 @@ const THead = () => {
 }
 
 const TBody = () => {
-  const { props } = useContext(Ctx)
+  const { props, store } = useContext(Ctx)
   return (
     <props.Tbody>
       <props.EachRows each={props.data}>{(row, rowIndex) => (
         <props.Tr y={rowIndex()} data={row()}>
           <props.EachCells each={props.columns}>{(col, colIndex) => (
-            <props.Td col={col()} x={colIndex()} y={rowIndex()} data={row()} value={row()[col().id]} />
+            <props.Td col={col()} x={colIndex()} y={rowIndex()} data={row()} value={row()[col().id]} onChange={v => store.commands.rowChange({ ...row(), [col().id]: v })} />
           )}</props.EachCells>
         </props.Tr>
       )}</props.EachRows>
@@ -257,7 +263,7 @@ export default Intable
 // process ===================================================================================================================================================================================================
 
 function BasePlugin(): Plugin$0 {
-  const omits = { col: null, data: null }
+  const omits = { col: null, data: null, onChange: null }
 
   const scroll = o => <div {...o} />
   const table = o => <table {...o} /> as any
@@ -393,13 +399,11 @@ function BasePlugin(): Plugin$0 {
         const [el, setEl] = createSignal<HTMLElement>()
         
         const { props } = useContext(Ctx)
-        const mProps = combineProps(
-          o,
-          { ref: setEl },
-          { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
-          { get class() { return o.col.class }, get style() { return o.col.style } },
-          { get style() { return o.col.width ? `width: ${o.col.width}px; max-width: ${o.col.width}px` : '' } },
-        )
+        const mProps = combineProps(o, {
+          ref: setEl,
+          get class() { return [unFn(props.cellClass, o), o.col.class].filter(Boolean).join(' ') },
+          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
+        })
 
         createEffect(() => {
           if (o.covered) return
@@ -419,14 +423,11 @@ function BasePlugin(): Plugin$0 {
       },
       Td: ({ Td = td }, { store }) => o => {
         const { props } = useContext(Ctx)
-        const mProps = combineProps(
-          o,
-          { get class() { return unFn(props.cellClass, o) }, get style() { return unFn(props.cellStyle, o) } },
-          { get class() { return o.col.class }, get style() { return o.col.style } },
-          { get style() { return o.col.width ? `width: ${o.col.width}px; max-width: ${o.col.width}px` : '' } },
-          // () => o.col.props?.(o) ?? {}
-        )
-        return <Td {...mProps}>{o.children}</Td>
+        const mProps = mergeProps(o, {
+          get class() { return [unFn(props.cellClass, o), o.col.class].filter(Boolean).join(' ') },
+          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
+        })
+        return <Td {...mProps} />
       },
       EachRows: ({ EachRows }) => EachRows || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
       EachCells: ({ EachCells }) => EachCells || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
@@ -546,3 +547,14 @@ export const defaultsPlugins = [
   TooltipPlugin,
   KeyEachPlugin,
 ]
+
+// defaultsPlugins.push({
+//   name: 'aaa',
+//   priority: -Infinity,
+//   rewriteProps: {
+//     Td: ({ Td }) => o => {
+//       o = mergeProps(() => null, o)
+//       return <Td {...o} />
+//     }
+//   }
+// })
