@@ -8,7 +8,7 @@ import { createMutationObserver } from '@solid-primitives/mutation-observer'
 import { isFunction, isPromise, mapValues } from 'es-toolkit'
 import { castArray } from 'es-toolkit/compat'
 import { createKeybindingsHandler } from 'tinykeys'
-import { unFn } from '../utils'
+import { change2, unFn } from '../utils'
 
 interface UseMoveOptions {
   preventDefault?: boolean
@@ -193,6 +193,7 @@ export function useHistory([val, setVal]) {
 export function createShallowState(state) {
   const owner = getOwner()
   const map = {}
+  const keys = {}
   const get = (k, v?) => (map[k] ??= runWithOwner(owner, () => createSignal(v)))
 
   for (const k in state) get(k, state[k])
@@ -203,6 +204,7 @@ export function createShallowState(state) {
     },
     set(o, k, v, r) {
       o[k] = v
+      keys[k] = 1
       get(k, v)[1](() => v)
       return true
     },
@@ -212,8 +214,8 @@ export function createShallowState(state) {
       delete map[k]
       return true
     },
-    has: (o, p) => p == $PROXY || p in map,
-    ownKeys: (o) => Reflect.ownKeys(map),
+    has: (o, p) => p == $PROXY || p in keys,
+    ownKeys: (o) => Reflect.ownKeys(keys),
     getOwnPropertyDescriptor: (o, k) => ({ enumerable: true, configurable: true, get() { return get(k)[0]() }, set(v) { get(k)[1](v) } }),
   })
 }
@@ -224,10 +226,7 @@ export function useMemoState(fn) {
   createComputed(() => {
     batch(() => {
       const val = { ...fn() }
-      untrack(() => {
-        for (const k in state) k in val || (delete state[k])
-        Object.assign(state, val)
-      })
+      untrack(() => change2(state, val))
     })
   })
   return state

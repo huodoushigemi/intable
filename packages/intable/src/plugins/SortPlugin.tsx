@@ -2,8 +2,6 @@ import { mergeProps, Show } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { type Plugin, type Plugin$0, type TableStore } from '..'
 import { useControlled } from '../hooks/useControlled'
-import { toReactive } from '../hooks'
-import { log } from '../utils'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -113,16 +111,17 @@ export const SortPlugin: Plugin$0 = [{
 
   rewriteProps: {
     // Apply defaults so consumers can always read sort.multiple / sort.autoSort.
-    sort: ({ sort }, { store }) => (
+    sort: ({ sort }, { store }) => {
+      if (!sort) return { value: [] }
       sort = mergeProps({
         multiple: false,
         autoSort: true,
         initialValue: [],
-      }, sort),
-      store.sort ??= useControlled(sort, store.owner),
-      store.sort.$setOpt(sort),
-      store.sort
-    ),
+      }, sort)
+      store.sort ??= useControlled(sort, store.owner)
+      store.sort.$setOpt(sort)
+      return store.sort
+    },
     // 
 
     data: ({ data }, { store }) => {
@@ -139,7 +138,7 @@ export const SortPlugin: Plugin$0 = [{
 
   rewriteProps: {
     Th: ({ Th }, { store }) => o => {
-      const sort = store.props.sort as TableStore['sort']
+      const sort = mergeProps(() => store.props.sort) as TableStore['sort']
       const isSortable = () => !!o.col.sortable && !o.col[store.internal]
       const sortKey = () => isSortable() ? sort.value.find(k => k.field === o.col.id) : undefined
 

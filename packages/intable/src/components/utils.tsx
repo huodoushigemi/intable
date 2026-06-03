@@ -8,7 +8,8 @@ export function solidComponent<T extends (...arg) => JSX.Element>(comp: T) {
 
 export function renderComponent(Comp: any, props: any, store: TableStore) {
   if (!Comp) return null
-  if (typeof Comp == 'string') {}
+  const t = typeof Comp
+  if (t === 'string' || t === 'number') {}
   else if (!Comp.__solid) Comp = store.props.renderer!(Comp)
-  return typeof Comp === 'function' ? <Comp {...props} /> : Comp
+  return t === 'function' ? <Comp {...props} /> : Comp
 }

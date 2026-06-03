@@ -1,5 +1,4 @@
-import type { Component, JSX } from 'solid-js'
-import { defaultsDeep } from 'es-toolkit/compat'
+import { mergeProps, type Component, type JSX } from 'solid-js'
 import { Ctx, type Plugin, type TableColumn, type TableProps, type TableStore } from '..'
 import { renderComponent, solidComponent } from '../components/utils'
 import { useSelector } from '../hooks/useSelector'
@@ -35,9 +34,9 @@ export const ExpandPlugin: Plugin = {
   }),
 
   rewriteProps: {
-    expand: ({ expand }) => defaultsDeep(expand, {
+    expand: ({ expand }) => mergeProps({
       enable: false,
-    } as TableProps['expand']),
+    } as TableProps['expand'], expand),
 
     columns: ({ columns }, { store }) => store.props.expand?.enable
       ? [store.expandCol, ...columns]

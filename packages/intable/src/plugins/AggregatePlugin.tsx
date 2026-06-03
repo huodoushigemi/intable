@@ -1,5 +1,6 @@
 import { createMemo, For, Show } from 'solid-js'
 import { type Plugin, type TableColumn } from '..'
+import { renderComponent } from '../components/utils'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export const AggregatePlugin: Plugin = {
         <>
           <Tbody {...o} />
           <Show when={hasAgg()}>
-            <tfoot class='sticky bottom-0 z-2 shadow-inner'>
+            <tfoot class='sticky bottom-0 z-2'>
               <tr style='font-weight:600'>
                 <For each={cols()}>
                   {(col, i) => {
@@ -81,15 +82,15 @@ export const AggregatePlugin: Plugin = {
                     })
                     return (
                       <td
-                        style={`${col.width ? `width:${col.width}px;` : ''}padding:4px 8px;border-top:1px solid var(--table-b-c)`}
+                        style={`${col.width ? `width:${col.width}px;` : ''};border-top:1px solid var(--table-b-c)`}
                         class={col.class as string | undefined}
                       >
                         <Show when={col.aggregate} fallback={
                           <Show when={i() === firstUserIdx()}>
-                            <span class='text-xs font-semibold tracking-wide select-none'>{label()}</span>
+                            <span class='text-xs font-semibold tracking-wide select-none'>{renderComponent(label(), undefined, store)}</span>
                           </Show>
                         }>
-                          <span class='font-mono text-sm tabular-nums c-[--c-primary]'>{val()}</span>
+                          <span class='font-mono text-sm tabular-nums c-[--c-primary]'>{renderComponent(val(), undefined, store)}</span>
                         </Show>
                       </td>
                     )

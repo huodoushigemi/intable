@@ -1,5 +1,4 @@
 import { mergeProps } from 'solid-js'
-import { defaultsDeep } from 'es-toolkit/compat'
 import { type Commands, type Plugin, type TableColumn, type TableProps } from '..'
 import { Checkbox } from './RenderPlugin/components'
 import { solidComponent } from '../components/utils'
@@ -60,11 +59,11 @@ export const RowSelectionPlugin: Plugin = {
     rowSelector: useSelector(mergeProps(() => ({ ...store.props?.rowSelection })))
   }),
   rewriteProps: {
-    rowSelection: ({ rowSelection }) => defaultsDeep(rowSelection, {
+    rowSelection: ({ rowSelection }) => mergeProps({
       enable: false,
       multiple: false,
       selectable: () => true,
-    } as TableProps['rowSelection']),
+    } as TableProps['rowSelection'], rowSelection),
 
     columns: ({ columns }, { store }) => store.props?.rowSelection?.enable
       ? [store.rowSelectionCol, ...columns]
