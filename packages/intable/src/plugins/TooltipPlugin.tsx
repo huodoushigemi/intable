@@ -3,6 +3,7 @@ import type { Plugin } from '..'
 import { Tooltip } from '../components/Tooltip'
 import { combineProps } from '@solid-primitives/props'
 import { offset } from 'floating-ui-solid'
+import { renderComponent } from '../components/utils'
 
 declare module '..' {
   interface TableColumn {
@@ -19,13 +20,12 @@ declare module '..' {
 export const TooltipPlugin: Plugin = {
   name: 'tooltip',
   rewriteProps: {
-    Td: ({ Td }) => o => {
+    Td: ({ Td }, { store }) => o => {
       const tip = () => {
         const t = o.col.tooltip
         if (t == null) return
         if (typeof t == 'boolean') return t && o.value != null ? String(o.value) : undefined
-        if (typeof t === 'string') return t
-        return t(o)
+        return renderComponent(t, o, store)
       }
       const [td, setTd] = createSignal()
       o = combineProps({ ref: setTd }, o)
