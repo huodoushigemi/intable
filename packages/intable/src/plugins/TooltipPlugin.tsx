@@ -22,9 +22,10 @@ export const TooltipPlugin: Plugin = {
   rewriteProps: {
     Td: ({ Td }, { store }) => o => {
       const tip = () => {
-        const t = o.col.tooltip
+        let t = o.col.tooltip
         if (t == null) return
-        if (typeof t == 'boolean') return t && o.value != null ? String(o.value) : undefined
+        if (typeof t == 'boolean') t = t && o.value != null ? String(o.value) : undefined
+        if (typeof t === 'function') t = t(o)
         return renderComponent(t, o, store)
       }
       const [td, setTd] = createSignal()
