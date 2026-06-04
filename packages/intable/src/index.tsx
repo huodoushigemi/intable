@@ -402,7 +402,7 @@ function BasePlugin(): Plugin$0 {
         const mProps = combineProps(o, {
           ref: setEl,
           get class() { return [unFn(props.cellClass, o), o.col.class].filter(Boolean).join(' ') },
-          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
+          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') },
         })
 
         createEffect(() => {
@@ -425,8 +425,8 @@ function BasePlugin(): Plugin$0 {
         const { props } = useContext(Ctx)
         const mProps = combineProps(o, {
           get class() { return [unFn(props.cellClass, o), o.col.class].filter(Boolean).join(' ') },
-          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
-        })
+          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') },
+        }, ...store.plugins.flatMap(e => e.tdProps?.(o, store) ?? []))
         return <Td {...mProps} />
       },
       EachRows: ({ EachRows }) => EachRows || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
@@ -534,17 +534,17 @@ export const defaultsPlugins = [
   IndexPlugin,
   FilterPlugin,
   SortPlugin,
-  ValidatorPlugin,
-  EditablePlugin,
-  CellMergePlugin,
-  TreePlugin,
-  FitColWidthPlugin,
+  // ValidatorPlugin,
+  // EditablePlugin,
+  // CellMergePlugin,
+  // TreePlugin,
+  // FitColWidthPlugin,
   RowGroupPlugin,
   ResizePlugin,
   AggregatePlugin,
   AutoFillPlugin,
   ImportExportPlugin,
-  TooltipPlugin,
+  // TooltipPlugin,
   KeyEachPlugin,
 ]
 

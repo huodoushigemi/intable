@@ -109,31 +109,55 @@ export const CellSelectionPlugin: Plugin = {
         </Th>
       )
     },
-    Td: ({ Td }, { store }) => (o) => {
-      const clazz = createMemo(() => {
-        let clazz = ''
-        const { xs, ys } = store.cellSelectionRect()
-        const inx = inrange(o.x, xs[0], xs[1])
-        const iny = inrange(o.y, ys[0], ys[1])
-        if (inx && iny) {
-          clazz += 'range-selected '
-          if (o.x == xs[0]) clazz += 'range-selected-l '
-          if (o.x == xs[1]) clazz += 'range-selected-r '
-          if (o.y == ys[0]) clazz += 'range-selected-t '
-          if (o.y == ys[1]) clazz += 'range-selected-b '
-        }
-        // if (o.x == 0 && iny) clazz += 'row-range-highlight '
-        if (o.col.id == store.$index?.id && iny) clazz += 'row-range-highlight '
-        return clazz
-      })
+    // Td: ({ Td }, { store }) => (o) => {
+    //   const clazz = createMemo(() => {
+    //     let clazz = ''
+    //     const { xs, ys } = store.cellSelectionRect()
+    //     const inx = inrange(o.x, xs[0], xs[1])
+    //     const iny = inrange(o.y, ys[0], ys[1])
+    //     if (inx && iny) {
+    //       clazz += 'range-selected '
+    //       if (o.x == xs[0]) clazz += 'range-selected-l '
+    //       if (o.x == xs[1]) clazz += 'range-selected-r '
+    //       if (o.y == ys[0]) clazz += 'range-selected-t '
+    //       if (o.y == ys[1]) clazz += 'range-selected-b '
+    //     }
+    //     // if (o.x == 0 && iny) clazz += 'row-range-highlight '
+    //     if (o.col.id == store.$index?.id && iny) clazz += 'row-range-highlight '
+    //     return clazz
+    //   })
 
-      return (
-        <Td {...o} class={`${o.class} ${clazz()}`} tabindex={-1}>
-          {/*@once*/ o.children}
-          {clazz() && <div class='area' />}
-        </Td>
-      )
-    },
+    //   return (
+    //     <Td {...o} class={`${o.class} ${clazz()}`} tabindex={-1}>
+    //       {/*@once*/ o.children}
+    //       {() => clazz() && <div class='area' />}
+    //     </Td>
+    //   )
+    // },
+  },
+  tdProps: (o, store) => {
+    const clazz = createMemo(() => {
+      let clazz = ''
+      const { xs, ys } = store.cellSelectionRect()
+      const inx = inrange(o.x, xs[0], xs[1])
+      const iny = inrange(o.y, ys[0], ys[1])
+      if (inx && iny) {
+        clazz += 'range-selected '
+        if (o.x == xs[0]) clazz += 'range-selected-l '
+        if (o.x == xs[1]) clazz += 'range-selected-r '
+        if (o.y == ys[0]) clazz += 'range-selected-t '
+        if (o.y == ys[1]) clazz += 'range-selected-b '
+      }
+      // if (o.x == 0 && iny) clazz += 'row-range-highlight '
+      if (o.col.id == store.$index?.id && iny) clazz += 'row-range-highlight '
+      return clazz
+    })
+
+    return {
+      get class() { return clazz() },
+      tabindex: -1,
+      get children() { return [o.children, () => clazz() && <div class='area' />] }
+    }
   },
   keybindings: (store) => ({
     'ArrowLeft': async () => {

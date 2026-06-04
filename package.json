@@ -3,7 +3,7 @@
   "version": "0.0.46",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --force",
     "build": "vite build",
     "build:lib": "node scripts/build.js",
     "publish:lib": "cp README.md packages/intable/ && pnpm build:lib && node scripts/publish.js",
