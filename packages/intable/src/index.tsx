@@ -423,7 +423,7 @@ function BasePlugin(): Plugin$0 {
       },
       Td: ({ Td = td }, { store }) => o => {
         const { props } = useContext(Ctx)
-        const mProps = mergeProps(o, {
+        const mProps = combineProps(o, {
           get class() { return [unFn(props.cellClass, o), o.col.class].filter(Boolean).join(' ') },
           get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
         })
