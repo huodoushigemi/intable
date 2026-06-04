@@ -112,7 +112,6 @@ export const SortPlugin: Plugin$0 = [{
   rewriteProps: {
     // Apply defaults so consumers can always read sort.multiple / sort.autoSort.
     sort: ({ sort }, { store }) => {
-      if (!sort) return { value: [] }
       sort = mergeProps({
         multiple: false,
         autoSort: true,

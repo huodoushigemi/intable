@@ -1,4 +1,4 @@
-import { useEffect, useRef, createElement as h, type FC } from 'react'
+import { useEffect, useRef, createElement as h, type FC, useMemo } from 'react'
 import { createRoot, flushSync } from './utils'
 
 import { solidComponent } from '../../intable/src/components/utils'
@@ -17,18 +17,33 @@ import { createComputed, onCleanup } from 'solid-js'
 export const Intable: FC<TableProps> = (props) => {
   const ref = useRef<any>(null)
 
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.options = {
-        class: props.className,
-        useColKey: true,
-        ...props,
-        renderer: component,
-      } as TableProps
-    }
-  }, [props])
+  // useEffect(() => {
+  //   if (ref.current) {
+  //     ref.current.options = {
+  //       class: props.className,
+  //       useColKey: true,
+  //       ...props,
+  //       renderer: component,
+  //     } as TableProps
+  //   }
+  // }, [props])
 
-  return h('wc-table', { ref, style: { display: 'contents' } })
+  // return h('wc-table', { ref, style: { display: 'contents' } })
+
+  const el = useMemo(() => document.createElement('wc-table'), [])
+  el.options = {
+    class: props.className,
+    useColKey: true,
+    ...props,
+    renderer: component,
+  } as TableProps
+
+  useEffect(() => {
+    // ref.current?.replaceWith(el)
+    ref.current?.appendChild(el)
+  }, [ref.current])
+  
+  return h('div', { ref, style: { display: 'contents' } })
 }
 
 
