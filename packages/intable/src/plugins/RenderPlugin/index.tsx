@@ -7,7 +7,7 @@ import { renderComponent, solidComponent } from '../../components/utils'
 
 declare module '../../index' {
   interface TableProps {
-
+    cpu?: boolean
   }
   interface TableColumn {
     type?: string
@@ -19,8 +19,7 @@ declare module '../../index' {
   }
 }
 
-export type RenderProps = TDProps & { onChange: (v) => void }
-export type Render = (props: RenderProps) => JSX.Element | any
+export type Render = (props: TDProps) => JSX.Element | any
 
 export const RenderPlugin: Plugin = {
   name: 'render',
@@ -30,12 +29,14 @@ export const RenderPlugin: Plugin = {
   }),
   rewriteProps: {
     Td: ({ Td }, { store }) => o => {
+      if (store.props.cpu) o = mergeProps(() => ({}), o)
       return (
         <Td {...o}>
-          {(() => {
-            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type)
-            return Comp ? renderComponent(Comp, o, store) : text(o)
-          })()}
+          {/* @ts-ignore */}
+          {() => {
+            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type ?? text)
+            return Comp == text ? text(o) : renderComponent(Comp, o, store)
+          }}
         </Td>
       )
     }

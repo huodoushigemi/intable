@@ -18,7 +18,13 @@ export default defineConfig({
 
     (await import('unplugin-preprocessor-directives/vite')).default(),
 
-    solid(),
+    solid({
+      babel: {
+        plugins: [
+          [(await import('./scripts/perfMergeProps/babel-plugin.js')).default],
+        ],
+      },
+    }),
 
     (await import('vite-plugin-pages')).default({
       resolver: 'solid',

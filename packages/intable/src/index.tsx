@@ -113,7 +113,7 @@ export interface TableProps {
 }
 
 export type THProps = { x: number; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number; style?: any }
-interface TDProps {
+export interface TDProps {
   x: number; y: number;
   data: any; col: TableColumn;
   value?: any; onChange?: (v) => void
@@ -547,14 +547,3 @@ export const defaultsPlugins = [
   TooltipPlugin,
   KeyEachPlugin,
 ]
-
-// defaultsPlugins.push({
-//   name: 'aaa',
-//   priority: -Infinity,
-//   rewriteProps: {
-//     Td: ({ Td }) => o => {
-//       o = mergeProps(() => null, o)
-//       return <Td {...o} />
-//     }
-//   }
-// })
