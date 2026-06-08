@@ -1,4 +1,4 @@
-import { mergeProps, type JSX } from 'solid-js'
+import { createMemo, mergeProps, type JSX } from 'solid-js'
 import { component } from 'undestructure-macros'
 import { type Plugin, type TDProps } from '../..'
 import { Checkbox, Files } from './components'
@@ -33,10 +33,10 @@ export const RenderPlugin: Plugin = {
       return (
         <Td {...o}>
           {/* @ts-ignore */}
-          {() => {
+          {createMemo(() => {
             let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type ?? text)
             return Comp == text ? text(o) : renderComponent(Comp, o, store)
-          }}
+          })}
         </Td>
       )
     }
