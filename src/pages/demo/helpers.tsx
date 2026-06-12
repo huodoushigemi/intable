@@ -23,6 +23,7 @@ export function makeCols(count: number, extra?: Partial<{ width: number; editabl
     range(count).map(i => ({
       id: 'col_' + i,
       name: 'Col ' + i,
+      // width: 80,
       ...extra,
     }))
   )

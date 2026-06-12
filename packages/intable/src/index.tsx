@@ -402,7 +402,7 @@ function BasePlugin(): Plugin$0 {
         const mProps = combineProps(o, {
           ref: setEl,
           get class() { return [unFn(props.cellClass, o), o.col.class].filter(Boolean).join(' ') },
-          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
+          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; min-width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
         })
 
         createEffect(() => {
@@ -425,7 +425,7 @@ function BasePlugin(): Plugin$0 {
         const { props } = useContext(Ctx)
         const mProps = mergeProps(o, {
           get class() { return [unFn(props.cellClass, o), o.col.class, o.class].filter(Boolean).join(' ') },
-          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`, o.style].filter(Boolean).join(';') }
+          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; min-width: ${o.col.width}px; max-width: ${o.col.width}px`, o.style].filter(Boolean).join(';') }
         })
         return <Td {...mProps} />
       },
@@ -490,31 +490,13 @@ const FixedColumnPlugin: Plugin$0 = store => {
   }
 }
 
-const FitColWidthPlugin: Plugin$0 = store => {
-  const size = createMutable({ width: 0 })
-  createResizeObserver(() => store.scroll_el!, (_, el, e) => size.width = e.contentBoxSize[0].inlineSize)
-  const __fit_col_width__cols_temp = createMutable([] as any[])
-
-  let lock = false
-  createEffect(on(() => [size.width, store.props.columns.map(e => e.width)], async () => {
-    if (!size.width) return
-    if (lock) return
-    __fit_col_width__cols_temp.length = 0
-    lock = true
-    await Promise.resolve()
-    const gap = Math.max((size.width - store.table.getBoundingClientRect().width) / store.props!.columns.filter(e => !e.width).length, 0)
-    const cols = store.props!.columns.map((e, i) => (e.width ? null : { width: Math.max((store.ths[i]?.getBoundingClientRect().width || 0) + gap, 80) }))
-    __fit_col_width__cols_temp.push(...cols)
-    lock = false
-  }))
-  return {
-    name: 'fit-col-width',
-    priority: -Infinity,
-    rewriteProps: {
-      columns: ({ columns }, { store }) => (
-        columns = columns.map((e, i) => ({ ...e, ...__fit_col_width__cols_temp?.[i], [store.ID]: e[store.ID] ??= Symbol() })),
-        untrack(() => batch(() => reconcile(columns, { key: store.ID })(store.__fit_col_width__cols ??= [])))
-      )
+const FitColWidthPlugin: Plugin = {
+  name: 'fit-col-width',
+  rewriteProps: {
+    Table: ({ Table }, { store }) => o => {
+      const hasFitColWidth = createMemo(() => store.props.columns.some(e => !e.width))
+      o = combineProps(o, { get style() { return hasFitColWidth() ? 'min-width: 100%' : 'min-width: unset' } })
+      return <Table {...o} />
     }
   }
 }
