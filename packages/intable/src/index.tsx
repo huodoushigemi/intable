@@ -423,9 +423,9 @@ function BasePlugin(): Plugin$0 {
       },
       Td: ({ Td = td }, { store }) => o => {
         const { props } = useContext(Ctx)
-        const mProps = combineProps(o, {
-          get class() { return [unFn(props.cellClass, o), o.col.class].filter(Boolean).join(' ') },
-          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`].filter(Boolean).join(';') }
+        const mProps = mergeProps(o, {
+          get class() { return [unFn(props.cellClass, o), o.col.class, o.class].filter(Boolean).join(' ') },
+          get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; max-width: ${o.col.width}px`, o.style].filter(Boolean).join(';') }
         })
         return <Td {...mProps} />
       },
@@ -502,7 +502,7 @@ const FitColWidthPlugin: Plugin$0 = store => {
     __fit_col_width__cols_temp.length = 0
     lock = true
     await Promise.resolve()
-    const gap = (size.width - store.table.getBoundingClientRect().width) / store.props!.columns.filter(e => !e.width).length
+    const gap = Math.max((size.width - store.table.getBoundingClientRect().width) / store.props!.columns.filter(e => !e.width).length, 0)
     const cols = store.props!.columns.map((e, i) => (e.width ? null : { width: Math.max((store.ths[i]?.getBoundingClientRect().width || 0) + gap, 80) }))
     __fit_col_width__cols_temp.push(...cols)
     lock = false

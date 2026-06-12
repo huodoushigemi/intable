@@ -1,5 +1,4 @@
-import { createComputed, createEffect, createMemo, createRoot, createSignal, on, onCleanup, useContext, type Component, type JSX } from 'solid-js'
-import { combineProps } from '@solid-primitives/props'
+import { createEffect, createMemo, createRoot, createSignal, mergeProps, on, onCleanup, useContext, type Component, type JSX } from 'solid-js'
 import { createAsyncMemo } from '@solid-primitives/memo'
 import { delay } from 'es-toolkit'
 import { createMutable } from 'solid-js/store'
@@ -117,17 +116,18 @@ export const EditablePlugin: Plugin = {
       let input: HTMLInputElement
       const size = createMutable({ w: 0, h: 0 })
       
-      o = combineProps(o, {
-        ref: v => el = v,
-        get class() { return editing() ? 'is-editing' : '' },
-        get style() { return editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '' },
-        onClick: () => input?.focus?.(),
-        onDblClick: () => setEditing(editable()),
-        onKeyDown: e => e.key == 'Escape' && editorState()?.[0].cancel()
+      // mergeProps combineProps 10M -> 20M, so manually merge props here to save memory
+      const mo = mergeProps(o, {
+        ref: v => (el = v, o.ref?.(v)),
+        get class() { return [editing() ? 'is-editing' : '', o.class].filter(Boolean).join(' ') },
+        get style() { return [editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '', o.style].filter(Boolean).join(' ') },
+        onClick: e => (input?.focus?.(), o.onClick?.(e)),
+        onDblClick: e => (setEditing(editable()), o.onDblClick?.(e)),
+        onKeyDown: e => (e.key == 'Escape' && editorState()?.[0].cancel(), o.onKeyDown?.(e))
       } as JSX.HTMLAttributes<any>)
       
       return (
-        <Td {...o}>
+        <Td {...mo}>
           {editorState()?.[1]?.el
             ? <div
                 class='in-cell-edit-wrapper'

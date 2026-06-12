@@ -50,7 +50,7 @@ const VModelPlugin: Plugin = {
   }
 }
 
-const component = <T extends Record<string, any>>(Comp: Component<T>) => {
+export const component = <T extends Record<string, any>>(Comp: Component<T>) => {
   return (props: T) => {
     const root = document.createDocumentFragment()
     root.remove ??= () => {}

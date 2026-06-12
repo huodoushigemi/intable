@@ -1,6 +1,6 @@
 import { createMemo, Show } from 'solid-js'
-import { combineProps } from '@solid-primitives/props'
 import { type Plugin, type TableColumn, type TableStore } from '../index'
+import { createLazyMemo } from '@solid-primitives/memo';
 
 declare module '../index' {
   interface TableProps {
@@ -83,6 +83,11 @@ function buildMergeMap(
 
 export const CellMergePlugin: Plugin = {
   name: 'cell-merge',
+  store: (store) => ({
+    hasMergeCell: createLazyMemo(() => (
+      store.props.merge || store.props.columns.some(c => c.mergeRow)
+    ))
+  }),
   rewriteProps: {
     /**
      * Build the merge map once per data/columns change inside the Table wrapper
@@ -99,11 +104,11 @@ export const CellMergePlugin: Plugin = {
       return <Table {...o} />
     },
 
-    Td: ({ Td }, { store }) => o => {
+    Td: ({ Td }, { store }) => !store.hasMergeCell() ? Td : o => {
       const key = (): CellKey => `${o.y},${o.x}`
       const isCovered = () => store._mergeMap?.().covered.has(key()) ?? false
       const span = () => store._mergeMap?.().spans.get(key())
-
+      
       return (
         // Covered cells must not render any DOM node — HTML collapses the layout automatically
         <Show when={!isCovered()}>

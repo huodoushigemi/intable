@@ -1,0 +1,14 @@
+import { h } from 'vue'
+import { component } from '../../../packages/vue/src'
+import { cols, data } from './data'
+
+export default component(() => {
+  return h('table', { style: { border: '1px solid black', borderCollapse: 'collapse' } }, [
+    h('thead', {}, [
+      h('tr', {}, cols.map(col => h('th', {}, col.name)))
+    ]),
+    h('tbody', {}, data.map((row, rowIndex) => h('tr', { y: rowIndex, data: row }, cols.map((col, colIndex) => (
+      h('td', { x: colIndex, y: rowIndex, data: row }, row[col.id]))
+    ))))
+  ])
+})

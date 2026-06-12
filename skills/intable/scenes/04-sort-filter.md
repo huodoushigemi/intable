@@ -45,7 +45,7 @@ const [sort, setSort] = useState([{ field: 'age', order: 'asc' }])
 
 ```tsx
 const columns = [
-  { id: 'name', name: '姓名', type: 'text',   width: 140, filterable: true },
+  { id: 'name', name: '姓名',                 width: 140, filterable: true },
   { id: 'dept', name: '部门', type: 'enum',   width: 140, filterable: true,
     enum: { eng: '工程', design: '设计', pm: '产品' } },
   { id: 'age',  name: '年龄', type: 'number', width: 100, filterable: true },
@@ -67,6 +67,68 @@ const columns = [
 ```
 
 各列 `type` 对应可用操作符：
-- `text` / `textarea`：contains、eq、in、startswith、endswith、blank
-- `number` / `date`：追加 lt、gt、between、not_between
-- `enum` / `checkbox`：eq、in、blank
+
+| 操作符 | 说明 | text | number | date | enum | checkbox |
+|---|---|---|---|---|---|---|
+| `contains` | 包含 | ✅ | — | — | — | — |
+| `eq` | 等于 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `ne` | 不等于 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `lt` | 小于 / 早于 | — | ✅ | ✅ | — | — |
+| `gt` | 大于 / 晚于 | — | ✅ | ✅ | — | — |
+| `lte` | 小于等于 / 不晚于 | — | ✅ | ✅ | — | — |
+| `gte` | 大于等于 / 不早于 | — | ✅ | ✅ | — | — |
+| `between` | 介于 | — | ✅ | ✅ | — | — |
+| `not_between` | 不介于 | — | ✅ | ✅ | — | — |
+| `in` | 在列表中 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `not_in` | 不在列表中 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `startwith` | 开头是 | ✅ | — | — | — | — |
+| `endwith` | 结尾是 | ✅ | — | — | — | — |
+| `blank` | 为空 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `noblank` | 不为空 | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### `filters` 结构（`onChange` 回调参数）
+
+`onChange` 接收 `AndOrNode[]`，每个元素是 `GroupNode` 或 `RuleNode`：
+
+```ts
+type AndOrNode = GroupNode | RuleNode
+```
+
+**GroupNode** — 逻辑分组，支持嵌套 AND/OR：
+
+```ts
+type GroupNode = {
+  op?: 'and' | 'or'         // 逻辑运算符，默认 'and'
+  children?: AndOrNode[]    // 子节点（RuleNode 或 嵌套 GroupNode）
+}
+```
+
+**RuleNode** — 单个筛选条件：
+
+```ts
+type RuleNode = {
+  field: string  // 列 id
+  op: string     // 操作符，见上表
+  value: any     // 筛选值
+}
+```
+
+**示例** — `(姓名包含"张" AND 年龄>25) OR 部门=设计`：
+
+```ts
+const filters: AndOrNode[] = [
+  {
+    op: 'or',
+    children: [
+      {
+        op: 'and',
+        children: [
+          { field: 'name', op: 'contains', value: '张' },
+          { field: 'age',  op: 'gt',       value: 25 },
+        ],
+      },
+      { field: 'dept', op: 'eq', value: 'design' },
+    ],
+  },
+]
+```

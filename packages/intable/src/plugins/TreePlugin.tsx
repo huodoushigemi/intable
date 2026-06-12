@@ -1,5 +1,3 @@
-import { useContext } from 'solid-js'
-import { combineProps } from '@solid-primitives/props'
 import { type Plugin, type Plugin$0, Ctx } from '../index'
 import { useSelector } from '../hooks/useSelector'
 import { createLazyMemo } from '@solid-primitives/memo'

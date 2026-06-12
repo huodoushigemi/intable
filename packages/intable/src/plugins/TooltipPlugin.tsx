@@ -1,9 +1,9 @@
-import { createSignal, Show } from 'solid-js'
+import { createSignal, mergeProps, Show } from 'solid-js'
 import type { Plugin } from '..'
 import { Tooltip } from '../components/Tooltip'
-import { combineProps } from '@solid-primitives/props'
 import { offset } from 'floating-ui-solid'
 import { renderComponent } from '../components/utils'
+import { createLazyMemo } from '@solid-primitives/memo'
 
 declare module '..' {
   interface TableColumn {
@@ -19,8 +19,11 @@ declare module '..' {
 
 export const TooltipPlugin: Plugin = {
   name: 'tooltip',
+  store: (store) => ({
+    hasTooltip: createLazyMemo(() => store.props.columns.some(c => c.tooltip))
+  }),
   rewriteProps: {
-    Td: ({ Td }, { store }) => o => {
+    Td: ({ Td }, { store }) => !store.hasTooltip() ? Td : o => {
       const tip = () => {
         let t = o.col.tooltip
         if (t == null) return
@@ -29,9 +32,9 @@ export const TooltipPlugin: Plugin = {
         return renderComponent(t, o, store)
       }
       const [td, setTd] = createSignal()
-      o = combineProps({ ref: setTd }, o)
+      const mo = mergeProps(o, { ref: e => (setTd(e), o.ref?.(e)) })
       return (
-        <Td {...o}>
+        <Td {...mo}>
           <Show when={tip()} fallback={o.children}>
             {tip => (
               <Tooltip content={tip()} strategy='fixed' target={td()} middleware={[offset({ mainAxis: 4 })]}>
