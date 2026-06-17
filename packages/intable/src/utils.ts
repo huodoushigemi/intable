@@ -1,4 +1,4 @@
-import { delay, isFunction, isPlainObject, isPromise } from "es-toolkit"
+import { delay, isFunction, isPlainObject, isPromise, keyBy } from "es-toolkit"
 import { useMemoAsync } from "./hooks"
 
 export * as tree from './tree'
@@ -102,18 +102,30 @@ type Awatable<T> = T | Promise<T>
 type BaseType = string | number | boolean | null
 
 const cache = new WeakMap
+const cache2 = new WeakMap
 
 export function resolveOptions(opts: Fnable<Awatable<Record<string, any> | ({ label: any; value: any } | BaseType)[]>>): { label: any; value: any }[] {
   let ret = opts
   if (isFunction(ret)) ret = ret()
   if (isPromise(ret)) {
-    if (cache.has(ret)) return cache.get(ret)()
-    cache.set(ret, useMemoAsync(() => ret.then(e => e.map(e => resolveOptions(e)))))
-    return cache.get(ret)()
+    if (cache.has(opts)) return cache.get(opts)()
+    cache.set(opts, useMemoAsync(() => ret.then(e => e.map(e => resolveOptions(e)))))
+    return cache.get(opts)()
   }
+  if (cache2.has(opts)) return cache2.get(opts)
   if (isPlainObject(ret)) ret = Object.entries(ret).map(([k, v]) => ({ value: k, label: v, ...v }))
-  return (ret as any[])?.map(e => resolveOpt(e)) || []
+  ret = (ret as any[])?.map(e => resolveOpt(e)) || []
+  cache2.set(opts, ret)
+  return ret
 }
+
+export const getOpt = (() => {
+  const cache = new WeakMap
+  return (opts: any, value: any) => {
+    const keyed = cache.get(opts) ?? cache.set(opts, keyBy(resolveOptions(opts), e => e.value)).get(opts)
+    return keyed[value]
+  }
+})()
 
 function resolveOpt(opt) {
   return (

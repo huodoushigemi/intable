@@ -1,8 +1,8 @@
 import { createMemo, mergeProps, type JSX } from 'solid-js'
 import { component } from 'undestructure-macros'
 import { type Plugin, type TDProps } from '../..'
-import { Checkbox, Files } from './components'
-import { resolveOptions, toArr } from '../../utils'
+import { Checkbox, Files, Tags } from './components'
+import { getOpt, toArr } from '../../utils'
 import { renderComponent, solidComponent } from '../../components/utils'
 
 declare module '../../index' {
@@ -43,8 +43,10 @@ export const RenderPlugin: Plugin = {
   }
 }
 
+export { text2colorMap } from './components'
+
 const text: Render = component(({ value, col }) => {
-  return col.enum ? toArr(value).map(v => resolveOptions(col.enum!).find(e => e.value == v)?.label ?? v).join(', ') : value
+  return col.enum ? <Tags disabled value={toArr(value).map(v => getOpt(col.enum, v)?.label ?? v)} /> : value
 })
 
 const number = text

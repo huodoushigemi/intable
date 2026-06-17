@@ -217,5 +217,10 @@ export const editors = {
       <Checkbox {...o} ref={() => {}} onInput={() => {}} class='mx-3!' />
     </label>
   )),
-  select: createEditor(o => <select {...o}><option value=''>-</option>{o.options?.map(e => <option value={e.value} selected={e.value === o.value}>{e.label}</option>)}</select>, {}, true),
+  select: createEditor(o => (
+    <select {...o}>
+      {!o.multiple && <option value=''>-</option>}
+      {o.options?.map(e => <option value={e.value} selected={e.value === o.value}>{e.label}</option>)}
+    </select>
+  ), {}, true),
 }
