@@ -46,7 +46,7 @@ export const RenderPlugin: Plugin = {
 export { text2colorMap } from './components'
 
 const text: Render = component(({ value, col }) => {
-  return col.enum ? <Tags disabled value={toArr(value).map(v => getOpt(col.enum, v)?.label ?? v)} /> : value
+  return col.enum ? <Tags disabled value={toArr(value).map(v => getOpt(col.enum, v))} /> : value
 })
 
 const number = text

@@ -16,7 +16,7 @@ export const Files = component(({ ...props }) => {
 })
 
 export const Tags = component(({ value, children, disabled, onChange, onAdd, color, ...props }) => {
-  props = combineProps({ class: 'flex flex-wrap items-center gap-2 h-full' }, props)
+  props = combineProps({ class: 'in-tags flex flex-wrap items-center gap-2 h-full' }, props)
   const toarr = v => Array.isArray(v) ? v : (v != null ? [v] : [])
   return (
     <div {...props}>
@@ -33,7 +33,7 @@ export const Tags = component(({ value, children, disabled, onChange, onAdd, col
 export const Tag = component(({ disabled, value, children, color, onDel, ...props }) => {
   const c = color === undefined && value != null ? stringToColor(String(value)) : color
   props = combineProps({
-    get class() { return `flex items-center px-2 py-1 rd-sm text-3.5 lh-[1] ${c ? '' : 'bg-gray/20'}` },
+    get class() { return `in-tag flex items-center px-2 py-1 rd-sm text-3 lh-[1] ${c ? '' : 'bg-gray/20'}` },
     get style() { return c ? `background: ${c}` : undefined }
   }, props)
   return (
@@ -129,7 +129,7 @@ export const text2colorMap: Record<string, string> = {
 }
 
 const stringToColor = (str: string) => {
-  if (text2colorMap[str]) return text2colorMap[str]
+  if (text2colorMap[str]) return text2colorMap[str] + 'bf' // op75
   let hash = 0
   for (let i = 0; i < str.length; i++) hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
   return `hsl(${Math.abs(hash * 137) % 360} 60% 88% / 0.75)`

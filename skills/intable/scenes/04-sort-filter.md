@@ -46,8 +46,7 @@ const [sort, setSort] = useState([{ field: 'age', order: 'asc' }])
 ```tsx
 const columns = [
   { id: 'name', name: '姓名',                 width: 140, filterable: true },
-  { id: 'dept', name: '部门', type: 'enum',   width: 140, filterable: true,
-    enum: { eng: '工程', design: '设计', pm: '产品' } },
+  { id: 'dept', name: '部门',                 width: 140, filterable: true, enum: { eng: '工程', design: '设计', pm: '产品' } },
   { id: 'age',  name: '年龄', type: 'number', width: 100, filterable: true },
   { id: 'date', name: '日期', type: 'date',   width: 140, filterable: true },
 ]

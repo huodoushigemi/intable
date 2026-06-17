@@ -114,12 +114,9 @@ const columns = [
   { id: 'checked',  name: '勾选',   width: 80,  editable: true, editor: 'checkbox' },
   { id: 'score',    name: '评分',   width: 100, editable: true, editor: 'rate' },
   // Select — enum 提供选项
-  { id: 'dept',     name: '部门',   width: 140, editable: true, editor: 'select',
-    enum: { eng: '工程', design: '设计', pm: '产品' } },
+  { id: 'dept',     name: '部门',   width: 140, editable: true, editor: 'select', enum: { eng: '工程', design: '设计', pm: '产品' } },
   // 多选 Select — editorProps 透传给 antd Select 组件
-  { id: 'tags',     name: '标签',   width: 180, editable: true, editor: 'select',
-    enum: { a: 'Tag A', b: 'Tag B', c: 'Tag C' },
-    editorProps: { mode: 'multiple' } },
+  { id: 'tags',     name: '标签',   width: 180, editable: true, editor: 'select', enum: { a: 'Tag A', b: 'Tag B', c: 'Tag C' }, editorProps: { mode: 'multiple' } },
 ]
 
 <Intable
@@ -164,8 +161,7 @@ const columns = [
   { id: 'color',    name: '颜色', width: 80,  editable: true, editor: 'color' },
   { id: 'active',   name: '在职', width: 80,  editable: true, editor: 'switch' },
   { id: 'score',    name: '评分', width: 100, editable: true, editor: 'rate' },
-  { id: 'dept',     name: '部门', width: 140, editable: true, editor: 'select',
-    enum: { eng: '工程', design: '设计', pm: '产品' } },
+  { id: 'dept',     name: '部门', width: 140, editable: true, editor: 'select', enum: { eng: '工程', design: '设计', pm: '产品' } },
 ]
 
 const data = ref([])

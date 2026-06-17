@@ -16,17 +16,20 @@ const columns = [
     ),
   },
   // render 函数也可以是字符串模板（使用 store.renders 中注册的渲染器）
-  // type + enum：自动渲染为可读标签
-  {
-    id: 'dept', name: '部门', width: 120,
-    type: 'enum',
-    enum: { eng: '工程', design: '设计', pm: '产品' },
-  },
+  // enum：自动渲染为 <Tags /> 组件，颜色会根据文本自动生成
+  { id: 'dept', name: '部门', width: 120, enum: { eng: '工程', design: '设计', pm: '产品' } },
   // type: 'checkbox'：渲染为勾选图标
   { id: 'active', name: '在职', width: 80, type: 'checkbox' },
   // type: 'date' / 'datetime'：渲染为本地化日期
   { id: 'joined', name: '入职', width: 140, type: 'date' },
 ]
+
+// 枚举列自动渲染为标签，且支持设置颜色
+const DeptEnum = {
+  eng: { label: '工程', color: '#1890ff' },
+  design: { label: '设计', color: '#13c2c2' },
+  pm: { label: '产品', color: '#eb2f96' },
+}
 
 <Intable columns={columns} data={data} />
 ```
@@ -39,12 +42,9 @@ const columns = [
 
 ```tsx
 const columns = [
-  { id: 'desc',  name: '描述', width: 200,
-    tooltip: true },                                           // 显示单元格值
-  { id: 'code',  name: '代码', width: 100,
-    tooltip: '点击可复制' },                                   // 固定字符串
-  { id: 'score', name: '评分', width: 80,
-    tooltip: ({ value, data }) => `${data.name} 的评分：${value}` },  // 动态函数
+  { id: 'desc', name: '描述', width: 200, tooltip: true }, // 显示单元格值
+  { id: 'code', name: '代码', width: 100, tooltip: '点击可复制' }, // 固定字符串
+  { id: 'score', name: '评分', width: 80, tooltip: ({ value, data }) => `${data.name} 的评分：${value}` }, // 动态函数
 ]
 ```
 
