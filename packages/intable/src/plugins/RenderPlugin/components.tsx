@@ -34,7 +34,7 @@ export const Tag = component(({ disabled, value, children, color, onDel, ...prop
   const c = color === undefined && value != null ? stringToColor(String(value)) : color
   props = combineProps({
     get class() { return `in-tag flex items-center px-2 py-1 rd-sm text-3 lh-[1] ${c ? '' : 'bg-gray/20'}` },
-    get style() { return c ? `background: ${c}` : undefined }
+    get style() { return c ? `color: ${c}; background: color-mix(in srgb, ${c} 15%, transparent)` : undefined }
   }, props)
   return (
     <div {...props}>
@@ -67,9 +67,12 @@ export const text2colorMap: Record<string, string> = {
   错误: '#ef4444',
   失败: '#ef4444',
   异常: '#ef4444',
+  拒绝: '#ef4444',
+  已拒绝: '#ef4444',
   error: '#ef4444',
   fail: '#ef4444',
   failed: '#ef4444',
+  rejected: '#ef4444',
   // 警告
   警告: '#f59e0b',
   warning: '#f59e0b',
@@ -129,8 +132,8 @@ export const text2colorMap: Record<string, string> = {
 }
 
 const stringToColor = (str: string) => {
-  if (text2colorMap[str]) return text2colorMap[str] + 'bf' // op75
+  if (text2colorMap[str]) return text2colorMap[str]
   let hash = 0
   for (let i = 0; i < str.length; i++) hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
-  return `hsl(${Math.abs(hash * 137) % 360} 60% 88% / 0.75)`
+  return `hsl(${Math.abs(hash * 137) % 360} 55% 40%)`
 }
