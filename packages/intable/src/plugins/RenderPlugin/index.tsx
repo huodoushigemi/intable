@@ -33,8 +33,8 @@ export const RenderPlugin: Plugin = {
       return (
         <Td {...o}>
           {/* @ts-ignore */}
-          {createMemo(() => {
-            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? o.col.type ?? text)
+          {/*@once*/ createMemo(() => {
+            let Comp = (e => typeof e == 'string' ? store.renders[e] : e)(o.col.render ?? (o.col.enum && text) ?? o.col.type) ?? text
             return Comp == text ? text(o) : renderComponent(Comp, o, store)
           })}
         </Td>
@@ -46,12 +46,9 @@ export const RenderPlugin: Plugin = {
 export { text2colorMap } from './components'
 
 const text: Render = component(({ value, col }) => {
-  return col.enum ? <Tags disabled value={toArr(value).map(v => getOpt(col.enum, v))} /> : value
+  return col.enum ? <Tags disabled value={toArr(value).map(v => getOpt(col.enum, v) ?? v)} /> : value
 })
 
-const number = text
-
-const date = text
 
 const checkbox: Render = component(({ value, onChange }) => (
   <div class='flex items-center h-full'>
@@ -65,8 +62,7 @@ const file: Render = component(({ value, onChange }) => (
 
 export const renders = {
   text,
-  number,
-  date,
+  switch: checkbox,
   checkbox,
   file
 }

@@ -44,7 +44,7 @@ export interface EditorOpt {
 export const EditablePlugin: Plugin = {
   name: 'editable',
   store: () => ({
-    editors: { ...editors }
+    editors: { ...editors },
   }),
   rewriteProps: {
     editable: ({ editable }, { store }) => o => {
@@ -54,12 +54,16 @@ export const EditablePlugin: Plugin = {
     Td: ({ Td }, { store }) => o => {
       let el!: HTMLElement
       const { props } = useContext(Ctx)
-      const [editing, setEditing] = createSignal(false)
-      let eventKey = ''
 
       const editable = () => unFn(props.editable, o)
+
+      return createMemo(() => !editable() ? <Td {...o} /> : unFn(() => {
+      // return unFn(() => unFn(() => {
+        
+      let eventKey = ''
+      const [editing, setEditing] = createSignal(false)
       const selected = () => (([x, y]) => o.x == x && o.y == y)(store.selected.start || [])
-      const preEdit = () => selected() && editable() && !editing()
+      const preEdit = () => editable() && !editing() && selected()
 
       const [validating, setValidating] = createSignal(false)
 
@@ -128,7 +132,8 @@ export const EditablePlugin: Plugin = {
       
       return (
         <Td {...mo}>
-          {editorState()?.[1]?.el
+          {/* @ts-ignore */}
+          {() => editorState()?.[1]?.el
             ? <div
                 class='in-cell-edit-wrapper'
                 tabindex={-1}
@@ -144,7 +149,7 @@ export const EditablePlugin: Plugin = {
               </div>
             : o.children
           }
-          {preEdit() &&
+          {() => preEdit() &&
             <input
               style='position: absolute; margin-top: 1em; width: 0; height: 0; pointer-events: none; opacity: 0'
               // todo
@@ -163,6 +168,7 @@ export const EditablePlugin: Plugin = {
           }
         </Td>
       )
+      }))
     }
   }
 }

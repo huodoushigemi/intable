@@ -132,6 +132,7 @@ export const text2colorMap: Record<string, string> = {
 }
 
 const stringToColor = (str: string) => {
+  str = str.trim().toLowerCase()
   if (text2colorMap[str]) return text2colorMap[str]
   let hash = 0
   for (let i = 0; i < str.length; i++) hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0

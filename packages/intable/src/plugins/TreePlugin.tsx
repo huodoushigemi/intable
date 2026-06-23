@@ -107,7 +107,7 @@ export const TreePlugin: Plugin$0 = store => {
        * Render the first non-internal column with indentation and an
        * expand / collapse chevron for rows that have children.
        */
-      Td: ({ Td }, { store }) => o => {
+      Td: ({ Td }, { store }) => !store._haschildren ? Td : o => {
         const rowKey = () => store.props.rowKey
         const meta = () => store._treeMeta?.get(o.data?.[rowKey()])
 

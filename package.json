@@ -1,6 +1,6 @@
 {
   "name": "intable-project",
-  "version": "0.0.53",
+  "version": "0.0.54",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@intable/vue": "workspace:^",
     "@solidjs/router": "^0.16.1",
+    
     "es-toolkit": "^1.39.10",
     "intable": "workspace:^",
     "react": "^18.3.1",
