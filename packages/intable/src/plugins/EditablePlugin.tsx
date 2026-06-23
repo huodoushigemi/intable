@@ -224,9 +224,9 @@ export const editors = {
     </label>
   )),
   select: createEditor(o => (
-    <select {...o}>
+    <select {...o} prop:value={o.value}>
       {!o.multiple && <option value=''>-</option>}
-      {o.options?.map(e => <option value={e.value} selected={e.value === o.value}>{e.label}</option>)}
+      {o.options?.map(e => <option value={e.value}>{e.label}</option>)}
     </select>
   ), {}, true),
 }

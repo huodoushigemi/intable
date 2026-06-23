@@ -187,7 +187,8 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
         <select
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
           multiple
-          value={toList(props.value).map(v => String(v))}
+          // @ts-ignore
+          prop:value={toList(props.value).map(v => String(v))}
           onChange={e => props.onChange([...((e.target as HTMLSelectElement).selectedOptions)].map(opt => opt.value))}
         >
           {options().map(e => <option value={String(e.value)}>{String(e.label)}</option>)}
@@ -225,7 +226,8 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
       <Match when={type() === 'enum'}>
         <select
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-          value={props.value ?? ''}
+          // @ts-ignore
+          prop:value={props.value ?? ''}
           onInput={e => props.onChange((e.target as HTMLSelectElement).value)}
         >
           <option value=''></option>
@@ -236,7 +238,8 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
       <Match when={['checkbox', 'switch', 'boolean'].includes(type())}>
         <select
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-          value={props.value ?? ''}
+          // @ts-ignore
+          prop:value={props.value ?? ''}
           onInput={e => props.onChange((e.target as HTMLSelectElement).value)}
         >
           <option value=''></option>
@@ -282,7 +285,8 @@ export const AndOrFields = (props: Props) => {
           <div class='flex items-center gap-2'>
             <select
               class={`px-2 py-1 rounded-md border ${props.hideFields ? 'hidden' : ''}`}
-              value={node.field}
+              // @ts-ignore
+              prop:value={node.field}
               onInput={e => {
                 const fieldId = (e.target as HTMLSelectElement).value
                 const f = props.fields.find(v => v.id === fieldId)
@@ -295,7 +299,8 @@ export const AndOrFields = (props: Props) => {
 
             <select
               class='px-2 py-1 rounded-md border'
-              value={node.op || defaultOp(type())}
+              // @ts-ignore
+              prop:value={node.op || defaultOp(type())}
               onInput={e => {
                 const op = (e.target as HTMLSelectElement).value as RuleOp
                 update({ op, value: normalizeValueByOp(op, node.value) })
