@@ -329,6 +329,6 @@ const Select = props => (
     }}
   >
     {(props.clearable || props.placeholder) && <option value='' disabled={!props.clearable}>{props.placeholder}</option>}
-    {props.options?.map(e => <option value={e.value}>{e.label}</option>)}
+    {props.options?.map(e => <option value={e.value} selected={e.value === props.value}>{e.label}</option>)}
   </select>
 )
