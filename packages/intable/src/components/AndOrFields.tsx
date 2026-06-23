@@ -184,15 +184,13 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
       </Match>
 
       <Match when={isListOp(op()) && type() === 'enum'}>
-        <select
+        <Select
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
           multiple
-          // @ts-ignore
-          prop:value={toList(props.value).map(v => String(v))}
-          onChange={e => props.onChange([...((e.target as HTMLSelectElement).selectedOptions)].map(opt => opt.value))}
-        >
-          {options().map(e => <option value={String(e.value)}>{String(e.label)}</option>)}
-        </select>
+          value={toList(props.value).map(v => String(v))}
+          onChange={v => props.onChange(v)}
+          options={options()}
+        />
       </Match>
 
       <Match when={isListOp(op())}>
@@ -224,27 +222,23 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
       </Match>
 
       <Match when={type() === 'enum'}>
-        <select
+        <Select
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-          // @ts-ignore
-          prop:value={props.value ?? ''}
-          onInput={e => props.onChange((e.target as HTMLSelectElement).value)}
-        >
-          <option value=''></option>
-          {options().map(e => <option value={String(e.value)}>{String(e.label)}</option>)}
-        </select>
+          value={props.value ?? ''}
+          onChange={v => props.onChange(v)}
+          options={options()}
+          clearable
+        />
       </Match>
 
       <Match when={['checkbox', 'switch', 'boolean'].includes(type())}>
-        <select
+        <Select
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-          // @ts-ignore
-          prop:value={props.value ?? ''}
-          onInput={e => props.onChange((e.target as HTMLSelectElement).value)}
-        >
-          <option value=''></option>
-          {[true, false].map(e => <option value={String(e)}>{String(e)}</option>)}
-        </select>
+          value={props.value ?? ''}
+          onChange={v => props.onChange(v)}
+          options={[{ label: 'true', value: 'true' }, { label: 'false', value: 'false' }]}
+          clearable
+        />
       </Match>
     </Switch>
   )
@@ -283,31 +277,27 @@ export const AndOrFields = (props: Props) => {
 
         return (
           <div class='flex items-center gap-2'>
-            <select
+            <Select
               class={`px-2 py-1 rounded-md border ${props.hideFields ? 'hidden' : ''}`}
-              // @ts-ignore
-              prop:value={node.field}
-              onInput={e => {
-                const fieldId = (e.target as HTMLSelectElement).value
-                const f = props.fields.find(v => v.id === fieldId)
-                update(newRule(f!, { field: fieldId }))
+              value={node.field}
+              onChange={v => {
+                const f = props.fields.find(e => e.id === v)
+                update(newRule(f!, { field: v }))
               }}
-            >
-              <option value='' disabled>选择字段</option>
-              {props.fields.map(f => <option value={f.id}>{f.name}</option>)}
-            </select>
+              options={props.fields.map(f => ({ label: f.name ?? f.id, value: f.id }))}
+              placeholder='选择字段'
+            />
 
-            <select
+            <Select
               class='px-2 py-1 rounded-md border'
-              // @ts-ignore
-              prop:value={node.op || defaultOp(type())}
-              onInput={e => {
-                const op = (e.target as HTMLSelectElement).value as RuleOp
+              value={node.op || defaultOp(type())}
+              onChange={op => {
                 update({ op, value: normalizeValueByOp(op, node.value) })
               }}
-            >
-              {ruleOptions().map(r => <option value={r.value}>{r.label}</option>)}
-            </select>
+              options={ruleOptions()}
+            />
+
+            
 
             <RuleValueEditor
               field={field()}
@@ -323,3 +313,22 @@ export const AndOrFields = (props: Props) => {
     />
   )
 }
+
+const Select = props => (
+  <select
+    {...props}
+    options={null}
+    clearable={null}
+    
+    class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
+    // @ts-ignore
+    prop:value={props.value}
+    onChange={e => {
+      const sel = e.target as HTMLSelectElement
+      props.onChange?.(sel.multiple ? [...sel.selectedOptions].map(opt => opt.value) : sel.value)
+    }}
+  >
+    {(props.clearable || props.placeholder) && <option value='' disabled={!props.clearable}>{props.placeholder}</option>}
+    {props.options?.map(e => <option value={e.value}>{e.label}</option>)}
+  </select>
+)
