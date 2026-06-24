@@ -35,7 +35,7 @@ export const RowSelectionPlugin: Plugin = {
       resizable: false,
       name: solidComponent((o) => (
         store.props.rowSelection?.multiple &&
-        <label class='flex items-center justify-center w-full h-full'>
+        <label class='flex items-center justify-center w-full h-full absolute inset-0'>
           <Checkbox
             value={store.commands.rowSelector.isAll(store.props.data)}
             onChange={v => v ? store.commands.rowSelector.selectAll(store.props.data) : store.commands.rowSelector.clear()}

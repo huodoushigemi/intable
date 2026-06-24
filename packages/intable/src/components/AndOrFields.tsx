@@ -145,11 +145,11 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
   return (
     <Switch
       fallback={(
-        <input
+        <Input
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
           value={props.value ?? ''}
           placeholder={props.placeholder}
-          onInput={e => props.onChange((e.target as HTMLInputElement).value)}
+          onChange={props.onChange}
         />
       )}
     >
@@ -163,20 +163,20 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
           const inputType = type() === 'number' ? 'number' : (type() === 'date' ? 'date' : 'text')
           return (
             <div class='flex-1 flex items-center gap-1'>
-              <input
+              <Input
                 class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
                 type={inputType}
                 value={start ?? ''}
                 placeholder='开始'
-                onInput={e => props.onChange([((e.target as HTMLInputElement).value), end ?? ''])}
+                onChange={e => props.onChange([e, end ?? ''])}
               />
               <span class='text-xs c-gray/70'>~</span>
-              <input
+              <Input
                 class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
                 type={inputType}
                 value={end ?? ''}
                 placeholder='结束'
-                onInput={e => props.onChange([start ?? '', ((e.target as HTMLInputElement).value)])}
+                onChange={e => props.onChange([start ?? '', e])}
               />
             </div>
           )
@@ -194,30 +194,30 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
       </Match>
 
       <Match when={isListOp(op())}>
-        <input
+        <Input
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
           value={toList(props.value).join(', ')}
           placeholder={props.placeholder ?? '多个值用逗号分隔'}
-          onInput={e => props.onChange(toList((e.target as HTMLInputElement).value))}
+          onChange={e => props.onChange(toList((e.target as HTMLInputElement).value))}
         />
       </Match>
 
       <Match when={type() === 'number'}>
-        <input
+        <Input
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
           type='number'
           value={props.value ?? ''}
           placeholder={props.placeholder}
-          onInput={e => props.onChange((e.target as HTMLInputElement).value)}
+          onChange={props.onChange}
         />
       </Match>
 
       <Match when={type() === 'date'}>
-        <input
+        <Input
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
           type='date'
           value={props.value ?? ''}
-          onInput={e => props.onChange((e.target as HTMLInputElement).value)}
+          onChange={props.onChange}
         />
       </Match>
 
@@ -297,8 +297,6 @@ export const AndOrFields = (props: Props) => {
               options={ruleOptions()}
             />
 
-            
-
             <RuleValueEditor
               field={field()}
               op={node.op}
@@ -313,6 +311,15 @@ export const AndOrFields = (props: Props) => {
     />
   )
 }
+
+const Input = props => (
+  <input
+    {...props}
+    onChange={null}
+    onInput={e => e.isComposing || props.onChange?.((e.target as HTMLInputElement).value)}
+    onCompositionEnd={e => props.onChange?.((e.target as HTMLInputElement).value)}
+  />
+)
 
 const Select = props => (
   <select

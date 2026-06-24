@@ -95,7 +95,7 @@ export const DiffPlugin: Plugin = {
           o.data[NEW] ? 'bg-green!' :
           o.data[DEL] ? 'bg-red!' :
           o.data[store.internal] ? '' :
-          diff!.changed && o.data[o.col.id] != store.diffDataKeyed()[id]?.[o.col.id] ? 'bg-green!' : ''
+          diff!.changed && !isEqual(o.data[o.col.id], store.diffDataKeyed()[id]?.[o.col.id]) ? 'bg-green!' : ''
         ].join(' ')
       })
       return <Td {...o} class={o.class + (clazz() ? ' relative z-1' : '')}>
