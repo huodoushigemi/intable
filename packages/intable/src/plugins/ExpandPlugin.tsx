@@ -30,7 +30,7 @@ export const ExpandPlugin: Plugin = {
   }),
 
   commands: (store) => ({
-    expand: useSelector({ multiple: true })
+    expand: useSelector({ multiple: true, key: store.props.rowKey })
   }),
 
   rewriteProps: {

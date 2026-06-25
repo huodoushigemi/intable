@@ -14,13 +14,15 @@ declare module '../index' {
     }
   }
   interface TableStore {
-    tree: ReturnType<typeof useSelector<any[]>>
     /**
      * Lookup map populated as a side-effect of the `data` rewriteProp.
      * Maps each row's rowKey → its tree metadata.
      * Written via createMutable so reads are reactive.
      */
-    _treeMeta: Map<any, { depth: number; hasChildren: boolean; parentKey: any }>
+    _treeMeta: Map<any, { depth: number; hasChildren: boolean; parentKey: any, row: any }>
+  }
+  interface Commands {
+    tree: ReturnType<typeof useSelector<any[]>>
   }
 }
 
@@ -28,28 +30,23 @@ declare module '../index' {
 // Helpers
 // ------------------------------------------------------------
 
-interface FlattenResult {
-  flat: any[]
-  meta: Map<any, { depth: number; hasChildren: boolean; parentKey: any }>
-}
-
 function flattenTree(
   rows: any[],
   childrenField: string,
   rowKeyField: string,
-  isExpand: (key: any) => boolean,
+  isExpand: (row: any) => boolean,
   depth = 0,
   parentKey: any = null,
   flat: any[] = [],
-  meta: Map<any, { depth: number; hasChildren: boolean; parentKey: any }> = new Map(),
-): FlattenResult {
+  meta: Map<any, { depth: number; hasChildren: boolean; parentKey: any, row: any }> = new Map(),
+) {
   for (const row of rows || []) {
     const key = row[rowKeyField]
     const children: any[] = row[childrenField]
     const hasChildren = Array.isArray(children) && children.length > 0
-    meta.set(key, { depth, hasChildren, parentKey })
+    meta.set(key, { depth, hasChildren, parentKey, row })
     flat.push(row)
-    if (hasChildren && isExpand(key)) {
+    if (hasChildren && isExpand(row)) {
       flattenTree(children, childrenField, rowKeyField, isExpand, depth + 1, key, flat, meta)
     }
   }
@@ -67,7 +64,6 @@ export const TreePlugin: Plugin$0 = store => {
     name: 'tree',
 
     store: (store) => ({
-      tree: useSelector({ multiple: true }),
       _treeMeta: new Map(),
       _hasChildren: false,
     }),
@@ -93,7 +89,7 @@ export const TreePlugin: Plugin$0 = store => {
           data,
           childrenField,
           rowKeyField,
-          (key) => store.tree.has(key),
+          (e) => store.commands.tree.has(e),
         )
 
         // Reactive write: any context reading store._treeMeta will re-run
@@ -113,7 +109,8 @@ export const TreePlugin: Plugin$0 = store => {
 
         const onDblClick = e => {
           o.onDblClick?.(e)
-          meta()?.hasChildren && store.tree.toggle(o.data?.[rowKey()])
+          if (o.x != firstCol()) return
+          meta()?.hasChildren && store.commands.tree.toggle(o.data)
         }
         
         return (
@@ -123,8 +120,8 @@ export const TreePlugin: Plugin$0 = store => {
               {meta()?.hasChildren ? (
                 <ILucideChevronRight
                   class='icon-clickable mr-1'
-                  style={`transform: rotate(${store.tree.has(o.data?.[rowKey()]) ? 90 : 0}deg); opacity: .6; flex-shrink: 0; transition: transform .15s`}
-                  onClick={(e: MouseEvent) => { e.stopPropagation(); store.tree.toggle(o.data?.[rowKey()]) }}
+                  style={`transform: rotate(${store.commands.tree.has(o.data) ? 90 : 0}deg); opacity: .6; flex-shrink: 0; transition: transform .15s`}
+                  onClick={(e: MouseEvent) => { e.stopPropagation(); store.commands.tree.toggle(o.data) }}
                 />
               ) : (
                 // Spacer keeps text aligned with sibling rows that do have an icon
@@ -141,6 +138,8 @@ export const TreePlugin: Plugin$0 = store => {
     },
 
     commands: (store, { addRows }) => ({
+      tree: useSelector({ multiple: true, key: store.props.rowKey }),
+
       // add to parent children array if adding inside an expanded group, otherwise add to root
       addRows(i, rows, before = true) {
         if (!store.props?.tree) return addRows?.(i, rows, before)
@@ -163,6 +162,7 @@ export const TreePlugin: Plugin$0 = store => {
         const meta = store._treeMeta?.get(anchorKey)
         if (!meta || meta.depth === 0) return addRows?.(i, rows, before)
 
+        const parent = store._treeMeta.get(meta.parentKey)?.row
         const parentKey = meta.parentKey
 
         // Update cell selection to point at the inserted rows
@@ -201,7 +201,7 @@ export const TreePlugin: Plugin$0 = store => {
         insertInto(rawData)
 
         // Ensure the parent branch is expanded so the new row is visible
-        if (!store.tree.has(parentKey)) store.tree.toggle(parentKey)
+        store.commands.tree.add(parent)
 
         store.props?.onDataChange?.(rawData)
       },

@@ -56,7 +56,7 @@ export const RowSelectionPlugin: Plugin = {
     } as TableColumn,
   }),
   commands: (store) => ({
-    rowSelector: useSelector(mergeProps(() => ({ ...store.props?.rowSelection })))
+    rowSelector: useSelector(mergeProps(() => ({ ...store.props?.rowSelection, key: store.props.rowKey })))
   }),
   rewriteProps: {
     rowSelection: ({ rowSelection }) => mergeProps({
