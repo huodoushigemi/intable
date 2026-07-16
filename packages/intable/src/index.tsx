@@ -33,6 +33,7 @@ import { FilterPlugin } from './plugins/FilterPlugin'
 import { ImportExportPlugin } from './plugins/ImportExportPlugin'
 import { TooltipPlugin } from './plugins/TooltipPlugin'
 import { KeyEachPlugin } from './plugins/KeyEachPlugin'
+import { PaginationPlugin } from './plugins/PaginationPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -42,7 +43,8 @@ export const Ctx = createContext({
 type Requireds<T, K extends keyof T> = Pri<Omit<T, K> & Required<Pick<T, K>>>
 type Pri<T> = { [K in keyof T]: T[K] }
 type TableProps2 = Requireds<TableProps, (
-  'Scroll' | 'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells' |
+  'Scroll' | 'ScrollFooter' | 'LoadMore' |
+  'Table' | 'Thead' | 'Tbody' | 'Tr' | 'Th' | 'Td' | 'EachRows' | 'EachCells' |
   'rowKey' | 'data' | 'columns' |
   'newRow'
 )>
@@ -95,6 +97,7 @@ export interface TableProps {
   EachRows?: Each
   EachCells?: Each<TableColumn>
   Footer?: Component<any>
+  ScrollFooter?: Component<any>
   // 
   cellClass?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
   cellStyle?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
@@ -340,7 +343,7 @@ function BasePlugin(): Plugin$0 {
         
         o = combineProps(o,
           // { ref: el => store.scroll_el = el, class: '' },
-          { get class() { return `data-table ${store.props.border && 'data-table--border'} data-table--${store.props.size}` } },
+          { get class() { return `data-table data-table--${store.props.size} flex flex-col` } },
           { get class() { return store.props.class }, get style() { return store.props.style } },
           { get class() { return clazz() } }
         )
@@ -349,20 +352,30 @@ function BasePlugin(): Plugin$0 {
         
         return (
           <Scroll tabindex={-1} {...o}>
+            <store.props.Header />
             <div class='data-table__layers'>
               {layers()}
             </div>
-            <div class='data-table--scroll-view h-full max-h-inherit' ref={el => store.scroll_el = el}>
+            <div class={`data-table--scroll-view relative h-full max-h-inherit flex-1 ${store.props.border && 'data-table--border'}`} ref={el => store.scroll_el = el}>
               {o.children}
-              <store.props.Footer />
+              <store.props.ScrollFooter />
               {!store.props.data.length && <div class='data-table__empty'>No data</div>}
             </div>
+            <store.props.Footer />
           </Scroll>
         )
       },
+      Header: ({ Header }) => (
+        Header ??= o => <div {...combineProps({ class: 'data-table__header' }, o)} />,
+        o => <Header {...o} />
+      ),
       Footer: ({ Footer }) => (
         Footer ??= o => <div {...combineProps({ class: 'data-table__footer' }, o)} />,
         o => <Footer {...o} />
+      ),
+      ScrollFooter: ({ ScrollFooter }) => (
+        ScrollFooter ??= o => <div {...combineProps({ class: 'data-table__scroll__footer' }, o)} />,
+        o => <ScrollFooter {...o} />
       ),
       Table: ({ Table = table }, { store }) => o => {
         o = combineProps({ ref: el => store.table = el, class: `data-table--table` }, o)
@@ -528,4 +541,5 @@ export const defaultsPlugins = [
   ImportExportPlugin,
   TooltipPlugin,
   KeyEachPlugin,
+  PaginationPlugin,
 ]

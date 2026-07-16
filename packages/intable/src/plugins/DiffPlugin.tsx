@@ -81,8 +81,7 @@ export const DiffPlugin: Plugin = {
       // Structural change (add / delete / move) — fall back to diff library
       const diffArr = diffArrays(diffData, data, { comparator: (a, b) => a == b || a[rowKey] == b[rowKey] })
       return diffArr.flatMap(e => (
-        // e.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) :
-        e.added ? e.value.map(e => (e[NEW] = 1, e)) :
+        e.added ? diff!.added ? e.value.map(e => ({ ...e, [NEW]: 1 })) : e.value :
         e.removed ? diff!.removed ? e.value.map(e => ({ ...e, [DEL]: 1, [store.internal]: 1 })) : [] :
         e.value
       ))

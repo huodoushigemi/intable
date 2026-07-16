@@ -1,5 +1,5 @@
 import { For, Show, useContext, createMemo, createSignal, createEffect } from 'solid-js'
-import { Ctx, type Plugin$0, type TableColumn, type TableStore } from '..'
+import { type Plugin$0, type TableColumn, type TableStore } from '..'
 
 declare module '../index' {
   interface TableColumn {
@@ -200,7 +200,7 @@ export const HeaderGroupPlugin: Plugin$0 = {
      *    flex mode to preserve width, display:none in table mode)
      */
     Thead: ({ Thead }, { store }) => o => {
-      const { props } = useContext(Ctx)
+      const { props } = store
 
       const gridData = createMemo(() => {
         const rawCols = store.rawProps.columns || []

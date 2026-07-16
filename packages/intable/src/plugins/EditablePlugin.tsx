@@ -2,7 +2,7 @@ import { createEffect, createMemo, createRoot, createSignal, mergeProps, on, onC
 import { createAsyncMemo } from '@solid-primitives/memo'
 import { delay } from 'es-toolkit'
 import { createMutable } from 'solid-js/store'
-import { Ctx, type Plugin, type TableColumn } from '..'
+import { type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
 import { chooseFile, resolveOptions, unFn } from '../utils'
 import Textarea from '../components/Textarea'
@@ -53,9 +53,7 @@ export const EditablePlugin: Plugin = {
     },
     Td: ({ Td }, { store }) => o => {
       let el!: HTMLElement
-      const { props } = useContext(Ctx)
-
-      const editable = () => unFn(props.editable, o)
+      const editable = () => unFn(store.props.editable, o)
 
       return createMemo(() => !editable() ? <Td {...o} /> : unFn(() => {
       // return unFn(() => unFn(() => {

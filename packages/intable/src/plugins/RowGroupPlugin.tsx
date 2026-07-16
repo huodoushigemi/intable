@@ -1,6 +1,6 @@
 import { groupBy, zipObject } from 'es-toolkit'
 import { findLast } from 'es-toolkit/compat'
-import { Ctx, type Plugin } from '..'
+import { type Plugin } from '..'
 import { batch, createMemo, useContext } from 'solid-js'
 import type { TableStore } from '..'
 
@@ -87,7 +87,7 @@ export const RowGroupPlugin: Plugin = {
       // todo
       if (!o.data?.[GROUP]) return Td(o)
       
-      const { props } = useContext(Ctx)
+      const { props } = store
       const show = createMemo(() => store.rowGroup.isExpand(o.data))
       
       return (

@@ -16,7 +16,7 @@ declare module '../index' {
       noMoreText?: string
       onLoadMore?: () => void | Promise<void>
     }
-    LoadMore?: Component<TableProps['loadMore']>
+    LoadMore?: Component<Exclude<TableProps['loadMore'], undefined>>
   }
   interface TableStore {
     loadMore: {
@@ -28,19 +28,6 @@ declare module '../index' {
 
 function isPromiseLike(v: any): v is Promise<unknown> {
   return !!v && typeof v.then === 'function'
-}
-
-const LoadMoreLayer: Component<TableProps['loadMore']> = (props) => {
-  const visible = () => !!props.enable && (props.loading || props.hasMore === false)
-  const text = () => props.loading
-    ? (props.loadingText ?? 'loading...')
-    : (props.noMoreText ?? '无更多数据')
-
-  return (
-    <Show when={visible()}>
-      <div class='data-table__load-more sticky left-0'>{text()}</div>
-    </Show>
-  )
 }
 
 export const LoadMorePlugin: Plugin = {
@@ -58,14 +45,23 @@ export const LoadMorePlugin: Plugin = {
       debounce: 200,
       ...loadMore,
     }),
-    LoadMore: ({ LoadMore = LoadMoreLayer }, { store }) => () => {
-      return <LoadMore {...store.props.loadMore} />
-    },
-    Footer: ({ Footer }, { store }) => o => (
-      <Footer {...combineProps({ class: 'contents' }, o)}>
+    LoadMore: ({ LoadMore }, { store }) => LoadMore ?? ((props) => {
+      const visible = () => !!props.enable && (props.loading || props.hasMore === false)
+      const text = () => props.loading
+        ? (props.loadingText ?? 'loading...')
+        : (props.noMoreText ?? '无更多数据')
+
+      return (
+        <Show when={visible()}>
+          <div class='data-table__load-more sticky left-0'>{text()}</div>
+        </Show>
+      )
+    }),
+    ScrollFooter: ({ ScrollFooter }, { store }) => o => (
+      <ScrollFooter {...combineProps({ class: 'contents' }, o)}>
         {o.children}
-        <store.props.LoadMore />
-      </Footer>
+        <store.props.LoadMore {...store.props.loadMore} />
+      </ScrollFooter>
     )
   },
   onMount: (store) => {

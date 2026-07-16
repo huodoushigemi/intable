@@ -1,4 +1,4 @@
-import { type Plugin, type Plugin$0, Ctx } from '../index'
+import { type Plugin, type Plugin$0 } from '../index'
 import { useSelector } from '../hooks/useSelector'
 import { createLazyMemo } from '@solid-primitives/memo'
 

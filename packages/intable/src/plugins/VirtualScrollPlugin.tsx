@@ -4,7 +4,7 @@ import { defaultRangeExtractor } from '@tanstack/solid-virtual'
 import { defaultsDeep } from 'es-toolkit/compat'
 import { useVirtualizer } from '../hooks/useVirtualizer'
 import { RecycleList } from '../components/RecycleList'
-import { Ctx, type Plugin } from '..'
+import { type Plugin } from '..'
 
 const $ML = Symbol()
 
@@ -58,7 +58,7 @@ export const VirtualScrollPlugin: Plugin = {
       return <Scroll {...o} />
     },
     Table: ({ Table }, { store }) => (o) => {
-      const { props } = useContext(Ctx)
+      const { props } = store
       
       const virtualizerY = useVirtualizer(mergeProps(() => props.virtual?.y, {
         getScrollElement: () => store.scroll_el!,

@@ -1,5 +1,5 @@
 import { mergeProps, type Component, type JSX } from 'solid-js'
-import { Ctx, type Plugin, type TableColumn, type TableProps, type TableStore } from '..'
+import { type Plugin, type TableColumn, type TableProps, type TableStore } from '..'
 import { renderComponent, solidComponent } from '../components/utils'
 import { useSelector } from '../hooks/useSelector'
 import { combineProps } from '@solid-primitives/props'

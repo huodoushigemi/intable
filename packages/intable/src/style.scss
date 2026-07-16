@@ -58,7 +58,7 @@
   }
 
   &--border {
-    @apply b-1 b-solid;
+    @apply outline-(1 solid [--table-b-c]);
 
     th, td {
       background-image: linear-gradient(var(--table-b-c), var(--table-b-c)), linear-gradient(var(--table-b-c), var(--table-b-c));
@@ -83,6 +83,33 @@
 
   &__load-more {
     @apply py-2 text-center text-3 c-gray/70;
+  }
+
+  &__pagination {
+    @apply border-t-1 b-t-solid b-t-[--table-b-c] c-[--table-c];
+  }
+
+  &__pagination-btn {
+    @apply cursor-pointer select-none min-w-7 px-2 py-1 rd-1 bg-[--table-row-hover-bg];
+    &:not(:disabled):hover {
+      @apply c-[--c-primary] bg-[--c-primary]/20;
+    }
+    &.is-active {
+      @apply c-white! bg-[--c-primary]! font-semibold;
+    }
+  }
+
+  &--small {
+    .data-table__pagination {
+      @apply py-1 text-xs;
+    }
+    .data-table__pagination-btn {
+      @apply min-w-6 px-1.5 py-1 rd-0.75;
+    }
+  }
+
+  &__footer {
+    @apply shrink-0;
   }
 }
 

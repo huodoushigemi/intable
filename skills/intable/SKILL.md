@@ -37,6 +37,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 合计行 | 列加 `aggregate` |
 | 自动填充 | `autoFill` prop |
 | Excel 导入/导出 | `store.commands.exportExcel()` / `readExcel()` |
+| 分页 | `pagination` prop |
 
 ## 可选插件（需传入 `plugins=[]`）
 
@@ -80,7 +81,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 固定列、多级表头、列拖拽 | `./scenes/06-layout.md` |
 | 自定义渲染、render、tooltip、单元格合并、mergeRow | `./scenes/07-render.md` |
 | 撤销、重做、undo、redo、diff、变更高亮 | `./scenes/08-history-diff.md` |
-| 大数据、虚拟滚动、加载更多、无限滚动 | `./scenes/09-performance.md` |
+| 大数据、虚拟滚动、加载更多、无限滚动、分页、服务端分页 | `./scenes/09-performance.md`、`./scenes/14-pagination.md` |
 | 合计、汇总、aggregate、sum、avg | `./scenes/10-aggregate.md` |
 | 主题、暗色、列显示隐藏、Excel、导入导出、自定义插件 | `./scenes/11-advanced.md` |
 | CRUD、增删改查、新增行、删除行、保存、提交 API、刷新 | `./scenes/12-crud.md` |

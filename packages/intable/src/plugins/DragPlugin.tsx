@@ -1,6 +1,6 @@
 import { delay } from "es-toolkit"
 import { isMatch } from "es-toolkit/compat"
-import { Ctx, type Plugin, type TableColumn, type TableStore, type THProps } from "../index"
+import { type Plugin, type TableColumn, type TableStore, type THProps } from "../index"
 import { useSort } from '../hooks/useSort'
 
 declare module '../index' {
