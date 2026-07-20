@@ -44,6 +44,53 @@ export const Tag = component(({ disabled, value, children, color, onDel, ...prop
   )
 })
 
+/** Star rating component. max defaults to 5. */
+export const Rate = component(({ value, disabled, max = 5, onChange, ...props }) => {
+  const val = () => Math.round(Number(value) || 0)
+  props = combineProps({
+    get class() { return `in-rate inline-flex items-center gap-0.5 ${disabled ? '' : 'cursor-pointer'}` },
+  }, props)
+  return (
+    <div {...props}>
+      <For each={Array.from({ length: max }, (_, i) => i + 1)}>
+        {star => (
+          <span
+            class={`lh-none select-none ${disabled ? '' : 'hover:scale-110'} transition-transform`}
+            style={{ color: star <= val() ? '#f59e0b' : '#d1d5db', cursor: disabled ? 'default' : 'pointer' }}
+            onClick={() => !disabled && onChange?.(star)}
+          >
+            ★
+          </span>
+        )}
+      </For>
+    </div>
+  )
+})
+
+/** Progress bar component. value is 0–100 or 0–1. */
+export const Progress = component(({ value, disabled, onChange, ...props }) => {
+  const pct = () => {
+    const v = Number(value) || 0
+    return v <= 1 ? Math.round(v * 100) : Math.min(100, Math.max(0, Math.round(v)))
+  }
+  // const color = () => pct() >= 100 ? '#10b981' : pct() >= 60 ? '#3b82f6' : pct() >= 30 ? '#f59e0b' : '#ef4444'
+  const color = () => 'var(--c-primary)'
+  props = combineProps({
+    get class() { return 'in-progress flex items-center h-full w-full' },
+  }, props)
+  return (
+    <div {...props}>
+      <div class='flex-1 h-2 rd-full bg-gray-200 overflow-hidden' title={`${pct()}%`}>
+        <div
+          class='h-full rd-full transition-all duration-300'
+          style={{ width: `${pct()}%`, background: color() }}
+        />
+      </div>
+      <span class='ml-1 text-11px c-gray-500 min-w-30px text-right'>{pct()}%</span>
+    </div>
+  )
+})
+
 // 评估公式
 export const evaluateFormula = (formula: string, data: any) => {
   try {

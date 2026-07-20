@@ -133,6 +133,7 @@ export interface TableColumn extends Obj {
   fixed?: 'left' | 'right'
   class?: any
   style?: any
+  table?: TableProps
   // props?: (props) => JSX.HTMLAttributes<any>
 }
 

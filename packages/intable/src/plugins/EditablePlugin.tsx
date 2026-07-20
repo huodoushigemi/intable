@@ -4,7 +4,7 @@ import { delay } from 'es-toolkit'
 import { createMutable } from 'solid-js/store'
 import { type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
-import { chooseFile, resolveOptions, unFn } from '../utils'
+import { chooseFile, log, resolveOptions, unFn } from '../utils'
 import Textarea from '../components/Textarea'
 
 declare module '../index' {
@@ -52,6 +52,8 @@ export const EditablePlugin: Plugin = {
       return !!arr.length && arr.every(e => unFn(e, o)) && !o.data[store.internal] && !o.col[store.internal]
     },
     Td: ({ Td }, { store }) => o => {
+      const { props } = store
+      
       let el!: HTMLElement
       const editable = () => unFn(store.props.editable, o)
 
@@ -74,7 +76,7 @@ export const EditablePlugin: Plugin = {
           size.h = el.getBoundingClientRect().height
 
           let canceled = false, initialValue = o.data[o.col.id]
-          const editor = (e => typeof e == 'string' ? store.editors[e] : e)(o.col.editor ?? o.col.type ?? (o.col.enum ? 'select' : 'text'))
+          const editor = (e => typeof e == 'string' ? store.editors[e] : e)(o.col.editor ?? o.col.type ?? (o.col.enum && 'select')) ?? (initialValue != null ? store.editors[typeof initialValue] : null) ?? store.editors.text
           const opt: EditorOpt = {
             props: o.col.editorProps,
             col: o.col,
@@ -173,14 +175,15 @@ export const EditablePlugin: Plugin = {
 
 const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
   ({ eventKey, value, col, ok, cancel, props, onChange }) => createRoot(destroy => {
+    const out = extra?.out ?? (v => v)
     const [v, setV] = createSignal(eventKey || value)
     let el!: HTMLElement
     ;(<Comp
       ref={e => el = e}
       class='relative block px-2 size-full z-9 box-border resize-none outline-0'
       value={v()}
-      onInput={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()))}
-      onChange={e => (setV(e instanceof Event ? e.target.value : e), onChange?.(v()), isSelector && ok())}
+      onInput={e => (setV(out(e instanceof Event ? e.target.value : e)), onChange?.(v()))}
+      onChange={e => (setV(out(e instanceof Event ? e.target.value : e)), onChange?.(v()), isSelector && ok())}
       options={col.enum ? resolveOptions(col.enum ?? []) : undefined}
       {...extra}
       {...props}
@@ -201,11 +204,11 @@ const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
 
 const Input = o => <input {...o} />
 
-export const editors = {
+export const editors: Record<string, Editor> = {
   text: createEditor(Input),
   textarea: createEditor(o => <Textarea autosize={{ minRows: 2, maxRows: 3 }} {...o} class={`${o.class} bg-[--table-bg] outline-(1.5px solid [--c-primary])`} />),
-  number: createEditor(Input, { type: 'number' }),
-  range: createEditor(Input, { type: 'range' }),
+  number: createEditor(Input, { type: 'number', out: v => Number(v) }),
+  range: createEditor(Input, { type: 'range', out: v => Number(v) }),
   date: createEditor(Input, { type: 'date' }, true),
   time: createEditor(Input, { type: 'time' }, true),
   datetime: createEditor(Input, { type: 'datetime-local' }, true),
@@ -228,3 +231,5 @@ export const editors = {
     </select>
   ), {}, true),
 }
+
+editors.boolean = editors.checkbox

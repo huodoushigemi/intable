@@ -1,7 +1,7 @@
 import { createMemo, mergeProps, type JSX } from 'solid-js'
 import { component } from 'undestructure-macros'
 import { type Plugin, type TDProps } from '../..'
-import { Checkbox, Files, Tags } from './components'
+import { Checkbox, Files, Tags, Rate, Progress } from './components'
 import { getOpt, toArr } from '../../utils'
 import { renderComponent, solidComponent } from '../../components/utils'
 
@@ -13,6 +13,7 @@ declare module '../../index' {
     type?: string
     render?: string | Render
     enum?: Record<string, any> | { label?: string; value: any }[]
+    max?: number
   }
   interface TableStore {
     renders: { [key: string]: Render }
@@ -60,11 +61,29 @@ const file: Render = component(({ value, onChange }) => (
   <Files value={value} onChange={onChange} disabled />
 ))
 
+const rate: Render = component(({ value, onChange, col }) => (
+  <Rate value={value} max={col.max ?? 5} onChange={onChange} disabled />
+))
+
+const progress: Render = component(({ value, onChange }) => (
+  <Progress value={value} onChange={onChange} />
+))
+
+const obj: Render = component(({ value, col }) => {
+  const label = () => col.table?.columns?.[0].id
+  const key = () => col.table?.rowKey ?? 'id'
+  return <Tags disabled value={toArr(value).map(e => ({ label: e[label()], value: e[key()] }))} />
+})
+
 export const renders = {
   text,
   switch: checkbox,
   checkbox,
-  file
+  file,
+  rate,
+  progress,
+  obj,
+  objs: obj,
 }
 
 for (const k in renders) {
