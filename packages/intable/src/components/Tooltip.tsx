@@ -1,4 +1,4 @@
-import { children, type JSX } from 'solid-js'
+import { type JSX } from 'solid-js'
 import { Popover, type FloatingProps } from './Popover'
 import { offset } from 'floating-ui-solid'
 import type { Placement } from '@floating-ui/dom'
@@ -20,14 +20,20 @@ export type TooltipProps = {
  * ```
  */
 export function Tooltip(props: TooltipProps) {
+  const placement = () => props.placement ?? 'top'
+
   return (
     <Popover
       trigger='hover'
-      placement={props.placement ?? 'top'}
-      middleware={[offset({ mainAxis: 6 })]}
+      placement={placement()}
+      middleware={[offset({ mainAxis: 8 })]}
       {...props}
       reference={props.children as any}
-      floating={<div class='tt-tooltip'>{props.content}</div> as any}
+      floating={
+        <div class='in-tooltip' data-placement={placement()}>
+          {props.content}
+        </div> as any
+      }
     />
   )
 }

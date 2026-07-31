@@ -295,11 +295,29 @@ td.is-invalid {
   }
 }
 
-.tt-tooltip {
-  @apply px-3 py-2 rd-1 text-xs leading-snug shadow-md z-50 bg-gray-800 c-white break-words w-max select-text;
+.in-tooltip {
+  @apply relative px-3 py-2 rd-1 text-xs leading-snug shadow-md z-50 bg-gray-800 c-white break-words w-max select-text;
+  animation: in-tooltip-in 0.15s ease both;
+
   .dark & {
     @apply bg-gray-100 c-gray-900;
   }
+
+  // Arrow via ::before pseudo-element
+  &::before { @apply content-[''] absolute w-2 h-2 rotate-45 bg-inherit; }
+  &[data-placement='top']::before { @apply -bottom-1 left-[calc(50%-4px)]; }
+  &[data-placement='bottom']::before { @apply -top-1 left-[calc(50%-4px)]; }
+  &[data-placement='left']::before { @apply -right-1 top-[calc(50%-4px)]; }
+  &[data-placement='right']::before { @apply -left-1 top-[calc(50%-4px)]; }
+  &[data-placement='top-start']::before { @apply -bottom-1 left-3; }
+  &[data-placement='top-end']::before { @apply -bottom-1 right-3; }
+  &[data-placement='bottom-start']::before { @apply -top-1 left-3; }
+  &[data-placement='bottom-end']::before { @apply -top-1 right-3; }
+}
+
+@keyframes in-tooltip-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 // drag
@@ -315,3 +333,10 @@ th[draggable="true"], td[draggable="true"] {
 .input-no-spin::-webkit-inner-spin-button {
   @apply appearance-none;
 }
+
+// branch graph ---------------------------------------------------------------
+// The branch-graph column is an empty placeholder column; the actual graph is
+// drawn as a single SVG overlay positioned over it (see BranchGraphPlugin).
+.branch-graph-col { @apply p-0 overflow-hidden; }
+.branch-graph-svg { display: block; }
+.branch-graph-wrap { @apply relative; }

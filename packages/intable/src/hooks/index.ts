@@ -134,10 +134,16 @@ export function useMemo<T>(fn: () => T) {
   return ret
 }
 
+export function signal<T>(init?: T) {
+  const [val, setVal] = createSignal(init)
+  function fn(v?: T) { return arguments.length ? setVal(() => v) : val() }
+  return fn
+}
+
 export function useHover(el: MaybeAccessor<Many<HTMLElement | undefined>>) {
-  const [hover, setHover] = createSignal(false)
-  createEventListener(el, 'pointerenter', () => setHover(true))
-  createEventListener(el, 'pointerleave', () => setHover(false))
+  const hover = signal(false)
+  createEventListener(el, 'pointerenter', () => hover(true))
+  createEventListener(el, 'pointerleave', () => hover(false))
   return hover
 }
 
