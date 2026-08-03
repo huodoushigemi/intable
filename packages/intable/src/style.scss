@@ -215,7 +215,10 @@
 }
 
 input[type="checkbox"].you-checkbox {
-  @apply relative size-4 m-1 rd-1 c-#2196f3 b-(2 solid current) outline-offset--0 focus:outline-(4 solid #2196f3/40) cusor-pointer appearance-none checked:bg-current;
+  @apply relative size-4 m-1 rd-1 c-#2196f3 b-(2 solid current) outline-offset--0 focus:outline-(4 solid #2196f3/40) cusor-pointer appearance-none;
+  &.checked {
+    @apply bg-current;
+  }
   &.checked::after {
     @apply content-["✓"] absolute top-50% left-50% translate--50% text-3 c-#fff z-1;
   }
@@ -337,6 +340,15 @@ th[draggable="true"], td[draggable="true"] {
 // branch graph ---------------------------------------------------------------
 // The branch-graph column is an empty placeholder column; the actual graph is
 // drawn as a single SVG overlay positioned over it (see BranchGraphPlugin).
-.branch-graph-col { @apply p-0 overflow-hidden; }
-.branch-graph-svg { display: block; }
-.branch-graph-wrap { @apply relative; }
+.branch-graph-col {
+  @apply p-0 overflow-hidden;
+}
+
+.branch-graph-svg {
+  display: block;
+}
+
+.branch-graph-wrap {
+  // the overlay is absolutely positioned relative to this wrapper
+  @apply relative;
+}

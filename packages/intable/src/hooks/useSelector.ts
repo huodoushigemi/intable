@@ -1,8 +1,13 @@
 import { createSignal, createMemo, createSelector } from 'solid-js'
 import { log, toArr } from '../utils'
+import { useControlled } from './useControlled'
 
 interface UseSelectorOpt<T> {
+  /**
+   * The controlled value of the selector.
+   */
   value?: T
+  initialValue?: T
   onChange?: (v: T) => void
   multiple?: boolean
   selectable?: (v) => boolean
@@ -55,11 +60,13 @@ class SingleSet extends KeyedSet {
 }
 
 export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
-  const { value: initialValue, onChange, multiple = false, selectable } = opt
+  opt = useControlled(opt)
+  const { onChange, multiple = false, selectable } = opt
 
   const Set2 = (v?) => multiple ? new KeyedSet(v, opt.key) : new SingleSet(v, opt.key)
   
-  const [selected, setSelected] = createSignal(Set2(toArr(initialValue)))
+  // const [selected, setSelected] = createSignal(Set2(toArr(initialValue)))
+  const selected = createMemo(() => Set2(toArr(opt.value)))
 
   // 检查是否包含某个值
   const has = createSelector<Set<any>, any>(selected, (a, b) => b.has(a as T))
@@ -71,32 +78,28 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
 
   // 清空选择
   const clear = () => {
-    setSelected(Set2())
-    onChange?.(value())
+    onChange?.(multiple ? [] : undefined as any)
   }
 
   // 设置选择
   const set = (v: T) => {
     if (!isSelectable(v)) return
-    setSelected(Set2(toArr(v)))
-    onChange?.(value())
+    onChange?.(multiple ? [v] : v as any)
   }
 
   // 添加选择
   const add = (v: T) => {
     if (!isSelectable(v)) return
-    const newSet = Set2(selected())
+    const newSet = Set2([...selected()])
     newSet.add(v)
-    setSelected(newSet)
-    onChange?.(value())
+    onChange?.(multiple ? [...newSet] : [...newSet][0])
   }
 
   // 删除选择
   const del = (v: T) => {
-    const newSet = Set2(selected())
+    const newSet = Set2([...selected()])
     newSet.delete(v)
-    setSelected(newSet)
-    onChange?.(value())
+    onChange?.(multiple ? [...newSet] : [...newSet][0])
   }
 
   // 切换选择状态
@@ -104,16 +107,11 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
     has(v) ? del(v) : add(v)
   }
 
-  // 使用 createMemo 优化 selected 的计算
-  const value = createMemo(() => {
-    return multiple ? Array.from(selected()) : [...selected()][0]
-  })
-
   const isAll = (data: T[]) => !!data.length && data.every(d => has(d))
 
   const selectAll = (data: T[]) => {
-    setSelected(Set2(data))
-    onChange?.(value())
+    const val = data.filter(e => isSelectable(e))
+    onChange?.(multiple ? val : val[0] as any)
   }
 
   return {
@@ -125,6 +123,6 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
     toggle,
     isAll,
     selectAll,
-    get value() { return value() }
+    get value() { return opt.value }
   }
 }

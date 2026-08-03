@@ -38,7 +38,7 @@ export const ImportExportPlugin: Plugin = {
   // ],
   commands: (store) => ({
     createExcel: async (data = store.props!.data) => {
-      const XLSX = await import("xlsx")
+      const XLSX = await import(/* @vite-ignore */ "xlsx")
       const allCols = store.props!.columns.filter(col => !col[store.internal])
       const rows = data.map(row => Object.fromEntries(allCols.map((e) => [e.name, row[e.id]])))
       
@@ -56,7 +56,7 @@ export const ImportExportPlugin: Plugin = {
     readExcel: async (file) => {
       file ??= await chooseFile({ accept: '.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel' })
       const buffer = await readFileAsArrayBuffer(file)
-      const XLSX = await import("xlsx")
+      const XLSX = await import(/* @vite-ignore */ "xlsx")
       const workbook = XLSX.read(buffer, { type: 'array' })
       const worksheet = workbook.Sheets[workbook.SheetNames[0]]
       const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[]

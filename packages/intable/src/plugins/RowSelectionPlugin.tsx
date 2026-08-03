@@ -10,6 +10,7 @@ declare module '../index' {
       enable?: boolean
       multiple?: boolean
       value?: any
+      initialValue?: any
       selectable?: (row) => boolean
       onChange?: (selected) => void
     }

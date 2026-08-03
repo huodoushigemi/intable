@@ -6,7 +6,6 @@
 
 | 主题 | 导入路径 | 适用场景 |
 |------|---------|----------|
-| 默认 | `intable/style.css` | 通用 |
 | Dark (OLED) | `intable/theme/dark.css` | 开发工具、夜间模式 |
 | Shadcn/Zinc | `intable/theme/shadcn.css` | SaaS 后台、现代产品 |
 | GitHub | `intable/theme/github.css` | 数据展示 |

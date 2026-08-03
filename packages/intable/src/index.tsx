@@ -34,6 +34,7 @@ import { ImportExportPlugin } from './plugins/ImportExportPlugin'
 import { TooltipPlugin } from './plugins/TooltipPlugin'
 import { KeyEachPlugin } from './plugins/KeyEachPlugin'
 import { PaginationPlugin } from './plugins/PaginationPlugin'
+import { BranchGraphPlugin } from './plugins/BranchGraphPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -93,7 +94,7 @@ export interface TableProps {
   Tbody?: Component<any>
   Td?: Component<TDProps>
   Th?: Component<THProps>
-  Tr?: Component<{ y?: number; data?: any; style?: any; children: JSX.Element }>
+  Tr?: Component<TRProps>
   EachRows?: Each
   EachCells?: Each<TableColumn>
   Footer?: Component<any>
@@ -101,6 +102,8 @@ export interface TableProps {
   // 
   cellClass?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
   cellStyle?: ((props: Omit<TDProps, 'y' | 'data'> & { y?:number, data? }) => string) | string
+  rowClass?: ((props: TRProps) => string) | string
+  rowStyle?: ((props: TRProps) => string) | string
   // 
   renderer?: (comp: (props) => JSX.Element) => ((props) => JSX.Element)
   // Plugin
@@ -113,9 +116,11 @@ export interface TableProps {
   keybindings?: Record<string, ((e?: KeyboardEvent) => void) | false>
 
   onDataChange?: (data: any[]) => void
+  onRowClick?: (row: any, rowIndex: number, e: MouseEvent) => void
 }
 
 export type THProps = { x: number; col: TableColumn; children?: JSX.Element; rowspan?: number; colspan?: number; style?: any }
+export type TRProps = { y?: number; data?: any; style?: any; children: JSX.Element }
 export interface TDProps {
   x: number; y: number;
   data: any; col: TableColumn;
@@ -392,7 +397,12 @@ function BasePlugin(): Plugin$0 {
       },
       Tr: ({ Tr = tr }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
-        o = combineProps({ ref: setEl }, o)
+        const mo = combineProps({
+          ref: setEl,
+          get class() { return o.y != null ? unFn(store.props.rowClass, o) : '' },
+          get style() { return o.y != null ? unFn(store.props.rowStyle, o) : '' },
+          onClick: e => o.y != null && store.props.onRowClick?.(o.data, o.y, e)
+        }, o)
 
         createEffect(() => {
           const { y } = o
@@ -407,7 +417,7 @@ function BasePlugin(): Plugin$0 {
           })
         })
 
-        return <Tr {...o} />
+        return <Tr {...mo} />
       },
       Th: ({ Th = th }, { store }) => o => {
         const [el, setEl] = createSignal<HTMLElement>()
@@ -543,4 +553,5 @@ export const defaultsPlugins = [
   TooltipPlugin,
   KeyEachPlugin,
   PaginationPlugin,
+  BranchGraphPlugin,
 ]

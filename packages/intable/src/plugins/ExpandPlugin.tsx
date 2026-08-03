@@ -30,7 +30,7 @@ export const ExpandPlugin: Plugin = {
   }),
 
   commands: (store) => ({
-    expand: useSelector({ multiple: true, key: store.props.rowKey })
+    expand: useSelector<any[]>({ multiple: true, key: store.props.rowKey, initialValue: [] })
   }),
 
   rewriteProps: {
@@ -45,7 +45,7 @@ export const ExpandPlugin: Plugin = {
     Tr: ({ Tr }, { store }) => store.props.expand?.enable ? o => (
       <Tr {...o}>{
         !o.data?.[store.expandCol.id] ? o.children :
-        <td colspan={store.props.columns?.length} style='width: 100%'>
+        <td colspan={store.props.columns?.length} style='width: fit-content'>
           {renderComponent(store.props.expand?.render, { ...o, data: o.data[store.expandCol.id] }, store)}
         </td>
       }</Tr>
@@ -57,7 +57,7 @@ export const ExpandPlugin: Plugin = {
     } : Td,
     
     data: ({ data }, { store }) => (
-      store.commands.expand.value.length
+      store.commands.expand.value!.length
         ? data?.flatMap(e => store.commands.expand.has(e) ? [e, { [store.expandCol.id]: e }] : e)
         : data
     )

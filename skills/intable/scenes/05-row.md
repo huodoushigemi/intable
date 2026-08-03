@@ -25,6 +25,17 @@ store.commands.rowSelector.clear()      // 清空所有选中
 />
 ```
 
+受控/非受控：
+
+```tsx
+// 受控：通过 value + onChange 管理选中状态
+<Intable rowSelection={{ enable: true, multiple: true, value: selectedRows, onChange: setSelected }} />
+
+// 非受控：通过 initialValue 设置初始值，后续由组件内部管理
+<Intable rowSelection={{ enable: true, multiple: true, initialValue: [row1, row2] }} />
+```
+```
+
 ---
 
 ## 行展开/收起（内置）
@@ -50,6 +61,36 @@ let store
 store.commands.expand.toggle(rowKey)
 store.commands.expand.isSelected(rowKey)
 ```
+
+受控/非受控：
+
+```tsx
+// 非受控：通过 initialValue 设置初始展开行
+<Intable expand={{ initialValue: [row], render: ... }} />
+```
+
+---
+
+## 行样式 / 行点击
+
+```tsx
+// rowClass / rowStyle：按行自定义样式（函数或静态字符串）
+<Intable
+  columns={columns}
+  data={data}
+  rowClass={({ y, data }) => data?.vip ? 'bg-yellow-50' : ''}
+  rowStyle={({ y, data }) => data?.disabled ? 'opacity: 0.5' : ''}
+/>
+
+// onRowClick：点击行时回调
+<Intable
+  columns={columns}
+  data={data}
+  onRowClick={(row, rowIndex, e) => console.log(row, rowIndex)}
+/>
+```
+
+`TRProps` 类型为 `{ y?: number; data?: any; style?: any; children: JSX.Element }`，可从 `intable` 导入。
 
 ---
 
