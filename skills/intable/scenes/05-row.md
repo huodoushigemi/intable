@@ -34,7 +34,6 @@ store.commands.rowSelector.clear()      // 清空所有选中
 // 非受控：通过 initialValue 设置初始值，后续由组件内部管理
 <Intable rowSelection={{ enable: true, multiple: true, initialValue: [row1, row2] }} />
 ```
-```
 
 ---
 
@@ -58,8 +57,8 @@ store.commands.rowSelector.clear()      // 清空所有选中
 
 ```tsx
 let store
-store.commands.expand.toggle(rowKey)
-store.commands.expand.isSelected(rowKey)
+store.commands.expand.toggle(row)
+store.commands.expand.has(row)
 ```
 
 受控/非受控：
@@ -113,6 +112,22 @@ const data = [
 // 自定义 children 字段名
 <Intable columns={columns} data={data} rowKey='id' tree={{ children: 'subItems' }} />
 ```
+
+编程式控制展开/收起（通过 `store.commands.tree`）：
+
+```tsx
+let store
+store.commands.tree.value           // 当前已展开的行对象数组（Row[]）
+store.commands.tree.has(row)        // 判断某行是否已展开
+store.commands.tree.add(row)        // 展开指定行
+store.commands.tree.del(row)        // 收起指定行
+store.commands.tree.toggle(row)     // 切换展开/收起
+store.commands.tree.clear()         // 收起所有行
+store.commands.tree.selectAll(data) // 展开所有行
+store.commands.tree.isAll(data)     // 判断是否全部展开
+```
+
+树形展开本质是一个 `multiple` 选择器，`value` / `initialValue` / `onChange` 同样适用：
 
 ---
 
