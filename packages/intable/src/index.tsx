@@ -6,7 +6,7 @@ import { createElementSize, createResizeObserver, makeResizeObserver } from '@so
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { difference, isEqual, memoize, sumBy, uniq } from 'es-toolkit'
 import { renderComponent, solidComponent } from './components/utils'
-import { log, unFn } from './utils'
+import { log, pxsuffix, unFn } from './utils'
 
 import 'virtual:uno.css'
 import './style.scss'
@@ -86,6 +86,7 @@ export interface TableProps {
   rowKey?: any
   size?: string
   loading?: boolean
+  scroll?: { x?: number | string }
   newRow?: (i: number) => any
   // Component
   Scroll?: Component<any>
@@ -384,7 +385,7 @@ function BasePlugin(): Plugin$0 {
         o => <ScrollFooter {...o} />
       ),
       Table: ({ Table = table }, { store }) => o => {
-        o = combineProps({ ref: el => store.table = el, class: `data-table--table` }, o)
+        o = combineProps({ ref: el => store.table = el, class: `data-table--table`, style: `width: ${pxsuffix(store.scroll?.x) ?? ''}` }, o)
         return <Table {...o} />
       },
       Thead: ({ Thead = thead }, { store }) => o => {

@@ -10,6 +10,8 @@ store.commands.rowSelector.has(row)     // 判断某行是否已选
 store.commands.rowSelector.add(row)     // 编程式选中某行
 store.commands.rowSelector.del(row)     // 取消选中
 store.commands.rowSelector.clear()      // 清空所有选中
+store.commands.rowSelector.isAll(data)  // 判断是否全部选中
+store.commands.rowSelector.isIndeterminate(data)  // 判断是否半选（部分选中）
 
 <Intable
   store={s => store = s}

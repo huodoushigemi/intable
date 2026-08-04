@@ -79,6 +79,8 @@ export const isEmpty = v => v == null || v === '' || (Array.isArray(v) && v.leng
 
 export const parseStyle = s => s ? s.split(';').reduce((o, e) => ((([k, v]) => o[k.trim()] = v.trim())(e.split(':')), o), {}) : {}
 
+export const pxsuffix = v => typeof v == 'number' ? `${v}px` : v
+
 export function findret<T, R>(arr: readonly T[], cb: (e: T, i: number) => R): R | undefined {
   for (let i = 0; i < arr.length; i++) {
     const ret = cb(arr[i], i)

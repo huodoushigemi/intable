@@ -28,6 +28,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 单元格选区/复制粘贴 | 默认开启 |
 | 行/列拖拽排序 | `rowDrag` / `colDrag` prop（默认关闭） |
 | 固定列 | 列加 `fixed: 'left'` 或 `'right'` |
+| 横向滚动宽度 | `scroll={{ x: 1200 }}` |
 | 行号列 | `index={true}` |
 | Tooltip | 列加 `tooltip` |
 | 自定义渲染 | 列加 `render` / `type` / `enum` |
@@ -58,6 +59,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 |------|------|
 | `columns` / `data` / `rowKey` | 列定义 / 行数据 / 唯一标识字段 |
 | `border` / `stickyHeader` / `index` / `loading` | 外观控制 |
+| `scroll` | `{ x }` 横向滚动宽度 |
 | `plugins` | 可选插件数组 |
 | `store` | `(store) => void` 获取内部 store |
 | `onDataChange` / `onColumnsChange` | 数据/列变更回调 |
@@ -78,7 +80,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 校验、验证、必填、required、Zod | `./scenes/03-validation.md` |
 | 排序、sort、筛选、filter、过滤、搜索 | `./scenes/04-sort-filter.md` |
 | 行选择、复选框、展开、树形、行拖拽、行分组 | `./scenes/05-row.md` |
-| 固定列、多级表头、列拖拽 | `./scenes/06-layout.md` |
+| 固定列、多级表头、列拖拽、横向滚动 | `./scenes/06-layout.md` |
 | 自定义渲染、render、tooltip、单元格合并、mergeRow | `./scenes/07-render.md` |
 | 撤销、重做、undo、redo、diff、变更高亮 | `./scenes/08-history-diff.md` |
 | 大数据、虚拟滚动、加载更多、无限滚动、分页、服务端分页 | `./scenes/09-performance.md`、`./scenes/14-pagination.md` |

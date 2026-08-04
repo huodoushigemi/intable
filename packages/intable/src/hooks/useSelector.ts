@@ -107,7 +107,15 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
     has(v) ? del(v) : add(v)
   }
 
-  const isAll = (data: T[]) => !!data.length && data.every(d => has(d))
+  const isAll = (data: T[]) => {
+    data = data.filter(e => isSelectable(e))
+    return !!data.length && data.every(d => has(d))
+  }
+
+  const isIndeterminate = (data: T[]) => {
+    data = data.filter(e => isSelectable(e))
+    return !!data.length && !isAll(data) && data.some(d => has(d))
+  }
 
   const selectAll = (data: T[]) => {
     const val = data.filter(e => isSelectable(e))
@@ -122,7 +130,8 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
     del,
     toggle,
     isAll,
+    isIndeterminate,
     selectAll,
-    get value() { return opt.value }
+    get value() { return opt.value },
   }
 }

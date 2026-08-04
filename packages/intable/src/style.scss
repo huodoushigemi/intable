@@ -222,6 +222,12 @@ input[type="checkbox"].you-checkbox {
   &.checked::after {
     @apply content-["✓"] absolute top-50% left-50% translate--50% text-3 c-#fff z-1;
   }
+  &.indeterminate {
+    @apply bg-current;
+  }
+  &.indeterminate::after {
+    @apply content-["—"] absolute top-50% left-50% translate--50% text-3 c-#fff z-1;
+  }
 }
 
 td.is-editing {

@@ -1,4 +1,4 @@
-# 固定列 / 多级表头 / 列拖拽
+# 固定列 / 多级表头 / 列拖拽 / 横向滚动
 
 ## 固定列（内置）
 
@@ -15,6 +15,18 @@ const columns = [
 ]
 
 <Intable class='h-400px' columns={columns} data={data} border stickyHeader />
+```
+
+## 横向滚动宽度（内置）
+
+通过 `scroll.x` 设置表格最小宽度，当列总宽超过容器时产生横向滚动。
+
+```tsx
+// 设置最小宽度为 1200px
+<Intable columns={columns} data={data} scroll={{ x: 1200 }} />
+
+// 也支持字符串格式
+<Intable columns={columns} data={data} scroll={{ x: 'max-content' }} />
 ```
 
 ---

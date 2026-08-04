@@ -2,10 +2,10 @@ import { For } from 'solid-js'
 import { component } from 'undestructure-macros'
 import { combineProps } from '@solid-primitives/props'
 
-export const Checkbox = component(({ value, onChange, ...props }) => {
-  props = combineProps({ get class() { return `you-checkbox ${value && 'checked'}` } }, props)
+export const Checkbox = component(({ value, indeterminate, onChange, ...props }) => {
+  props = combineProps({ get class() { return `you-checkbox ${value && 'checked'} ${indeterminate && 'indeterminate'}` } }, props)
   return (
-    <input checked={value || false} onChange={(e) => onChange?.(e.currentTarget.checked)} type="checkbox" {...props} />
+    <input checked={value || false} prop:indeterminate={!!indeterminate} onChange={(e) => onChange?.(e.currentTarget.checked)} type="checkbox" {...props} />
   )
 })
 

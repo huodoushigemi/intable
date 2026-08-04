@@ -38,6 +38,7 @@ export const RowSelectionPlugin: Plugin = {
         store.props.rowSelection?.multiple &&
         <label class='flex items-center justify-center w-full h-full absolute inset-0'>
           <Checkbox
+            indeterminate={store.commands.rowSelector.isIndeterminate(store.props.data)}
             value={store.commands.rowSelector.isAll(store.props.data)}
             onChange={v => v ? store.commands.rowSelector.selectAll(store.props.data) : store.commands.rowSelector.clear()}
             disabled={!store.props?.data?.length}
