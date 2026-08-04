@@ -385,7 +385,7 @@ function BasePlugin(): Plugin$0 {
         o => <ScrollFooter {...o} />
       ),
       Table: ({ Table = table }, { store }) => o => {
-        o = combineProps({ ref: el => store.table = el, class: `data-table--table`, style: `width: ${pxsuffix(store.scroll?.x) ?? ''}` }, o)
+        o = combineProps({ ref: el => store.table = el, class: `data-table--table`, style: `width: ${pxsuffix(store.props.scroll?.x) ?? ''}` }, o)
         return <Table {...o} />
       },
       Thead: ({ Thead = thead }, { store }) => o => {
