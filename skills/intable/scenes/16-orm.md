@@ -70,7 +70,7 @@ const userTable = {
 
 ### 外键单选（`type: 'fk'`）
 
-只存储关联对象的 ID，值为 ID 本身。
+只存储关联对象的 ID，值为 ID 本身。使用 `foreignField` 将外键对象回填到当前行中。
 
 ```tsx
 const deptTable = {
@@ -81,18 +81,19 @@ const deptTable = {
 const userTable = {
   columns: [
     { id: 'name', name: '姓名', width: 120 },
-    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', get table() { return deptTable } },
+    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', foreignField: 'dept', get table() { return deptTable } },
   ],
   rowKey: 'id',
 }
 
 // 数据示例
 { id: 1, name: 'Alice', dept_id: 1 }
+// 回填后可访问 row.dept.name
 ```
 
 ### 外键多选（`type: 'fks'`）
 
-存储多个关联对象的 ID 数组。
+存储多个关联对象的 ID 数组。使用 `foreignField` 将外键对象数组回填到当前行中。
 
 ```tsx
 const postTable = {
@@ -106,13 +107,14 @@ const postTable = {
 const userTable = {
   columns: [
     { id: 'name', name: '姓名', width: 120 },
-    { id: 'post_ids', name: '文章', width: 200, editable: true, type: 'fks', get table() { return postTable } },
+    { id: 'post_ids', name: '文章', width: 200, editable: true, type: 'fks', foreignField: 'posts', get table() { return postTable } },
   ],
   rowKey: 'id',
 }
 
 // 数据示例
 { id: 1, name: 'Alice', post_ids: [1, 2, 3] }
+// 回填后可访问 row.posts[0].title
 ```
 
 ---
@@ -148,7 +150,7 @@ const userTable = {
     { id: 'active', name: '在职', width: 70, editable: true, type: 'checkbox' },
     { id: 'manager', name: '上级', width: 120, editable: true, type: 'obj', get table() { return userTable } },
     { id: 'roles', name: '角色', width: 200, editable: true, type: 'objs', get table() { return roleTable } },
-    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', get table() { return deptTable } },
+    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', foreignField: 'dept', get table() { return deptTable } },
   ],
   rowKey: 'id',
   request: async (params) => {

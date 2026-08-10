@@ -57,7 +57,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 
 | Prop | 说明 |
 |------|------|
-| `columns` / `data` / `rowKey` | 列定义 / 行数据 / 唯一标识字段 |
+| `columns` / `data` / `rowKey` / `request` | 列定义 / 行数据 / 唯一标识字段 / 异步数据请求 |
 | `border` / `stickyHeader` / `index` / `loading` | 外观控制 |
 | `scroll` | `{ x }` 横向滚动宽度 |
 | `plugins` | 可选插件数组 |
@@ -88,6 +88,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 主题、暗色、列显示隐藏、Excel、导入导出、自定义插件 | `./scenes/11-advanced.md` |
 | CRUD、增删改查、新增行、删除行、保存、提交 API、刷新 | `./scenes/12-crud.md` |
 | 关联、关系、ORM、对象关系映射、单选、多选、关联选择、嵌套表格、级联 | `./scenes/16-orm.md` |
+| request、异步数据、服务端请求 | `./scenes/request.md` |
 
 ---
 

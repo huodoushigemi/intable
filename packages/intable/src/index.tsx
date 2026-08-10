@@ -22,7 +22,7 @@ import { ResizePlugin } from './plugins/ResizePlugin'
 import { DragPlugin } from './plugins/DragPlugin'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
-import { SortPlugin } from './plugins/SortPlugin'
+import { SortPlugin, type SortKey } from './plugins/SortPlugin'
 import { CellMergePlugin } from './plugins/CellMergePlugin'
 import { TreePlugin } from './plugins/TreePlugin'
 import { HeaderGroupPlugin } from './plugins/HeaderGroup'
@@ -92,11 +92,11 @@ export interface TableProps {
   scroll?: { x?: number | string }
   newRow?: (i: number) => any
   // 
-  request: (params: {
+  request?: (params: {
     page?: number;
     pageSize?: number;
     filters?: AndOrNode[];
-    sort?: Record<string, 'asc' | 'desc'>
+    sorts?: SortKey[];
   }) => Promise<{ data: any[]; total?: number }>
   // Component
   Scroll?: Component<any>
@@ -500,7 +500,7 @@ const RequestPlugin: Plugin = {
     data: ({ data = [] }, { store }) => (
       store.props.request
         ? (store._req ??= runWithOwner(store.owner, () => createResource(
-            () => store.props.request({ filters: store.props.filter?.value }),
+            () => store.props.request!({ filters: store.props.filter?.value, sorts: store.props.sort?.value, page: store.props.pagination?.value, pageSize: store.props.pagination?.pageSize }),
             { initialValue: { data: [], total: 0 } }
           )))[0]().data
         : data
