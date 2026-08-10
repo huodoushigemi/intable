@@ -1,3 +1,4 @@
+import { delay } from 'es-toolkit'
 import type { Plugin } from '..'
 import { isEmpty } from '../utils'
 
@@ -91,13 +92,36 @@ export const ValidatorPlugin: Plugin = {
     }
   }),
   rewriteProps: {
+    Table: ({ Table }, { store }) => o => {
+      return (
+        <Table {...o}>
+          {/* 支持原生 form 验证 */}
+          <input
+            class='hidden'
+            placeholder='Intable 内部隐藏校验输入框'
+            ref={el => {
+              el.setCustomValidity('……')
+              // 需要在下一次提交时触发验证
+              el.form?.addEventListener('submit', () => el.setCustomValidity('……'))
+            }}
+            onInvalid={({ currentTarget: el }) => {
+              store.validate()
+                .then(() => { el.setCustomValidity(''); el.reportValidity(); delay(0).then(() => el.form?.requestSubmit()) })
+                .catch(() => { el.setCustomValidity('error') })
+            }}
+          />
+          {o.children}
+        </Table>
+      
+      )
+    },
     Td: ({ Td }, { store }) => o => {
       const error = () => store.cellValidationErrors[o.data[store.props.rowKey]]?.[o.col.id]
 
       return (
         <Td {...o} class={o.class + ' ' + (error() != null ? 'is-invalid' : '')}>
           {/*@once*/ o.children}
-          
+
           {error() != null && <div class='cell-validation-error'>{(() => {
             const val = o.data[o.col.id]
             queueMicrotask(() => store.validateCell(val, o.data, o.col).catch(() => {}))

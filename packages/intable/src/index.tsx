@@ -1,4 +1,4 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner, createRenderEffect } from 'solid-js'
+import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner, createRenderEffect, createResource } from 'solid-js'
 import { createMutable, reconcile } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
@@ -35,6 +35,9 @@ import { TooltipPlugin } from './plugins/TooltipPlugin'
 import { KeyEachPlugin } from './plugins/KeyEachPlugin'
 import { PaginationPlugin } from './plugins/PaginationPlugin'
 import { BranchGraphPlugin } from './plugins/BranchGraphPlugin'
+import type { AndOrNode } from './components/AndOr'
+import { OrmPlugin } from './plugins/OrmPlugin'
+import { get, set } from 'es-toolkit/compat'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -88,6 +91,13 @@ export interface TableProps {
   loading?: boolean
   scroll?: { x?: number | string }
   newRow?: (i: number) => any
+  // 
+  request: (params: {
+    page?: number;
+    pageSize?: number;
+    filters?: AndOrNode[];
+    sort?: Record<string, 'asc' | 'desc'>
+  }) => Promise<{ data: any[]; total?: number }>
   // Component
   Scroll?: Component<any>
   Table?: Component<any>
@@ -128,6 +138,7 @@ export interface TDProps {
   value?: any; onChange?: (v) => void
   children?: JSX.Element;
   rowspan?: number; colspan?: number
+  [key: string]: any
 }
 
 type Obj = Record<string | symbol, any>
@@ -260,7 +271,18 @@ const TBody = () => {
       <props.EachRows each={props.data}>{(row, rowIndex) => (
         <props.Tr y={rowIndex()} data={row()}>
           <props.EachCells each={props.columns}>{(col, colIndex) => (
-            <props.Td col={col()} x={colIndex()} y={rowIndex()} data={row()} value={row()[col().id]} onChange={v => store.commands.rowChange({ ...row(), [col().id]: v })} />
+            <props.Td
+              col={col()}
+              x={colIndex()}
+              y={rowIndex()}
+              data={row()}
+              value={get(row(), col().id)}
+              onChange={v => {
+                const data = { ...row() }
+                set(data, col().id, v)
+                store.commands.rowChange(data)
+              }}
+            />
           )}</props.EachCells>
         </props.Tr>
       )}</props.EachRows>
@@ -323,7 +345,7 @@ function BasePlugin(): Plugin$0 {
       }
     },
     rewriteProps: {
-      data: ({ data = [] }) => data,
+      data: ({ data = [] }, { store }) => data,
       columns: ({ columns = [] }) => columns,
       newRow: ({ newRow }, { store }) => function () {
         const ret = newRow?.(...arguments) || {}
@@ -468,6 +490,24 @@ function BasePlugin(): Plugin$0 {
   }
 }
 
+const RequestPlugin: Plugin = {
+  name: 'request',
+  priority: Infinity,
+  store: (store) => ({
+    // 
+  }),
+  rewriteProps: {
+    data: ({ data = [] }, { store }) => (
+      store.props.request
+        ? (store._req ??= runWithOwner(store.owner, () => createResource(
+            () => store.props.request({ filters: store.props.filter?.value }),
+            { initialValue: { data: [], total: 0 } }
+          )))[0]().data
+        : data
+    )
+  }
+}
+
 const IndexPlugin: Plugin = {
   name: 'index',
   priority: -Infinity,
@@ -555,4 +595,6 @@ export const defaultsPlugins = [
   KeyEachPlugin,
   PaginationPlugin,
   BranchGraphPlugin,
+  RequestPlugin,
+  OrmPlugin,
 ]

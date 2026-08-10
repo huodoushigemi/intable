@@ -1,13 +1,10 @@
 import { batch, untrack, useContext } from 'solid-js'
-import { combineProps } from '@solid-primitives/props'
-import { clamp } from 'es-toolkit'
-import { defaultsDeep } from 'es-toolkit/compat'
+import { clamp, toMerged } from 'es-toolkit'
 import { usePointerDrag } from '../hooks'
 
 import { Ctx, type Plugin, type TableColumn, type TDProps, type THProps } from "../index"
-import { log, unFn } from '../utils'
+import { deepChange2, unFn } from '../utils'
 import { createEventListener } from '@solid-primitives/event-listener'
-import { reconcile } from 'solid-js/store'
 
 declare module '../index' {
   interface TableProps {
@@ -94,15 +91,15 @@ export const ResizePlugin: Plugin = {
     [ROW]: [],
   }),
   rewriteProps: {
-    resizable: ({ resizable }) => defaultsDeep(resizable, {
+    resizable: ({ resizable }) => toMerged(resizable ?? {}, {
       col: { enable: true, min: 45, max: 800 },
       row: { enable: false, min: 20, max: 400 }
     }),
     columns: ({ columns }, { store }) => (
       columns = columns.map((e, i) => ({ ...e, [store.ID]: e[store.ID] ??= Symbol() })),
-      columns = columns.map(e => e.resizable === void 0 ? { ...e, resizable: store.props?.resizable?.col.enable } : e),
+      columns = columns.map(e => e.resizable === void 0 ? { ...e, resizable: store.props?.resizable?.col?.enable } : e),
       columns = columns.map((e, i) => store[COL][i] ? { ...e, width: store[COL][i] } : e),
-      untrack(() => batch(() => reconcile(columns, { key: store.ID })(store.__resize__cols ??= [])))
+      untrack(() => batch(() => deepChange2(store.__resize__cols ??= [], columns)))
     ),
     Th: ({ Th }, { store }) => o => {
       return <Th {...o} class={`relative ${o.class}`}>
@@ -110,10 +107,10 @@ export const ResizePlugin: Plugin = {
         {o.col.resizable && <ColHandle {...o} />}
       </Th>
     },
-    Td: ({ Td }, { store }) => !store.props?.resizable?.row.enable ? Td : o => {
+    Td: ({ Td }, { store }) => !store.props?.resizable?.row?.enable ? Td : o => {
       return <Td {...o} class={`relative ${o.class}`}>
         {/*@once*/ o.children}
-        {o.x == 0 && store.props?.resizable?.row.enable && <RowHandle {...o} />}
+        {o.x == 0 && store.props?.resizable?.row?.enable && <RowHandle {...o} />}
       </Td>
     },
     cellStyle: ({ cellStyle }, { store }) => o => {

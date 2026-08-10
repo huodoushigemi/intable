@@ -1,6 +1,6 @@
 ---
 name: intable
-description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (create, read, update, delete), editable cells, validation (built-in or Zod), virtual scroll, sorting, filtering, row selection, expand, tree, drag, history/undo-redo, cell merge, row groups, load more, copy-paste, diff highlight, aggregate/summary row, auto-fill, themes, fixed columns, tooltip, custom cell render, column visibility, Excel import/export, or writing a custom plugin. Load this skill before writing any intable usage or plugin code."
+description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (create, read, update, delete), editable cells, validation (built-in or Zod), virtual scroll, sorting, filtering, row selection, expand, tree, drag, history/undo-redo, cell merge, row groups, load more, copy-paste, diff highlight, aggregate/summary row, auto-fill, themes, fixed columns, tooltip, custom cell render, column visibility, Excel import/export, ORM (object-relational mapping), relational data selection, nested tables, or writing a custom plugin. Load this skill before writing any intable usage or plugin code."
 ---
 
 本 skill 是 intable 组件库的使用索引。**遇到 intable 相关需求时，根据下方场景索引表找到对应文件路径，用 read_file 读取后再输出代码。**
@@ -77,7 +77,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 基础表格、只读展示、行号、border、loading | `./scenes/01-basic.md` |
 | 编辑单元格、新增行、复制粘贴、单元格选区、列宽调整、自动填充、AntdPlugin、ElementPlusPlugin、富编辑器 | `./scenes/02-editing.md` |
 | 自定义编辑器、editor 函数、editorProps、createEditor、全局注册编辑器 | `./scenes/13-custom-editor.md` |
-| 校验、验证、必填、required、Zod | `./scenes/03-validation.md` |
+| 校验、验证、必填、required、Zod、form表单校验 | `./scenes/03-validation.md` |
 | 排序、sort、筛选、filter、过滤、搜索 | `./scenes/04-sort-filter.md` |
 | 行选择、复选框、展开、树形、行拖拽、行分组 | `./scenes/05-row.md` |
 | 固定列、多级表头、列拖拽、横向滚动 | `./scenes/06-layout.md` |
@@ -87,6 +87,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 合计、汇总、aggregate、sum、avg | `./scenes/10-aggregate.md` |
 | 主题、暗色、列显示隐藏、Excel、导入导出、自定义插件 | `./scenes/11-advanced.md` |
 | CRUD、增删改查、新增行、删除行、保存、提交 API、刷新 | `./scenes/12-crud.md` |
+| 关联、关系、ORM、对象关系映射、单选、多选、关联选择、嵌套表格、级联 | `./scenes/16-orm.md` |
 
 ---
 

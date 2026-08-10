@@ -4,8 +4,7 @@ import { delay } from 'es-toolkit'
 import { createMutable } from 'solid-js/store'
 import { type Plugin, type TableColumn } from '..'
 import { Checkbox, Files } from './RenderPlugin/components'
-import { chooseFile, log, resolveOptions, unFn } from '../utils'
-import Textarea from '../components/Textarea'
+import { chooseFile, resolveOptions, unFn } from '../utils'
 
 declare module '../index' {
   interface TableProps {
@@ -27,7 +26,8 @@ export type Editor = (props: EditorOpt) => {
   getValue: () => any
   destroy: () => void
   focus?: () => void
-  blur?: () => void
+  blur?: () => void,
+  dialog?: boolean
 }
 
 export interface EditorOpt {
@@ -124,17 +124,23 @@ export const EditablePlugin: Plugin = {
       const mo = mergeProps(o, {
         ref: v => (el = v, o.ref?.(v)),
         get class() { return [editing() ? 'is-editing' : '', o.class].filter(Boolean).join(' ') },
-        get style() { return [editing() ? `width: ${size.w}px; height: ${size.h}px; padding: 0; ` : '', o.style].filter(Boolean).join(' ') },
+        get style() { return [editing() ? `width: ${size.w}px; height: ${size.h}px; ` : '', o.style].filter(Boolean).join(' ') },
         onClick: e => (input?.focus?.(), o.onClick?.(e)),
         onDblClick: e => (setEditing(editable()), o.onDblClick?.(e)),
-        onKeyDown: e => (e.key == 'Escape' && editorState()?.[0].cancel(), o.onKeyDown?.(e))
+        // onKeyDown: e => (e.key == 'Escape' && editorState()?.[0].cancel(), o.onKeyDown?.(e))
       } as JSX.HTMLAttributes<any>)
       
       return (
         <Td {...mo}>
           {/* @ts-ignore */}
-          {() => editorState()?.[1]?.el
-            ? <div
+          {() => editorState()?.[1]?.dialog ? (
+              <>
+                {o.children}
+                {editorState()?.[1]?.el}
+              </>
+            )
+            : editorState()?.[1]?.el ? (
+              <div
                 class='in-cell-edit-wrapper'
                 tabindex={-1}
                 on:pointerdown={e => e.stopPropagation()}
@@ -147,6 +153,7 @@ export const EditablePlugin: Plugin = {
                 {editorState()?.[1]?.el}
                 {validating() && <span class='cell-validating' />}
               </div>
+            )
             : o.children
           }
           {() => preEdit() &&

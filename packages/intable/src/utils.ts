@@ -158,3 +158,21 @@ export function change2(o1, o2) {
   Object.assign(o1, o2)
   return o1
 }
+
+export function deepChange2(o1, o2) {
+  if (o1 === o2) return o1
+  if (Array.isArray(o1) && Array.isArray(o2)) {
+    o1.length = o2.length
+    for (let i = 0; i < o1.length; i++) {
+      if (isPlainObject(o1[i]) && isPlainObject(o2[i])) deepChange2(o1[i], o2[i])
+      else o1[i] = o2[i]
+    }
+    return o1
+  }
+  for (const k in o1) k in o2 || (delete o1[k])
+  for (const k in o2) {
+    if (isPlainObject(o1[k]) && isPlainObject(o2[k])) deepChange2(o1[k], o2[k])
+    else o1[k] = o2[k]
+  }
+  return o1
+}

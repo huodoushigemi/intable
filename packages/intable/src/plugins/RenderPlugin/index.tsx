@@ -69,21 +69,13 @@ const progress: Render = component(({ value, onChange }) => (
   <Progress value={value} onChange={onChange} />
 ))
 
-const obj: Render = component(({ value, col }) => {
-  const label = () => col.table?.columns?.[0].id
-  const key = () => col.table?.rowKey ?? 'id'
-  return <Tags disabled value={toArr(value).map(e => ({ label: e[label()], value: e[key()] }))} />
-})
-
-export const renders = {
+export const renders: Record<string, Render> = {
   text,
   switch: checkbox,
   checkbox,
   file,
   rate,
   progress,
-  obj,
-  objs: obj,
 }
 
 for (const k in renders) {

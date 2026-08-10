@@ -113,6 +113,12 @@ const data = [
 
 // 自定义 children 字段名
 <Intable columns={columns} data={data} rowKey='id' tree={{ children: 'subItems' }} />
+
+// 自定义缩进宽度（默认 16px）
+<Intable columns={columns} data={data} rowKey='id' tree={{ indent: 20 }} />
+
+// 显示缩进引导线
+<Intable columns={columns} data={data} rowKey='id' tree={{ indentLine: true }} />
 ```
 
 编程式控制展开/收起（通过 `store.commands.tree`）：

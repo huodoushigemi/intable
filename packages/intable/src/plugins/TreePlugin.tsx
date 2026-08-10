@@ -11,6 +11,10 @@ declare module '../index' {
     tree?: {
       /** Field name that holds children rows. Default: `'children'`. */
       children?: string
+      /** Indentation width per tree level in px. Default: `16`. */
+      indent?: number
+      /** Show vertical indent guide lines. Default: `false`. */
+      indentLine?: boolean
     }
   }
   interface TableStore {
@@ -71,6 +75,8 @@ export const TreePlugin: Plugin$0 = store => {
     rewriteProps: {
       tree: ({ tree }) => ({
         children: 'children',
+        indent: 16,
+        indentLine: false,
         ...tree,
       }),
       
@@ -106,17 +112,28 @@ export const TreePlugin: Plugin$0 = store => {
       Td: ({ Td }, { store }) => !store._haschildren ? Td : o => {
         const rowKey = () => store.props.rowKey
         const meta = () => store._treeMeta?.get(o.data?.[rowKey()])
-
+        const indent = () => store.props.tree?.indent ?? 16
+        const indentLine = () => store.props.tree?.indentLine
+ 
         const onDblClick = e => {
           o.onDblClick?.(e)
           if (o.x != firstCol()) return
           meta()?.hasChildren && store.commands.tree.toggle(o.data)
         }
-        
+
+        const renderIndentLines = (depth: number) => {
+          if (!indentLine() || depth === 0) return null
+          return Array.from({ length: depth }, (_, i) => (
+            <span class='in-tree-indent-line' style={{ left: `${i * indent() + indent() / 2 + 10}px` }} />
+          ))
+        }
+
         return (
-          <Td {...o} onDblClick={onDblClick}>
+          <Td {...o} onDblClick={onDblClick} class='relative'>
             {store._haschildren && o.x === firstCol() ? (
-              <div class='flex items-center' style={`padding-left: ${meta()?.depth! * 16}px`}>
+              <>
+              {renderIndentLines(meta()?.depth ?? 0)}
+              <div class='flex items-center' style={`padding-left: ${meta()?.depth! * indent()}px`}>
               {meta()?.hasChildren ? (
                 <ILucideChevronRight
                   class='icon-clickable mr-1'
@@ -125,10 +142,11 @@ export const TreePlugin: Plugin$0 = store => {
                 />
               ) : (
                 // Spacer keeps text aligned with sibling rows that do have an icon
-                <span style='display: inline-block; width: 16px; flex-shrink: 0; margin-right: 4px' />
+                <span style={`display: inline-block; width: ${indent()}px; flex-shrink: 0; margin-right: 4px`} />
               )}
               {o.children}
             </div>
+            </>
             ) : (
               o.children
             )}

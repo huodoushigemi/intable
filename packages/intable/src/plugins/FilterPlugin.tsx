@@ -157,7 +157,7 @@ function evaluateFilterTree(raw: any, node: AndOrNode, type: (e: RuleNode) => st
   return activeChildren.every(child => evaluateFilterTree(raw, child, type))
 }
 
-function passesFilters(row: any, filters: AndOrNode[], columns: TableColumn[]) { 
+export function passesFilters(row: any, filters: AndOrNode[], columns: TableColumn[]) { 
   const colmap = keyBy(columns, c => c.id)
   return evaluateFilterTree(row, { op: 'and', children: filters }, e => normalizeType(colmap[e.field]))
 }

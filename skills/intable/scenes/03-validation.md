@@ -55,6 +55,24 @@ store.cellValidationErrors  // { [rowKey]: { [colId]: string | null } }
 
 ---
 
+## 表单校验集成
+
+表格可参与原生表单校验。在 `<form>` 中使用时，表单提交会自动触发 `store.validate()`：
+
+```tsx
+<form>
+  <Intable columns={columns} data={data} rowKey='id' />
+  <button type='submit'>提交</button>
+</form>
+```
+
+校验失败时，表格会：
+1. 标红错误单元格
+2. 滚动到第一个错误位置
+3. 通过隐藏 input 的 `setCustomValidity()` 阻止表单提交
+
+---
+
 ## Zod 校验（可选插件）
 
 ```bash

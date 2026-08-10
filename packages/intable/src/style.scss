@@ -358,3 +358,8 @@ th[draggable="true"], td[draggable="true"] {
   // the overlay is absolutely positioned relative to this wrapper
   @apply relative;
 }
+
+// tree indent guide lines
+.in-tree-indent-line {
+  @apply absolute top-0 bottom-0 w-1px bg-[--table-b-c] pointer-events-none;
+}

@@ -11,11 +11,11 @@ export const Checkbox = component(({ value, indeterminate, onChange, ...props })
 
 export const Files = component(({ ...props }) => {
   return (
-    <Tags {...props} color='' />
+    <Tags {...props} color='' addable />
   ) 
 })
 
-export const Tags = component(({ value, children, disabled, onChange, onAdd, color, ...props }) => {
+export const Tags = component(({ value, children, disabled, onChange, onAdd, color, addable, ...props }) => {
   props = combineProps({ class: 'in-tags flex flex-wrap items-center gap-2 h-full' }, props)
   const toarr = v => Array.isArray(v) ? v : (v != null ? [v] : [])
   return (
@@ -25,7 +25,7 @@ export const Tags = component(({ value, children, disabled, onChange, onAdd, col
           {children ? children(e) : (e?.text ?? e?.label ?? e?.name ?? e)}
         </Tag>
       )}</For>
-      {!disabled && <Tag disabled onClick={onAdd}><ILucidePlus /></Tag>}
+      {!disabled && addable && <Tag disabled onClick={onAdd}><ILucidePlus /></Tag>}
     </div>
   )
 })
