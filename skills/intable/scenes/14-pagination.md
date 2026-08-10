@@ -24,23 +24,17 @@
 传入 `request` 函数，翻页时自动调用，带 loading 防重复点击。
 
 ```tsx
-const [data, setData] = createSignal([])
-const [total, setTotal] = createSignal(0)
-
 <Intable
   columns={columns}
-  data={data()}          // 仅当前页数据
   loading={isLoading()}  // 可选：配合外部 loading 状态
+  request={async (params) => {
+    // 翻页时触发，参数：(页码, 每页条数)
+    const res = await fetch(`/api/list?page=${params.page}&size=${params.pageSize}`)
+    const json = await res.json()
+    return { data: json.data, total: json.total }
+  }}
   pagination={{
     enable: true,
-    total: total(),      // 服务端返回的总条数
-    request: async ({ page, pageSize }, store) => {
-      // 翻页时触发，参数：(页码, 每页条数)
-      const res = await fetch(`/api/list?page=${page}&size=${pageSize}`)
-      const json = await res.json()
-      setData(json.rows)
-      setTotal(json.total)
-    },
     onChange: (page) => console.log('切到第', page, '页'),
   }}
 />
@@ -57,5 +51,3 @@ const [total, setTotal] = createSignal(0)
 | `defaultValue` | `number`                                               | `1`     | 默认页码                                |
 | `value`        | `number`                                               | —       | 受控模式：当前页码                      |
 | `onChange`     | `(page: number) => void`                               | —       | 页码变化回调                            |
-| `request`      | `({ page, pageSize }, store) => void \| Promise<void>` | —       | 服务端分页请求函数                      |
-| `total`        | `number`                                               | —       | 服务端记录总数（仅 `request` 模式需要） |

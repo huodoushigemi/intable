@@ -363,3 +363,22 @@ th[draggable="true"], td[draggable="true"] {
 .in-tree-indent-line {
   @apply absolute top-0 bottom-0 w-1px bg-[--table-b-c] pointer-events-none;
 }
+
+// select
+.in-select-trigger {
+  transition: border-color 0.2s;
+}
+
+.in-select-dropdown {
+  // min-width: 100%;
+}
+
+.in-select-dropdown .in-tag {
+  font-size: 12px;
+}
+
+.in-select-option-active {
+  // background-color: color-mix(in srgb, var(--c-primary, #51a2ff) 15%, transparent);
+  color: var(--c-primary, #1677ff);
+  font-weight: 500;
+}

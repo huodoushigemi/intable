@@ -490,24 +490,6 @@ function BasePlugin(): Plugin$0 {
   }
 }
 
-const RequestPlugin: Plugin = {
-  name: 'request',
-  priority: Infinity,
-  store: (store) => ({
-    // 
-  }),
-  rewriteProps: {
-    data: ({ data = [] }, { store }) => (
-      store.props.request
-        ? (store._req ??= runWithOwner(store.owner, () => createResource(
-            () => store.props.request!({ filters: store.props.filter?.value, sorts: store.props.sort?.value, page: store.props.pagination?.value, pageSize: store.props.pagination?.pageSize }),
-            { initialValue: { data: [], total: 0 } }
-          )))[0]().data
-        : data
-    )
-  }
-}
-
 const IndexPlugin: Plugin = {
   name: 'index',
   priority: -Infinity,
@@ -562,6 +544,38 @@ const FitColWidthPlugin: Plugin = {
       const hasFitColWidth = createMemo(() => store.props.columns.some(e => !e.width))
       o = combineProps(o, { get style() { return hasFitColWidth() ? 'min-width: 100%' : 'min-width: unset' } })
       return <Table {...o} />
+    }
+  }
+}
+
+const RequestPlugin: Plugin = {
+  name: 'request',
+  priority: -Infinity,
+  store: (store) => ({
+
+  }),
+  rewriteProps: {
+    request: ({ request }, { store }) => {
+      if (!request) return request
+      Promise.resolve().then(() => {
+        untrack(() => store._req ??= runWithOwner(store.owner, () => createResource(
+          () => JSON.stringify({ filters: store.props.filter?.value, sorts: store.props.sort?.value, page: store.props.pagination?.value, pageSize: store.props.pagination?.pageSize }),
+          (params) => store.props.request!(JSON.parse(params)),
+          { initialValue: { data: [], total: 0 } }
+        )))
+      })
+      return request
+    },
+    data: ({ data = [] }, { store }) => (
+      store.props.request
+        ? store._req?.[0]().data ?? []
+        : data
+    ),
+    pagination: ({ pagination }, { store }) => {
+      return {
+        ...pagination,
+        total: store.props.request ? store._req?.[0]().total : pagination?.total,
+      }
     }
   }
 }

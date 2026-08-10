@@ -2,7 +2,7 @@ import { createSignal, createMemo, createSelector } from 'solid-js'
 import { log, toArr } from '../utils'
 import { useControlled } from './useControlled'
 
-interface UseSelectorOpt<T> {
+export interface UseSelectorOpt<T> {
   /**
    * The controlled value of the selector.
    */
@@ -61,9 +61,8 @@ class SingleSet extends KeyedSet {
 
 export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
   opt = useControlled(opt)
-  const { onChange, multiple = false, selectable } = opt
 
-  const Set2 = (v?) => multiple ? new KeyedSet(v, opt.key) : new SingleSet(v, opt.key)
+  const Set2 = (v?) => opt.multiple ? new KeyedSet(v, opt.key) : new SingleSet(v, opt.key)
   
   // const [selected, setSelected] = createSignal(Set2(toArr(initialValue)))
   const selected = createMemo(() => Set2(toArr(opt.value)))
@@ -73,18 +72,18 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
 
   // 检查值是否可选择
   const isSelectable = (v: T): boolean => {
-    return selectable ? selectable(v) : true
+    return opt.selectable ? opt.selectable(v) : true
   }
 
   // 清空选择
   const clear = () => {
-    onChange?.(multiple ? [] : undefined as any)
+    opt.onChange?.(opt.multiple ? [] : undefined as any)
   }
 
   // 设置选择
   const set = (v: T) => {
     if (!isSelectable(v)) return
-    onChange?.(multiple ? [v] : v as any)
+    opt.onChange?.(opt.multiple ? [v] : v as any)
   }
 
   // 添加选择
@@ -92,14 +91,14 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
     if (!isSelectable(v)) return
     const newSet = Set2([...selected()])
     newSet.add(v)
-    onChange?.(multiple ? [...newSet] : [...newSet][0])
+    opt.onChange?.(opt.multiple ? [...newSet] : [...newSet][0])
   }
 
   // 删除选择
   const del = (v: T) => {
     const newSet = Set2([...selected()])
     newSet.delete(v)
-    onChange?.(multiple ? [...newSet] : [...newSet][0])
+    opt.onChange?.(opt.multiple ? [...newSet] : [...newSet][0])
   }
 
   // 切换选择状态
@@ -119,7 +118,7 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
 
   const selectAll = (data: T[]) => {
     const val = data.filter(e => isSelectable(e))
-    onChange?.(multiple ? val : val[0] as any)
+    opt.onChange?.(opt.multiple ? val : val[0] as any)
   }
 
   return {

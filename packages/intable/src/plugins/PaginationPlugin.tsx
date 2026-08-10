@@ -11,16 +11,11 @@ declare module '..' {
       defaultValue?: number
       value?: number
       onChange?: (page: number) => void
-      /** Server-side pagination: called on page change with (page, pageSize).
-       *  Parent should update `data` and `total` in response. */
-      request?: (page: number, pageSize: number) => void | Promise<void>
-      /** Total record count (required for server-side pagination) */
       total?: number
     }
   }
   interface TableStore {
-    _pgnTotal: number
-    _pgnLoading: boolean
+    
   }
 }
 
@@ -28,22 +23,13 @@ declare module '..' {
 export const PaginationPlugin: Plugin = {
   name: 'pagination',
 
-  store: (store) => {
-    return {
-      _pgnTotal: 0,
-      _pgnLoading: false,
-    }
-  },
-
   rewriteProps: {
-    loading: ({ loading }, { store }) => {
-      return store._pgnLoading || loading
-    },
     pagination: ({ pagination }, { store }) => {
       pagination = mergeProps({
         enable: false,
         pageSize: 20,
         defaultValue: 1,
+        total: store.props.data.length,
       } as TableProps['pagination'], pagination)
 
       const ret = untrack(() => store._pgn ??= runWithOwner(store.owner, () => useControlled(pagination!)))
@@ -51,24 +37,10 @@ export const PaginationPlugin: Plugin = {
 
       return ret
     },
-    data: ({ data }, { store }) => {
-      if (!data) return data
-      const p = store.props.pagination as TableProps['pagination']
-      if (!p?.enable) return data
-      // Server-side pagination: parent controls data, plugin only shows footer
-      if (typeof p.request === 'function') {
-        store._pgnTotal = p.total ?? data.length
-        return data
-      }
-      // Client-side pagination: record total, slicing happens in EachRows
-      store._pgnTotal = data.length
-      return data
-    },
     EachRows: ({ EachRows }, { store }) => !store.props.pagination?.enable ? EachRows : (o) => {
       const p = mergeProps(() => store.props.pagination!)
-      if (!p?.enable) return <EachRows {...o} />
       // Server-side request mode: parent already sliced data
-      if (typeof p.request === 'function') return <EachRows {...o} />
+      if (store.props.request) return <EachRows {...o} />
       // Client-side: slice at row level
       const start = () => (p.value! - 1) * p.pageSize!
       const sliced = () => o.each.slice(start(), start() + p.pageSize!)
@@ -90,29 +62,18 @@ function PaginationFooter() {
   const p = mergeProps(() => store.props.pagination as Exclude<TableProps['pagination'], undefined>)
   const page = () => p.value!
   const pageSize = () => p.pageSize!
-  const total = () => Math.ceil(store._pgnTotal / pageSize())
-  const pages = createMemo(() => pageNumbers(page(), total()))
+  const totalPage = () => Math.ceil(p.total! / pageSize())
+  const pages = createMemo(() => pageNumbers(page(), totalPage()))
 
   const setPage = (v: number) => {
-    if (v < 1 || v > total()) return
-    const req = store.props.pagination?.request
-    if (req) {
-      if (store._pgnLoading) return
-      store._pgnLoading = true
-      const ret = req(v, pageSize())
-      if (ret && typeof (ret as Promise<void>).then === 'function') {
-        ;(ret as Promise<void>).finally(() => { store._pgnLoading = false })
-      } else {
-        store._pgnLoading = false
-      }
-    }
+    if (v < 1 || v > totalPage()) return
     store.props.pagination?.onChange?.(v)
   }
 
   return (
     <div class='data-table__pagination flex items-center justify-end gap-1 py-2 text-sm'>
       <span class='mr-2'>
-        共 {store._pgnTotal} 条
+        共 {p.total} 条
       </span>
       <button
         class='data-table__pagination-btn disabled:op-30'
@@ -138,7 +99,7 @@ function PaginationFooter() {
       </For>
       <button
         class='data-table__pagination-btn disabled:op-30'
-        disabled={page() >= total() || store.props.loading}
+        disabled={page() >= totalPage() || store.props.loading}
         onClick={() => setPage(page() + 1)}
       >
         ›

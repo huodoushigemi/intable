@@ -38,8 +38,8 @@ export const Tag = component(({ disabled, value, children, color, onDel, ...prop
   }, props)
   return (
     <div {...props}>
-      {children}
-      {!disabled && <ILucideX class='icon-clickable flex-shrink-0 size-4! ml-1 mr--1 op-75' onClick={onDel} />}
+      {children ?? value}
+      {!disabled && <ILucideX class='icon-clickable flex-shrink-0 size-4! ml-1 mr--1 op-75' on:click={e => { e.stopPropagation(); onDel?.(e) }} />}
     </div>
   )
 })

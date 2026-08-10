@@ -1,13 +1,14 @@
 import { component } from 'undestructure-macros'
 import { Intable, type Plugin, type TableColumn, type TableProps } from '..'
 import { editors, type Editor } from './EditablePlugin'
-import { log, toArr } from '../utils'
+import { isEmpty, log, toArr } from '../utils'
 import { Tags } from './RenderPlugin/components'
 import { createComputed, createResource, createRoot, createSignal, mergeProps, untrack, type Component } from 'solid-js'
 import { Dialog } from '../components/Dialog'
 import { renders, type Render } from './RenderPlugin'
 import { get, set } from 'es-toolkit/compat'
 import { createMutable } from 'solid-js/store'
+import { Select } from '../components/Select'
 
 declare module '../index' {
   interface TableProps {
@@ -19,6 +20,7 @@ declare module '../index' {
      * 会自动将外键对象 组装到当前行数据中，便于在表格中显示外键对象中的其他属性。
      */
     foreignField?: string
+    dialog?: boolean
   }
   interface TableStore {
 
@@ -55,29 +57,27 @@ export const OrmPlugin: Plugin = {
   },
 }
 
-const createDialogEditor = (Comp: Component<any>, extra?): Editor => (
+const createEditor = (Comp: Component<any>): Editor => (
   (aaa) => createRoot(destroy => {
     const { eventKey, value, col, ok, cancel, props, onChange } = aaa
-    const out = extra?.out ?? (v => v)
-    const [v, setV] = createSignal(eventKey || value)
-    const El = (<Comp
-      value={v()}
-      onChange={e => (setV(out(e)), onChange?.(v()), ok())}
-      {...extra}
-      {...props}
-      aaa={aaa}
-    />)
+    const [v, setV] = createSignal(value)
+    let el!: HTMLElement
 
+    setTimeout(() => {
+      el?.showPicker?.()
+    }, 0);
+    
     return {
-      el: (
-        <Dialog title={`选择 ${col.name}`} onCancel={cancel} onOk={ok} class='min-w-[40vw]'>
-          {El}
-        </Dialog>
-      ),
+      el: (<Comp
+        ref={e => (el = e)}
+        value={v()}
+        onChange={e => (setV(e), onChange?.(v()), !Array.isArray(v()) && ok())}
+        {...props}
+        aaa={aaa}
+      />),
       getValue: v,
-      // focus: () => el.focus(),
       destroy,
-      dialog: true
+      dialog: col.dialog
     }
   })
 )
@@ -101,7 +101,7 @@ const FKTags: Render = component(({ col, data, value, onChange, multiple, ...pro
   return <Tags value={rows().map(e => ({ label: e[label()], value: e[key()] }))} onChange={v => onChange?.(multiple ? v : v[0])} {...props} />
 })
 
-const ObjEditor = createDialogEditor(o => {
+const ObjEditor = createEditor(o => {
   const col = mergeProps(() => o.aaa.col) as TableColumn
   const key = () => col.table?.rowKey ?? 'id'
   const multiple = () => col.type == 'objs' || col.type == 'fks'
@@ -110,29 +110,69 @@ const ObjEditor = createDialogEditor(o => {
   const change = (e) => o.onChange(isfk() ? multiple() ? e.map(i => i[key()]) : e?.[key()] ?? null : e)
 
   return (
-    <div class=''>
-      <div class='flex items-center p-3'>
-        <div class='flex items-center gap-2'>
-          <span class='text-sm text-gray-500'>已选择 {selected().length} 项</span>
-          <button type='button' class='text-xs text-gray-400 hover:text-red-500 transition-colors' onClick={() => o.onChange?.(multiple() ? [] : null)}>清空</button>
-        </div>
-        
-        {
-          isfk()
-            ? <FKTags {...o} class='ml-2' col={col} value={selected()} onChange={change} multiple={multiple()} />
-            : <ObjTags {...o} class='ml-2' col={col} value={selected()} onChange={change} multiple={multiple()} />
-        }
-      </div>
+    <>{
+      col.dialog ? 
+        <Dialog title={`选择 ${col.name}`} onCancel={o.aaa.cancel} onOk={o.aaa.ok} class='min-w-[40vw]'>
+          <div class=''>
+            <div class='flex items-center p-3'>
+              <div class='flex items-center gap-2'>
+                <span class='text-sm text-gray-500'>已选择 {selected().length} 项</span>
+                <button type='button' class='text-xs text-gray-400 hover:text-red-500 transition-colors' onClick={() => o.onChange?.(multiple() ? [] : null)}>清空</button>
+              </div>
+              
+              {
+                isfk()
+                  ? <FKTags {...o} class='ml-2' col={col} value={selected()} onChange={change} multiple={multiple()} />
+                  : <ObjTags {...o} class='ml-2' col={col} value={selected()} onChange={change} multiple={multiple()} />
+              }
+            </div>
 
-      <div class='border-t border-gray/20 p-3'>
-        <Intable
-          {...o.aaa.col.table}
-          rowSelection={{ ...o.aaa.col.table?.rowSelection, enable: true, multiple: multiple(), value: o.value, onChange: change }}
+            <div class='border-t border-gray/20 p-3'>
+              <Intable
+                {...o.aaa.col.table}
+                class='max-h-[65vh]'
+                rowSelection={{ ...o.aaa.col.table?.rowSelection, enable: true, multiple: multiple(), value: selected(), onChange: change }}
+              />
+            </div>
+          </div>
+        </Dialog>
+      : <TableSelect
+          {...o}
+          col={col}
+          table={col.table}
+          valueObject={!isfk()}
+          class='min-h-full outline-1.5 outline-offset--1.5 outline-[--c-primary] bg-[--table-bg] py-1'
+          border={false}
+          multiple={multiple()}
         />
-      </div>
-    </div>
+    }</>
   )
 })
+
+export const TableSelect = (o: { value: any, valueObject?, onChange?: (value: any) => void, table: TableProps, [key: string]: any }) => {
+  const key = () => o.table?.rowKey ?? 'id'
+  const multiple = () => o.multiple
+  const isfk = () => !o.valueObject
+  const ks = () => isfk() ? toArr(o.value) : toArr(o.value).map(e => e[key()])
+  const [rows] = createResource(ks, () => fetchDataByKeys(ks(), o.table!), { initialValue: [] })
+  return (
+    <Select
+      {...o}
+      searchable
+      options={rows().map(e => ({ label: e[o.table?.columns?.[0].id], value: isfk() ? e[key()] : e }))}
+      request={({ keyword }) => {
+        return o.table?.request?.({
+          filters: keyword ? [{ field: o.table?.columns?.[0].id, op: 'like', value: keyword }] : []
+        })
+          .then(e => e.data.map(e => ({ label: e[o.table?.columns?.[0].id], value: isfk() ? e[key()] : e })))
+      }}
+      valueKey={isfk() ? undefined : key()}
+      value={o.value}
+      onChange={(e) => o.onChange?.(e)}
+      multiple={multiple()}
+    />
+  )
+}
 
 editors.obj = ObjEditor
 editors.objs = ObjEditor
@@ -146,15 +186,17 @@ renders.objs = o => <ObjTags {...o} disabled multiple />
 const fetchDataByKeys = (() => {
   const wk = new WeakMap()
   const getCache = (table: TableProps) => {
-    const cache = wk.get(table.request) || wk.set(table.request, {}).get(table.request)
+    const cache = wk.get(table.request!) || wk.set(table.request!, {}).get(table.request!)
     return cache[table.rowKey] ??= [{},{}]
   }
   return async (keys: any[], table: TableProps) => {
+    if (!table.request) return []
+    keys = keys.filter(e => !isEmpty(e))
     const [cache, pending] = getCache(table)
     const nocacheKeys = keys.filter(e => !cache[e])
     if (nocacheKeys.length) {
       const ks = nocacheKeys.filter(e => !pending[e])
-      const prom = table.request?.({
+      const prom = table.request({
         filters: [{ field: table.rowKey, op: 'in', value: ks }],
       })
       ks.forEach((k, i) => {

@@ -180,28 +180,29 @@ export const EditablePlugin: Plugin = {
   }
 }
 
-const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
-  ({ eventKey, value, col, ok, cancel, props, onChange }) => createRoot(destroy => {
+export const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor => (
+  (aaa) => createRoot(destroy => {
+    const { eventKey, value, col, ok, cancel, props, onChange } = aaa
     const out = extra?.out ?? (v => v)
-    const [v, setV] = createSignal(eventKey || value)
+    const [v, setV] = createSignal(isSelector ? eventKey || value : value)
     let el!: HTMLElement
-    ;(<Comp
-      ref={e => el = e}
-      class='relative block px-2 size-full z-9 box-border resize-none outline-0'
-      value={v()}
-      onInput={e => (setV(out(e instanceof Event ? e.target.value : e)), onChange?.(v()))}
-      onChange={e => (setV(out(e instanceof Event ? e.target.value : e)), onChange?.(v()), isSelector && ok())}
-      options={col.enum ? resolveOptions(col.enum ?? []) : undefined}
-      {...extra}
-      {...props}
-    />)
 
     setTimeout(() => {
       isSelector && el?.showPicker?.()
     }, 0);
     
     return {
-      el,
+      el: (<Comp
+        ref={e => el = e}
+        class='relative block px-2 size-full z-9 box-border resize-none outline-0'
+        value={v()}
+        onInput={e => (setV(out(e instanceof Event ? e.target.value : e)), onChange?.(v()))}
+        onChange={e => (setV(out(e instanceof Event ? e.target.value : e)), onChange?.(v()), isSelector && !Array.isArray(v()) && ok())}
+        options={col.enum ? resolveOptions(col.enum ?? []) : undefined}
+        {...extra}
+        {...props}
+        aaa={aaa}
+      />),
       getValue: v,
       focus: () => el.focus(),
       destroy,
