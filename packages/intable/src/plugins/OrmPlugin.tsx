@@ -126,8 +126,8 @@ const ObjEditor = createEditor(o => {
               
               {
                 isfk()
-                  ? <FKTags {...o} class='ml-2' col={col} value={selected()} onChange={change} multiple={multiple()} />
-                  : <ObjTags {...o} class='ml-2' col={col} value={selected()} onChange={change} multiple={multiple()} />
+                  ? <FKTags {...o} class='ml-2' col={col} data={o.aaa.data} value={selected()} onChange={change} multiple={multiple()} />
+                  : <ObjTags {...o} class='ml-2' col={col} data={o.aaa.data} value={selected()} onChange={change} multiple={multiple()} />
               }
             </div>
 
