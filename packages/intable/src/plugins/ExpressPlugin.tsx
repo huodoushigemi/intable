@@ -26,7 +26,7 @@ export const ExpressPlugin: Plugin = {
           if (!col.valueGetter && !col.valueSetter) continue
           for (let y = 0; y < store.props.data.length; y++) {
             const row = store.props.data[y]
-            if (col.id! in row) continue
+            if (!col.id) continue
             Object.defineProperty(row, col.id!, {
               get: () => col.valueGetter?.({ col, data: row, x, y }),
               set: (v) => untrack(() => col.valueSetter?.({ col, data: row, value: row[col.id], x, y }, v)),
