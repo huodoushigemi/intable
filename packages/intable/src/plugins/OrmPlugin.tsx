@@ -1,7 +1,7 @@
 import { component } from 'undestructure-macros'
 import { Intable, type Plugin, type TableColumn, type TableProps } from '..'
 import { editors, type Editor } from './EditablePlugin'
-import { isEmpty, log, toArr } from '../utils'
+import { isEmpty, log, toArr, unFn } from '../utils'
 import { Tags } from './RenderPlugin/components'
 import { createComputed, createResource, createRoot, createSignal, mergeProps, untrack, type Component } from 'solid-js'
 import { Dialog } from '../components/Dialog'
@@ -9,12 +9,14 @@ import { renders, type Render } from './RenderPlugin'
 import { get, set } from 'es-toolkit/compat'
 import { createMutable } from 'solid-js/store'
 import { Select } from '../components/Select'
+import type { AndOrNode } from '../components/AndOr'
 
 declare module '../index' {
   interface TableProps {
 
   }
   interface TableColumn {
+    table?: TableProps | ((p: { data: any }) => TableProps)
     /**
      * 外键对象的属性。
      * 会自动将外键对象 组装到当前行数据中，便于在表格中显示外键对象中的其他属性。
@@ -83,15 +85,17 @@ const createEditor = (Comp: Component<any>): Editor => (
 )
 
 const ObjTags = component(({ col, data, value, onChange, multiple, ...props }) => {
-  const label = () => col.table?.columns?.[0].id
-  const key = () => col.table?.rowKey ?? 'id'
+  const table = () => unFn(col.table, { data })
+  const label = () => table()?.columns?.[0].id
+  const key = () => table()?.rowKey ?? 'id'
   return <Tags value={toArr(value).map(e => ({ label: e[label()], value: e[key()] }))} onChange={v => onChange?.(multiple ? v : v[0])} {...props} />
 })
 
 const FKTags: Render = component(({ col, data, value, onChange, multiple, ...props }) => {
-  const label = () => col.table?.columns?.[0].id
-  const key = () => col.table?.rowKey ?? 'id'
-  const [rows] = createResource(() => value, () => fetchDataByKeys(toArr(value).map(e => e && typeof e != 'object' ? e : e[key()]), col.table!), { initialValue: [] })
+  const table = () => unFn(col.table, { data })
+  const label = () => table()?.columns?.[0].id
+  const key = () => table()?.rowKey ?? 'id'
+  const [rows] = createResource(() => value, () => fetchDataByKeys(toArr(value).map(e => e && typeof e != 'object' ? e : e[key()]), table()!), { initialValue: [] })
 
   // 回填外键对象到当前行中
   createComputed(() => {
@@ -103,7 +107,7 @@ const FKTags: Render = component(({ col, data, value, onChange, multiple, ...pro
 
 const ObjEditor = createEditor(o => {
   const col = mergeProps(() => o.aaa.col) as TableColumn
-  const key = () => col.table?.rowKey ?? 'id'
+  const key = () => unFn(col.table, { data: o.aaa.data })?.rowKey ?? 'id'
   const multiple = () => col.type == 'objs' || col.type == 'fks'
   const isfk = () => col.type == 'fk' || col.type == 'fks'
   const selected = () => isfk() ? toArr(o.value).map(e => ({ [key()]: e })) : toArr(o.value)
@@ -138,8 +142,7 @@ const ObjEditor = createEditor(o => {
         </Dialog>
       : <TableSelect
           {...o}
-          col={col}
-          table={col.table}
+          table={unFn(col.table, { data: o.aaa.data })}
           valueObject={!isfk()}
           class='min-h-full outline-1.5 outline-offset--1.5 outline-[--c-primary] bg-[--table-bg] py-1'
           border={false}
@@ -161,9 +164,10 @@ export const TableSelect = (o: { value: any, valueObject?, onChange?: (value: an
       searchable
       options={rows().map(e => ({ label: e[o.table?.columns?.[0].id], value: isfk() ? e[key()] : e }))}
       request={({ keyword }) => {
-        return o.table?.request?.({
-          filters: keyword ? [{ field: o.table?.columns?.[0].id, op: 'like', value: keyword }] : []
-        })
+        const filters = [] as AndOrNode[]
+        if (keyword) filters.push({ field: o.table?.columns?.[0].id, op: 'like', value: keyword })
+        if (o.table?.filter) filters.push(...o.table.filter.value ?? o.table.filter.initialValue ?? o.table.filter.defaultValue ?? [])
+        return o.table?.request?.({ filters })
           .then(e => e.data.map(e => ({ label: e[o.table?.columns?.[0].id], value: isfk() ? e[key()] : e })))
       }}
       valueKey={isfk() ? undefined : key()}
@@ -183,7 +187,7 @@ renders.fks = o => <FKTags {...o} disabled multiple />
 renders.obj = o => <ObjTags {...o} disabled />
 renders.objs = o => <ObjTags {...o} disabled multiple />
 
-const fetchDataByKeys = (() => {
+export const fetchDataByKeys = (() => {
   const wk = new WeakMap()
   const getCache = (table: TableProps) => {
     const cache = wk.get(table.request!) || wk.set(table.request!, {}).get(table.request!)
@@ -192,6 +196,7 @@ const fetchDataByKeys = (() => {
   return async (keys: any[], table: TableProps) => {
     if (!table.request) return []
     keys = keys.filter(e => !isEmpty(e))
+    if (!keys.length) return []
     const [cache, pending] = getCache(table)
     const nocacheKeys = keys.filter(e => !cache[e])
     if (nocacheKeys.length) {

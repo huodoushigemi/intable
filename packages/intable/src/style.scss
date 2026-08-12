@@ -169,8 +169,8 @@
   }
 }
 
-.filter-input {
-  @apply block w-full mt-1 px-1.5 text-[12px] b-1 b-[--table-b-c] rounded outline-none box-border;
+.in-filter-input {
+  @apply block flex-1 mt-1 px-1.5 min-w-40px w-0 text-[12px] b-1 b-[--table-b-c] rounded outline-none box-border;
   font-family: inherit;
   &:focus {
     @apply b-[--c-primary];
@@ -178,6 +178,10 @@
   &::placeholder {
     @apply op-30;
   }
+}
+
+.in-filter-icon {
+  @apply mt-1 px-1 text-[12px] b-1 b-[--table-b-c] rounded outline-none box-border;
 }
 
 .in-input {

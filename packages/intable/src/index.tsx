@@ -5,8 +5,10 @@ import { createLazyMemo } from '@solid-primitives/memo'
 import { createElementSize, createResizeObserver, makeResizeObserver } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { difference, isEqual, memoize, sumBy, uniq } from 'es-toolkit'
+import { get, set } from 'es-toolkit/compat'
 import { renderComponent, solidComponent } from './components/utils'
 import { log, pxsuffix, unFn } from './utils'
+import type { AndOrNode } from './components/AndOr'
 
 import 'virtual:uno.css'
 import './style.scss'
@@ -35,9 +37,8 @@ import { TooltipPlugin } from './plugins/TooltipPlugin'
 import { KeyEachPlugin } from './plugins/KeyEachPlugin'
 import { PaginationPlugin } from './plugins/PaginationPlugin'
 import { BranchGraphPlugin } from './plugins/BranchGraphPlugin'
-import type { AndOrNode } from './components/AndOr'
 import { OrmPlugin } from './plugins/OrmPlugin'
-import { get, set } from 'es-toolkit/compat'
+import { ExpressPlugin } from './plugins/ExpressPlugin'
 
 export const Ctx = createContext({
   props: {} as TableProps2,
@@ -150,7 +151,6 @@ export interface TableColumn extends Obj {
   fixed?: 'left' | 'right'
   class?: any
   style?: any
-  table?: TableProps
   // props?: (props) => JSX.HTMLAttributes<any>
 }
 
@@ -611,4 +611,9 @@ export const defaultsPlugins = [
   BranchGraphPlugin,
   RequestPlugin,
   OrmPlugin,
+  ExpressPlugin,
 ]
+
+
+export { renders } from './plugins/RenderPlugin'
+export { editors } from './plugins/EditablePlugin'

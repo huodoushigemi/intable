@@ -1,6 +1,6 @@
 {
   "name": "intable",
-  "version": "0.0.66",
+  "version": "0.0.67",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -33,6 +33,7 @@
     "@solid-primitives/storage": "^4.3.3",
     "@solid-primitives/utils": "^6.3.2",
     "@tanstack/solid-virtual": "^3.13.12",
+    "dayjs": "^1.11.20",
     "es-toolkit": "^1.39.10",
     "floating-ui-solid": "^1.0.63",
     "solid-element": "^1.9.1",

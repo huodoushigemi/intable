@@ -55,17 +55,17 @@ export const Filter = (props: FilterProps) => {
       on:pointerdown={e => e.stopPropagation()}
       onClick={e => e.stopPropagation()}
     >
-      <Show when={!isValueFree()} fallback={<div class='filter-input min-w-24 op-60 select-none'></div>}>
+      <Show when={!isValueFree()} fallback={<div class='in-filter-input min-w-24 op-60 select-none'></div>}>
         <RuleValueEditor
           field={props.col}
           op={rule()?.op}
-          class='filter-input h-6'
+          class='in-filter-input h-6'
           value={rule()?.value ?? ''}
           enum={props.col.enum}
           onChange={value => updateQuickValue(String(value ?? ''))}
         />
       </Show>
-      <button ref={filterBtn} class={`filter-input w-a! flex items-center justify-center ${tree() && 'bg-blue/20! c-blue b-#00000000!'}`} aria-label='筛选' title='筛选'>
+      <button ref={filterBtn} class={`in-filter-icon ${tree() && 'bg-blue/20! c-blue b-#00000000!'}`} aria-label='筛选' title='筛选'>
         <ILucideFilter class='size-3.5 op-75' />
       </button>
       <Popover

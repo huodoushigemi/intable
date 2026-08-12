@@ -1,5 +1,6 @@
 import { createMemo, mergeProps, type JSX } from 'solid-js'
 import { component } from 'undestructure-macros'
+import dayjs from 'dayjs'
 import { type Plugin, type TDProps } from '../..'
 import { Checkbox, Files, Tags, Rate, Progress } from './components'
 import { getOpt, toArr } from '../../utils'
@@ -76,6 +77,9 @@ export const renders: Record<string, Render> = {
   file,
   rate,
   progress,
+  date: ({ value }) => value ? dayjs(value).format('YYYY-MM-DD') : '',
+  datetime: ({ value }) => value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '',
+  time: text,
 }
 
 for (const k in renders) {

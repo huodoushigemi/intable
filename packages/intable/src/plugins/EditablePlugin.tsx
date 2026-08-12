@@ -24,7 +24,7 @@ declare module '../index' {
 export type Editor = (props: EditorOpt) => {
   el: JSX.Element
   getValue: () => any
-  destroy: () => void
+  destroy?: () => void
   focus?: () => void
   blur?: () => void,
   dialog?: boolean
@@ -102,7 +102,7 @@ export const EditablePlugin: Plugin = {
               validate(ret.getValue()).catch(() => {})
             }
             eventKey = ''
-            ret.destroy()
+            ret.destroy?.()
           })
           return [opt, ret] as const
         }
