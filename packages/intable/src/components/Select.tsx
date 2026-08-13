@@ -3,6 +3,8 @@ import { Floating } from './Popover'
 import { Tags, Tag } from '../plugins/RenderPlugin/components'
 import { unionBy } from 'es-toolkit'
 import { useSelector, type UseSelectorOpt } from '../hooks/useSelector'
+import { createDebouncedMemo } from '@solid-primitives/memo'
+import { renderComponent } from './utils'
 
 export interface SelectOption {
   label: string
@@ -24,6 +26,7 @@ export interface SelectProps {
   class?: string
   style?: string | JSX.CSSProperties
   valueKey?: string
+  initialOpen?: boolean
 }
 
 export const Select = (props: SelectProps) => {
@@ -31,7 +34,7 @@ export const Select = (props: SelectProps) => {
     get key() { return props.valueKey },
     onChange: (v) => props.onChange?.(v)
   }))
-  const [open, setOpen] = createSignal(false)
+  const [open, setOpen] = createSignal(props.initialOpen)
   const [search, setSearch] = createSignal('')
   const border = () => props.border !== false
   let searchInput!: HTMLInputElement
@@ -42,16 +45,12 @@ export const Select = (props: SelectProps) => {
 
   // 使用 request 获取远程数据
   const [remoteOptions] = createResource(
-    () => ({ keyword: search(), open: open() }),
-    async ({ keyword, open }) => {
-      if (!props.request || !open) return []
-      return props.request({ keyword })
-    }
+    createDebouncedMemo(() => ({ keyword: search(), open: open() }), 300, []),
+    o => o.open ? props.request?.(({ keyword: o.keyword })) ?? [] : Promise.resolve([]),
   )
 
   // 合并本地和远程选项
   const allOptions = createMemo(() => {
-    // return unionBy(props.options || [], remoteOptions() || [], e => e.value)
     return unionBy(props.options || [], remoteOptions() || [], e => props.valueKey ? e.value?.[props.valueKey] : e.value)
   })
 
@@ -142,7 +141,7 @@ export const Select = (props: SelectProps) => {
   const floating = (
     <div
       ref={dropdownRef}
-      class='in-select-dropdown bg-white border border-gray/20 rd-sm shadow-lg max-h-60 overflow-hidden flex flex-col z-9'
+      class='in-select-dropdown bg-white border border-gray/20 rd-sm shadow-lg overflow-hidden flex flex-col z-9'
     >
       <Show when={props.searchable}>
         <div class='p-2 border-b border-gray/10'>
@@ -157,7 +156,7 @@ export const Select = (props: SelectProps) => {
           />
         </div>
       </Show>
-      <div class='overflow-y-auto'>
+      <div class='overflow-y-auto max-h-80'>
         <Show when={filteredOptions().length > 0} fallback={<div class='p-3 text-sm text-gray-400 text-center'>无数据</div>}>
           <For each={filteredOptions()}>
             {opt => (
@@ -165,7 +164,7 @@ export const Select = (props: SelectProps) => {
                 class={`px-3 py-2 text-sm cursor-pointer flex items-center gap-2 transition-colors ${selector.has(opt.value) ? 'in-select-option-active' : 'hover:bg-gray/5'} ${opt.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={() => handleSelect(opt)}
               >
-                <span class='flex-1 truncate'>{opt.label}</span>
+                <span class='flex-1 truncate'>{renderComponent(opt.label)}</span>
                 <Show when={props.multiple}>
                   {selector.has(opt.value) && <ILucideCheck class='size-3' />}
                 </Show>

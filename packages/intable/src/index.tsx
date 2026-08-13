@@ -1,8 +1,8 @@
 import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner, createRenderEffect, createResource } from 'solid-js'
-import { createMutable, reconcile } from 'solid-js/store'
+import { createMutable } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
-import { createElementSize, createResizeObserver, makeResizeObserver } from '@solid-primitives/resize-observer'
+import { createElementSize, makeResizeObserver } from '@solid-primitives/resize-observer'
 import { createScrollPosition } from '@solid-primitives/scroll'
 import { difference, isEqual, memoize, sumBy, uniq } from 'es-toolkit'
 import { get, set } from 'es-toolkit/compat'
@@ -568,13 +568,18 @@ const RequestPlugin: Plugin = {
     },
     data: ({ data = [] }, { store }) => (
       store.props.request
-        ? store._req?.[0]().data ?? []
+        ? store._req?.[0]()?.data ?? []
         : data
+    ),
+    loading: ({ loading }, { store }) => (
+      store.props.request
+        ? loading || store._req?.[0].loading
+        : loading
     ),
     pagination: ({ pagination }, { store }) => {
       return {
         ...pagination,
-        total: store.props.request ? store._req?.[0]().total : pagination?.total,
+        total: store.props.request ? store._req?.[0]()?.total : pagination?.total,
       }
     }
   }

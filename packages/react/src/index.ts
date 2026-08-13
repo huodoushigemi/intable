@@ -1,13 +1,11 @@
 import { useEffect, useRef, createElement as h, type FC, useMemo } from 'react'
 import { createRoot, flushSync } from './utils'
 
-import { solidComponent } from '../../intable/src/components/utils'
-// #if DEV
-import '../../intable/src/wc'
-// #else
-import 'intable/wc'
 import { type TableProps } from 'intable'
-// #endif
+// import { solidComponent } from '../../intable/src/components/utils'
+// import '../../intable/src/wc'
+import 'intable/wc'
+import { solidComponent } from 'intable/components/utils'
 
 import './style.scss'
 

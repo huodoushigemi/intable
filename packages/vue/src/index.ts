@@ -1,5 +1,6 @@
 import { onCleanup, createRenderEffect } from 'solid-js'
 import { type Plugin, type TableProps } from 'intable'
+import { solidComponent } from 'intable/components/utils'
 import 'intable/wc'
 import './style.scss'
 
@@ -51,13 +52,13 @@ const VModelPlugin: Plugin = {
 }
 
 export const component = <T extends Record<string, any>>(Comp: Component<T>) => {
-  return (props: T) => {
+  return solidComponent((props: T) => {
     const root = document.createDocumentFragment()
     root.remove ??= () => {}
     createRenderEffect(() => render(h(Comp, { ...props }), root))
     onCleanup(() => render(null, root))
     return root
-  }
+  })
 }
 
 export default Intable

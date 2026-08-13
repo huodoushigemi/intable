@@ -6,7 +6,7 @@ import { Tags } from './RenderPlugin/components'
 import { createComputed, createResource, createRoot, createSignal, mergeProps, untrack, useContext, type Component } from 'solid-js'
 import { Dialog } from '../components/Dialog'
 import { renders, type Render } from './RenderPlugin'
-import { get, set } from 'es-toolkit/compat'
+import { get, set, iteratee } from 'es-toolkit/compat'
 import { createMutable } from 'solid-js/store'
 import { Select } from '../components/Select'
 import type { AndOrNode } from '../components/AndOr'
@@ -17,7 +17,7 @@ declare module '../index' {
 
   }
   interface TableColumn {
-    table?: TableProps | ((p: { data: any }) => TableProps)
+    table?: TableProps | ((p: { data: any }) => RequestTableProps)
     /**
      * 外键对象的属性。
      * 会自动将外键对象 组装到当前行数据中，便于在表格中显示外键对象中的其他属性。
@@ -28,6 +28,10 @@ declare module '../index' {
   interface TableStore {
 
   }
+}
+
+interface RequestTableProps extends TableProps {
+  rowLabel?: string | Component<{ data: any }>
 }
 
 
@@ -86,14 +90,15 @@ const createEditor = (Comp: Component<any>): Editor => (
 
 const ObjTags = component(({ col, data, value, onChange, multiple, ...props }) => {
   const table = () => unFn(col.table, { data })
-  const label = () => table()?.columns?.[0].id
+  // todo
+  const label = iteratee(table().rowLabel ?? table()?.columns?.[0].id)
   const key = () => table()?.rowKey ?? 'id'
-  return <Tags value={toArr(value).map(e => ({ label: e[label()], value: e[key()] }))} onChange={v => onChange?.(multiple ? v : v[0])} color='' {...props} />
+  return <Tags value={toArr(value).map(e => ({ label: label(e), value: e[key()] }))} onChange={v => onChange?.(multiple ? v : v[0])} color='' {...props} />
 })
 
 const FKTags: Render = component(({ col, data, value, onChange, multiple, ...props }) => {
   const table = () => unFn(col.table, { data })
-  const label = () => table()?.columns?.[0].id
+  const label = iteratee(table().rowLabel ?? table()?.columns?.[0].id)
   const key = () => table()?.rowKey ?? 'id'
   const [rows] = createResource(() => value, () => fetchDataByKeys(toArr(value).map(e => e && typeof e != 'object' ? e : e[key()]), table()!), { initialValue: [] })
 
@@ -102,7 +107,7 @@ const FKTags: Render = component(({ col, data, value, onChange, multiple, ...pro
     rows()
     untrack(() => set(data, col.foreignField!, multiple ? rows() : rows()[0]))
   })
-  return <Tags value={rows().map(e => ({ label: e[label()], value: e[key()] }))} onChange={v => onChange?.(multiple ? v : v[0])} color='' {...props} />
+  return <Tags value={rows().map(e => ({ label: label(e), value: e[key()] }))} onChange={v => onChange?.(multiple ? v : v[0])} color='' {...props} />
 })
 
 const ObjEditor = createEditor(o => {
@@ -154,8 +159,9 @@ const ObjEditor = createEditor(o => {
   )
 })
 
-export const TableSelect = (o: { value: any, valueObject?, onChange?: (value: any) => void, table: TableProps, [key: string]: any }) => {
+export const TableSelect = (o: { value: any, valueObject?, onChange?: (value: any) => void, table: RequestTableProps, [key: string]: any }) => {
   const key = () => o.table?.rowKey ?? 'id'
+  const label = iteratee(o.table.rowLabel ?? o.table?.columns?.[0].id)
   const multiple = () => o.multiple
   const isfk = () => !o.valueObject
   const ks = () => isfk() ? toArr(o.value) : toArr(o.value).map(e => e[key()])
@@ -164,18 +170,19 @@ export const TableSelect = (o: { value: any, valueObject?, onChange?: (value: an
     <Select
       {...o}
       searchable
-      options={rows().map(e => ({ label: e[o.table?.columns?.[0].id], value: isfk() ? e[key()] : e }))}
+      options={rows().map(e => ({ label: label(e), value: isfk() ? e[key()] : e }))}
       request={async ({ keyword }) => {
         const filters = [] as AndOrNode[]
-        if (keyword) filters.push({ field: o.table?.columns?.[0].id, op: 'like', value: keyword })
+        if (keyword) filters.push({ field: o.table?.columns?.[0].id, op: 'contains', value: keyword })
         if (o.table?.filter) filters.push(...o.table.filter.value ?? o.table.filter.initialValue ?? o.table.filter.defaultValue ?? [])
         return o.table?.request?.({ filters })
-          .then(e => e.data.map(e => ({ label: e[o.table?.columns?.[0].id], value: isfk() ? e[key()] : e }))) ?? []
+          .then(e => e.data.map(e => ({ label: label(e), value: isfk() ? e[key()] : e }))) ?? []
       }}
       valueKey={isfk() ? undefined : key()}
       value={o.value}
       onChange={(e) => o.onChange?.(e)}
       multiple={multiple()}
+      initialOpen
     />
   )
 }
