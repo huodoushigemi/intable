@@ -8,7 +8,6 @@ import { difference, isEqual, memoize, sumBy, uniq } from 'es-toolkit'
 import { get, set } from 'es-toolkit/compat'
 import { renderComponent, solidComponent } from './components/utils'
 import { log, pxsuffix, unFn } from './utils'
-import type { AndOrNode } from './components/AndOr'
 
 import 'virtual:uno.css'
 import './style.scss'
@@ -24,7 +23,7 @@ import { ResizePlugin } from './plugins/ResizePlugin'
 import { DragPlugin } from './plugins/DragPlugin'
 import { RowGroupPlugin } from './plugins/RowGroupPlugin'
 import { ExpandPlugin } from './plugins/ExpandPlugin'
-import { SortPlugin, type SortKey } from './plugins/SortPlugin'
+import { SortPlugin } from './plugins/SortPlugin'
 import { CellMergePlugin } from './plugins/CellMergePlugin'
 import { TreePlugin } from './plugins/TreePlugin'
 import { HeaderGroupPlugin } from './plugins/HeaderGroup'
@@ -37,6 +36,7 @@ import { TooltipPlugin } from './plugins/TooltipPlugin'
 import { KeyEachPlugin } from './plugins/KeyEachPlugin'
 import { PaginationPlugin } from './plugins/PaginationPlugin'
 import { BranchGraphPlugin } from './plugins/BranchGraphPlugin'
+import { RequestPlugin } from './plugins/RequestPlugin'
 import { OrmPlugin } from './plugins/OrmPlugin'
 import { ExpressPlugin } from './plugins/ExpressPlugin'
 
@@ -92,13 +92,6 @@ export interface TableProps {
   loading?: boolean
   scroll?: { x?: number | string }
   newRow?: (i: number) => any
-  // 
-  request?: (params: {
-    page?: number;
-    pageSize?: number;
-    filters?: AndOrNode[];
-    sorts?: SortKey[];
-  }) => Promise<{ data: any[]; total?: number }>
   // Component
   Scroll?: Component<any>
   Table?: Component<any>
@@ -544,43 +537,6 @@ const FitColWidthPlugin: Plugin = {
       const hasFitColWidth = createMemo(() => store.props.columns.some(e => !e.width))
       o = combineProps(o, { get style() { return hasFitColWidth() ? 'min-width: 100%' : 'min-width: unset' } })
       return <Table {...o} />
-    }
-  }
-}
-
-const RequestPlugin: Plugin = {
-  name: 'request',
-  priority: -Infinity,
-  store: (store) => ({
-
-  }),
-  rewriteProps: {
-    request: ({ request }, { store }) => {
-      if (!request) return request
-      Promise.resolve().then(() => {
-        untrack(() => store._req ??= runWithOwner(store.owner, () => createResource(
-          () => JSON.stringify({ filters: store.props.filter?.value, sorts: store.props.sort?.value, page: store.props.pagination?.value, pageSize: store.props.pagination?.pageSize }),
-          (params) => store.props.request!(JSON.parse(params)),
-          { initialValue: { data: [], total: 0 } }
-        )))
-      })
-      return request
-    },
-    data: ({ data = [] }, { store }) => (
-      store.props.request
-        ? store._req?.[0]()?.data ?? []
-        : data
-    ),
-    loading: ({ loading }, { store }) => (
-      store.props.request
-        ? loading || store._req?.[0].loading
-        : loading
-    ),
-    pagination: ({ pagination }, { store }) => {
-      return {
-        ...pagination,
-        total: store.props.request ? store._req?.[0]()?.total : pagination?.total,
-      }
     }
   }
 }

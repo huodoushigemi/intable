@@ -1,273 +1,217 @@
-
 # request 异步数据请求
 
-使用 `request` 函数从服务端加载数据，接收查询参数，返回 `{ data, total }`。
+`request` 是**内置功能**（非插件），传入 `request` 函数后，`data`、`loading`、`pagination` 自动由请求驱动，无需手动管理。
+
+---
+
+## 基本用法
 
 ```tsx
 const columns = [
   { id: 'name', name: '姓名', width: 120 },
   { id: 'age',  name: '年龄', width: 80 },
 ]
-const table = {
-  columns,
-  rowKey: 'id',
-  request: async (params) => {
+
+<Intable
+  class='h-60vh'
+  columns={columns}
+  rowKey='id'
+  request={async (params) => {
     const res = await fetch('/api/users', { method: 'POST', body: JSON.stringify(params) })
     return res.json() // { data: [...], total: 100 }
-  }
-}
-
-<Intable class='h-60vh' {...table} />
+  }}
+/>
 ```
 
-### params 参数
+---
 
-| 字段 | 说明 |
-|------|------|
-| `params.filters` | 筛选条件数组 |
-| `params.sorts` | 排序配置 |
-| `params.page` | 分页页码 |
-| `params.pageSize` | 分页大小 |
+## params 参数
 
-### 本地数据模拟
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `params.filters` | `AndOrNode[]` | 筛选条件（树形结构，支持 and/or 嵌套） |
+| `params.sorts` | `SortKey[]` | 排序配置 |
+| `params.page` | `number` | 当前页码 |
+| `params.pageSize` | `number` | 每页条数 |
+
+> **自动触发：** filters / sorts / page / pageSize 任一变化时，自动重新请求（300ms 防抖）。
+
+---
+
+## store.request 访问
+
+传入 `request` 后，`store.request` 暴露以下属性：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `store.request.data` | `{ data: any[], total: number }` | 请求返回的完整数据 |
+| `store.request.loading` | `boolean` | 是否正在请求中 |
+| `store.request.error` | `any` | 请求错误 |
+| `store.request.mutate` | `Setter<any>` | 手动更新缓存数据（乐观更新） |
+| `store.request.refresh` | `() => void` | 手动触发重新请求 |
 
 ```tsx
-import { passesFilters } from 'intable/plugins/FilterPlugin'
+const storeRef = useRef()
 
-const mockRequest = async (data, params, columns) => {
-  const filteredData = data.filter(row => passesFilters(row, params.filters, columns))
-  return { data: filteredData, total: filteredData.length }
-}
+// 手动刷新
+storeRef.current.request.refresh()
 
-const table = {
-  columns,
-  rowKey: 'id',
-  request: async (params) => mockRequest(localData, params, table.columns),
+// 乐观更新
+storeRef.current.request.mutate(prev => ({
+  ...prev,
+  data: [...prev.data, newRow],
+}))
+```
+
+---
+
+## 与分页配合
+
+`request` 模式下 `pagination.total` 自动取自请求返回的 `total`，无需手动传递：
+
+```tsx
+<Intable
+  class='h-60vh'
+  columns={columns}
+  rowKey='id'
+  pagination={{ enable: true, pageSize: 20 }}
+  request={async (params) => {
+    const res = await api.getUsers(params)
+    return { data: res.data.list, total: res.data.total }
+  }}
+/>
+```
+
+---
+
+## 与筛选/排序配合
+
+筛选和排序参数自动传递给 `request`，无需手动桥接：
+
+```tsx
+const columns = [
+  { id: 'name', name: '姓名', width: 120, filterable: true, sortable: true },
+  { id: 'age',  name: '年龄', width: 80, filterable: true, sortable: true, type: 'number' },
+]
+
+<Intable
+  class='h-60vh'
+  columns={columns}
+  rowKey='id'
+  request={async (params) => {
+    // params.filters 和 params.sorts 已自动包含筛选/排序状态
+    return api.getUsers(params)
+  }}
+/>
+```
+
+---
+
+## 与 store 联动示例
+
+```tsx
+import { useRef } from 'react'
+import { Intable } from '@intable/react'
+import type { TableStore } from 'intable'
+import { Button } from 'antd'
+
+export default function RequestDemo() {
+  const storeRef = useRef<TableStore>()
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button onClick={() => storeRef.current?.request?.refresh()}>刷新</Button>
+        <Button
+          onClick={() => {
+            const store = storeRef.current
+            if (store?.request) {
+              // 乐观更新：在本地插入一行
+              store.request.mutate(prev => ({
+                ...prev,
+                data: [{ id: Symbol(), name: '新用户', age: 20 }, ...prev.data],
+                total: prev.total + 1,
+              }))
+            }
+          }}
+        >
+          乐观新增
+        </Button>
+      </div>
+
+      <Intable
+        store={s => storeRef.current = s}
+        class='h-60vh'
+        columns={[
+          { id: 'name', name: '姓名', width: 120, filterable: true, sortable: true },
+          { id: 'age',  name: '年龄', width: 80, filterable: true, sortable: true, type: 'number' },
+        ]}
+        rowKey='id'
+        pagination={{ enable: true, pageSize: 20 }}
+        request={async (params) => {
+          const res = await fetch('/api/users', { method: 'POST', body: JSON.stringify(params) })
+          return res.json()
+        }}
+        border stickyHeader index
+      />
+    </div>
+  )
 }
 ```
 
-## 服务端示例
+---
 
-querybuilder.go
-```golang
-package querybuilder
+## 服务端示例（Go + GORM）
 
-import (
-	"fmt"
-	"reflect"
-	"strings"
-
-	"gorm.io/gorm"
-)
-
-// Condition 筛选条件
-type Condition struct {
-	Field    string      `json:"field"`
-	Op       string      `json:"op"`
-	Value    interface{} `json:"value"`
-	Children []Condition `json:"children"`
-}
-
-// Conditions 条件数组
-type Conditions []Condition
-
-// Sort 排序条件
-type Sort struct {
-	Field string `json:"field"`
-	Order string `json:"order"` // asc 或 desc
-}
-
-// ApplyFilters 将筛选条件应用到 GORM 查询
-func ApplyFilters(db *gorm.DB, conditions []Condition, fieldMap map[string]string) (*gorm.DB, error) {
-	for _, c := range conditions {
-		sql, args, err := buildSQL(c, fieldMap)
-		if err != nil {
-			return nil, err
-		}
-		db = db.Where(sql, args...)
-	}
-	return db, nil
-}
-
-// ApplySorts 将排序条件应用到 GORM 查询
-func ApplySorts(db *gorm.DB, sorts []Sort, fieldMap map[string]string) (*gorm.DB, error) {
-	for _, s := range sorts {
-		column, ok := fieldMap[s.Field]
-		if !ok || column == "" {
-			continue // 跳过不支持的字段
-		}
-		order := "ASC"
-		if strings.ToLower(s.Order) == "desc" {
-			order = "DESC"
-		}
-		db = db.Order(column + " " + order)
-	}
-	return db, nil
-}
-
-func buildSQL(c Condition, fieldMap map[string]string) (string, []interface{}, error) {
-	op := strings.ToLower(strings.TrimSpace(c.Op))
-	if op == "and" || op == "or" {
-		if len(c.Children) == 0 {
-			return "", nil, fmt.Errorf("%s children cannot be empty", op)
-		}
-		parts := make([]string, 0, len(c.Children))
-		args := make([]interface{}, 0)
-		joiner := " AND "
-		if op == "or" {
-			joiner = " OR "
-		}
-		for _, child := range c.Children {
-			s, a, err := buildSQL(child, fieldMap)
-			if err != nil {
-				return "", nil, err
-			}
-			parts = append(parts, "("+s+")")
-			args = append(args, a...)
-		}
-		return strings.Join(parts, joiner), args, nil
-	}
-
-	column, ok := fieldMap[c.Field]
-	if !ok || column == "" {
-		return "", nil, fmt.Errorf("unsupported field: %s", c.Field)
-	}
-
-	switch op {
-	case "eq":
-		return column + " = ?", []interface{}{c.Value}, nil
-	case "ne":
-		return column + " <> ?", []interface{}{c.Value}, nil
-	case "startwith", "startswith":
-		return column + " LIKE ?", []interface{}{fmt.Sprintf("%v%%", c.Value)}, nil
-	case "endwith", "endswith":
-		return column + " LIKE ?", []interface{}{fmt.Sprintf("%%%v", c.Value)}, nil
-	case "gt":
-		return column + " > ?", []interface{}{c.Value}, nil
-	case "gte":
-		return column + " >= ?", []interface{}{c.Value}, nil
-	case "lt":
-		return column + " < ?", []interface{}{c.Value}, nil
-	case "lte":
-		return column + " <= ?", []interface{}{c.Value}, nil
-	case "between":
-		vals, err := toSlice(c.Value)
-		if err != nil || len(vals) != 2 {
-			return "", nil, fmt.Errorf("between value must be array with 2 elements")
-		}
-		return column + " BETWEEN ? AND ?", []interface{}{vals[0], vals[1]}, nil
-	case "not_between":
-		vals, err := toSlice(c.Value)
-		if err != nil || len(vals) != 2 {
-			return "", nil, fmt.Errorf("not_between value must be array with 2 elements")
-		}
-		return column + " NOT BETWEEN ? AND ?", []interface{}{vals[0], vals[1]}, nil
-	case "contains":
-		return column + " LIKE ?", []interface{}{fmt.Sprintf("%%%v%%", c.Value)}, nil
-	case "in":
-		vals, err := toSlice(c.Value)
-		if err != nil || len(vals) == 0 {
-			return "", nil, fmt.Errorf("in value must be non-empty array")
-		}
-		return column + " IN ?", []interface{}{vals}, nil
-	case "not_in":
-		vals, err := toSlice(c.Value)
-		if err != nil || len(vals) == 0 {
-			return "", nil, fmt.Errorf("not_in value must be non-empty array")
-		}
-		return column + " NOT IN ?", []interface{}{vals}, nil
-	case "blank":
-		return "(" + column + " IS NULL OR " + column + " = '')", nil, nil
-	case "noblank":
-		return "(" + column + " IS NOT NULL AND " + column + " <> '')", nil, nil
-	default:
-		return "", nil, fmt.Errorf("unsupported op: %s", c.Op)
-	}
-}
-
-func toSlice(v interface{}) ([]interface{}, error) {
-	if v == nil {
-		return nil, fmt.Errorf("nil value")
-	}
-	rv := reflect.ValueOf(v)
-	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
-		return nil, fmt.Errorf("value is not array")
-	}
-	out := make([]interface{}, 0, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		out = append(out, rv.Index(i).Interface())
-	}
-	return out, nil
-}
-
-// BuildModelFields 通过反射从 model struct 生成查询字段。
-// key 为 json tag 名，value 为 gorm column 名；嵌套匿名 struct 递归处理
-func BuildModelFields(v interface{}) map[string]string {
-	fields := make(map[string]string)
-	collectModelFields(reflect.TypeOf(v), fields)
-	return fields
-}
-
-func collectModelFields(t reflect.Type, fields map[string]string) {
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		if f.Anonymous {
-			collectModelFields(f.Type, fields)
-			continue
-		}
-		jsonTag := strings.Split(f.Tag.Get("json"), ",")[0]
-		if jsonTag == "" || jsonTag == "-" {
-			continue
-		}
-		col := jsonTag
-		for _, part := range strings.Split(f.Tag.Get("gorm"), ";") {
-			if strings.HasPrefix(part, "column:") {
-				col = strings.TrimPrefix(part, "column:")
-				break
-			}
-		}
-		fields[jsonTag] = col
-	}
-}
-
-```
-
-使用
+`./example/querybuilder.go`
 
 ```golang
 type UserQueryRequest struct {
-	Filters  []querybuilder.Condition `json:"filters"`
-	Sorts    []querybuilder.Sort     `json:"sorts"`
-	Page     int                     `json:"page"`
-	PageSize int                     `json:"pageSize"`
+  Filters  []querybuilder.Condition `json:"filters"`
+  Sorts    []querybuilder.Sort     `json:"sorts"`
+  Page     int                     `json:"page"`
+  PageSize int                     `json:"pageSize"`
 }
 
-// 通过反射自动生成字段映射
-fieldMap := querybuilder.BuildModelFields(User{})
-db, err = querybuilder.ApplyFilters(db, req.Filters, fieldMap)
-db, err = querybuilder.ApplySorts(db, req.Sorts, fieldMap)
-// 统计总数
-var total int64
-if err := db.Count(&total).Error; err != nil {
-  R(c).Fail(http.StatusInternalServerError, err.Error())
-	return
-}
-// 分页查询
-if req.Page < 1 { req.Page = 1 }
-if req.PageSize < 1 { req.PageSize = 10 }
-offset := (req.Page - 1) * req.PageSize
-db = db.Offset(offset).Limit(req.PageSize)
+// handler
+func ListUsers(c *gin.Context) {
+  var req UserQueryRequest
+  if err := c.ShouldBindJSON(&req); err != nil {
+    R(c).Fail(http.StatusBadRequest, err.Error())
+    return
+  }
 
-var data []*User
-if err := db.Find(&data).Error; err != nil {
-  R(c).Fail(http.StatusInternalServerError, err.Error())
-	return
-}
+  db := db.Model(&User{})
 
-R(c).Ok(gin.H{
-	"data":  data,
-	"total": total,
-	"page":  req.Page,
-	"pageSize":  req.PageSize,
-})
+  // 通过反射自动生成字段映射
+  fieldMap := querybuilder.BuildModelFields(User{})
+  db, _ = querybuilder.ApplyFilters(db, req.Filters, fieldMap)
+  db, _ = querybuilder.ApplySorts(db, req.Sorts, fieldMap)
+
+  // 统计总数
+  var total int64
+  db.Count(&total)
+
+  // 分页查询
+  if req.Page < 1 { req.Page = 1 }
+  if req.PageSize < 1 { req.PageSize = 10 }
+  offset := (req.Page - 1) * req.PageSize
+
+  var data []*User
+  db.Offset(offset).Limit(req.PageSize).Find(&data)
+
+  R(c).Ok(gin.H{
+    "data":     data,
+    "total":    total,
+    "page":     req.Page,
+    "pageSize": req.PageSize,
+  })
+}
 ```
+
+---
+
+## 关键约束
+
+- 传入 `request` 后，`data` prop 由请求结果驱动，手动传入的 `data` 会被忽略
+- 请求参数变化自动触发重新请求（300ms 防抖），无需手动监听
