@@ -543,6 +543,7 @@ const FitColWidthPlugin: Plugin = {
 
 export const defaultsPlugins = [
   BasePlugin,
+  RequestPlugin,
   CommandPlugin,
   MenuPlugin,
   CellSelectionPlugin,
@@ -570,7 +571,6 @@ export const defaultsPlugins = [
   KeyEachPlugin,
   PaginationPlugin,
   BranchGraphPlugin,
-  RequestPlugin,
   OrmPlugin,
   ExpressPlugin,
 ]

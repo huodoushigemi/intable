@@ -3,14 +3,14 @@ import { Intable, Ctx, type Plugin, type TableColumn, type TableProps } from '..
 import { editors, type Editor } from './EditablePlugin'
 import { isEmpty, log, toArr, unFn } from '../utils'
 import { Tags } from './RenderPlugin/components'
-import { createComputed, createResource, createRoot, createSignal, mergeProps, untrack, useContext, type Component } from 'solid-js'
+import { createResource, createRoot, createSignal, getOwner, mergeProps, runWithOwner, untrack, useContext, type Component } from 'solid-js'
 import { Dialog } from '../components/Dialog'
 import { renders, type Render } from './RenderPlugin'
-import { get, set, iteratee } from 'es-toolkit/compat'
-import { createMutable } from 'solid-js/store'
+import { iteratee } from 'es-toolkit/compat'
 import { Select } from '../components/Select'
 import type { AndOrNode } from '../components/AndOr'
 import { solidComponent } from '../components/utils'
+import { useMemoAsync } from '../hooks'
 
 declare module '../index' {
   interface TableProps {
@@ -37,29 +37,30 @@ interface RequestTableProps extends TableProps {
 
 export const OrmPlugin: Plugin = {
   name: 'orm',
-  priority: -Infinity,
+  priority: Infinity,
   store: (store) => ({
     // 
   }),
   rewriteProps: {
-    Table: ({ Table }, { store }) => o => {
-      const state = createMutable({})
-      createComputed(() => {
-        const cols = store.props.columns?.filter(e => (e.type == 'fk' || e.type == 'fks') && e.foreignField)
-        if (!cols.length) return
-        for (const col of cols) {
-          for (const row of store.props.data) {
-            Object.defineProperty(row, col.foreignField!, {
-              get: () => get(state, [col.id, row[store.props.rowKey]]),
-              set: (v) => untrack(() => set(state, [col.id, row[store.props.rowKey]], v)),
-              enumerable: true,
-              configurable: true
-            })
-          }
+    data: ({ data }, { store }) => {
+      for (const col of store.props.columns) {
+        if (col.type != 'fk' && col.type != 'fks') continue
+        if (!col.foreignField) continue
+        for (const row of data) {
+          let cache, owner = getOwner()
+          Object.defineProperty(row, col.foreignField!, {
+            get: () => {
+              const multiple = col.type == 'fks'
+              cache ??= runWithOwner(owner, () => useMemoAsync(() => fetchDataByKeys(toArr(row[col.id]), unFn(col.table, { data: row }))))
+              return multiple ? cache() : cache()?.[0]
+            },
+            enumerable: true,
+            configurable: true,
+          })
         }
-      })
-      return <Table {...o} />
-    },
+      }
+      return data
+    }
   },
 }
 
@@ -101,12 +102,6 @@ const FKTags: Render = component(({ col, data, value, onChange, multiple, ...pro
   const label = iteratee(table().rowLabel ?? table()?.columns?.[0].id)
   const key = () => table()?.rowKey ?? 'id'
   const [rows] = createResource(() => value, () => fetchDataByKeys(toArr(value).map(e => e && typeof e != 'object' ? e : e[key()]), table()!), { initialValue: [] })
-
-  // 回填外键对象到当前行中
-  createComputed(() => {
-    rows()
-    untrack(() => set(data, col.foreignField!, multiple ? rows() : rows()[0]))
-  })
   return <Tags value={rows().map(e => ({ label: label(e), value: e[key()] }))} onChange={v => onChange?.(multiple ? v : v[0])} color='' {...props} />
 })
 

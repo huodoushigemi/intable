@@ -27,7 +27,7 @@ declare module '..' {
 
 export const RequestPlugin: Plugin = {
   name: 'request',
-  priority: -Infinity,
+  priority: Infinity,
   store: (store) => ({
     
   }),
@@ -53,9 +53,9 @@ export const RequestPlugin: Plugin = {
       })
       return request
     },
-    data: ({ data = [] }, { store }) => (
-      store.request
-        ? store.request.data?.data ?? []
+    data: ({ data }, { store }) => (
+      store.props.request
+        ? store.request!.data?.data ?? []
         : data
     ),
     loading: ({ loading }, { store }) => (
