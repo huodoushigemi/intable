@@ -34,7 +34,7 @@ const userTable = {
 const userTable = {
   columns: [
     { id: 'name', name: '姓名', width: 120 },
-    { id: 'manager', name: '上级', width: 120, editable: true, type: 'obj', get table() { return userTable } },
+    { id: 'manager', name: '上级', width: 120, editable: true, type: 'obj', table: () => userTable },
   ],
   rowKey: 'id',
 }
@@ -59,7 +59,7 @@ const roleTable = {
 const userTable = {
   columns: [
     { id: 'name', name: '姓名', width: 120 },
-    { id: 'roles', name: '角色', width: 200, editable: true, type: 'objs', get table() { return roleTable } },
+    { id: 'roles', name: '角色', width: 200, editable: true, type: 'objs', table: () => roleTable },
   ],
   rowKey: 'id',
 }
@@ -81,14 +81,15 @@ const deptTable = {
 const userTable = {
   columns: [
     { id: 'name', name: '姓名', width: 120 },
-    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', foreignField: 'dept', get table() { return deptTable } },
+    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', foreignField: 'dept', table: () => deptTable },
   ],
   rowKey: 'id',
 }
 
 // 数据示例
 { id: 1, name: 'Alice', dept_id: 1 }
-// 回填后可访问 row.dept.name
+// 回填后可访问 data.dept?.name
+{ id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', foreignField: 'dept', table: () => deptTable, render: o => o.data.dept?.name },
 ```
 
 ### 外键多选（`type: 'fks'`）
@@ -107,14 +108,15 @@ const postTable = {
 const userTable = {
   columns: [
     { id: 'name', name: '姓名', width: 120 },
-    { id: 'post_ids', name: '文章', width: 200, editable: true, type: 'fks', foreignField: 'posts', get table() { return postTable } },
+    { id: 'post_ids', name: '文章', width: 200, editable: true, type: 'fks', foreignField: 'posts', table: () => postTable },
   ],
   rowKey: 'id',
 }
 
 // 数据示例
 { id: 1, name: 'Alice', post_ids: [1, 2, 3] }
-// 回填后可访问 row.posts[0].title
+// 回填后可访问 data.posts[0].title | data.posts[0].content
+{ id: 'post_ids', name: '文章', width: 200, editable: true, type: 'fks', foreignField: 'posts', table: () => postTable, render: o => o.data.posts?.map(post => post.title).join(', ') },
 ```
 
 ---
@@ -148,9 +150,9 @@ const userTable = {
     { id: 'age', name: '年龄', width: 80, editable: true, type: 'number' },
     { id: 'email', name: '邮箱', width: 180, editable: true },
     { id: 'active', name: '在职', width: 70, editable: true, type: 'checkbox' },
-    { id: 'manager', name: '上级', width: 120, editable: true, type: 'obj', get table() { return userTable } },
-    { id: 'roles', name: '角色', width: 200, editable: true, type: 'objs', get table() { return roleTable } },
-    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', foreignField: 'dept', get table() { return deptTable } },
+    { id: 'manager', name: '上级', width: 120, editable: true, type: 'obj', table: () => userTable },
+    { id: 'roles', name: '角色', width: 200, editable: true, type: 'objs', table: () => roleTable },
+    { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', foreignField: 'dept', table: () => deptTable },
   ],
   rowKey: 'id',
   request: async (params) => {
@@ -205,8 +207,8 @@ const columns = [
 ```tsx
 const columns = [
   { id: 'name', name: '姓名', width: 120, editable: true, required: true },
-  { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', get table() { return deptTable }, required: true },
-  { id: 'roles', name: '角色', width: 200, editable: true, type: 'objs', get table() { return roleTable }, validator: (value) => { if (!value?.length) throw new Error('请至少选择一个角色'); if (value.length > 3) throw new Error('最多选择 3 个角色') } },
+  { id: 'dept_id', name: '部门', width: 120, editable: true, type: 'fk', table: () => deptTable, required: true },
+  { id: 'roles', name: '角色', width: 200, editable: true, type: 'objs', table: () => roleTable, validator: (value) => { if (!value?.length) throw new Error('请至少选择一个角色'); if (value.length > 3) throw new Error('最多选择 3 个角色') } },
 ]
 ```
 

@@ -53,7 +53,8 @@ export const component = <T extends Record<string, any>>(Comp: FC<T>) => {
     const root = createRoot(el)
 
     createComputed(async () => {
-      await Promise.resolve({ ...props })
+      JSON.stringify(props) // 收集依赖
+      await Promise.resolve()
       flushSync(() => {
         root.render(typeof Comp === 'function' ? h(Comp, props) : Comp);
       });

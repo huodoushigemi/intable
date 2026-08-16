@@ -237,3 +237,8 @@ export function useMemoState(fn) {
   })
   return state
 }
+
+export function noproxy<T extends object>(obj: T): T {
+  obj[$PROXY] = obj
+  return obj
+}

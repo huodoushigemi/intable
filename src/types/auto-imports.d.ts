@@ -6,6 +6,8 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const ILucideCheck: typeof import('~icons/lucide/check.jsx')['default']
+  const ILucideChevronDown: typeof import('~icons/lucide/chevron-down.jsx')['default']
   const ILucideChevronRight: typeof import('~icons/lucide/chevron-right.jsx')['default']
   const ILucideFilter: typeof import('~icons/lucide/filter.jsx')['default']
   const ILucidePlus: typeof import('~icons/lucide/plus.jsx')['default']
