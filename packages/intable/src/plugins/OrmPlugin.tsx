@@ -146,7 +146,7 @@ const ObjEditor = createEditor(o => {
           {...o}
           table={table()}
           valueObject={!isfk()}
-          class='min-h-full outline-1.5 outline-offset--1.5 outline-[--c-primary] bg-[--table-bg] py-1'
+          class='min-h-full outline-1.5 outline-offset--1.5 outline-[--in-c-primary] bg-[--in-table-bg] py-1'
           border={false}
           multiple={multiple()}
         />

@@ -6,22 +6,22 @@
 
 .data-table {
   --bg: #ffffff;
-  --c-primary: #18181b;
+  --in-c-primary: #18181b;
 
-  --menu-bg: #ffffff;
-  --li-hover-bg: #f4f4f5;
+  --in-menu-bg: #ffffff;
+  --in-li-hover-bg: #f4f4f5;
 
-  --table-b: 1px solid var(--table-b-c);
-  --table-b-c: #e4e4e7;
-  --table-c: #09090b;
-  --table-bg: #ffffff;
+  --in-table-b: 1px solid var(--in-table-b-c);
+  --in-table-b-c: #e4e4e7;
+  --in-table-c: #09090b;
+  --in-table-bg: #ffffff;
 
-  --table-header-c: #71717a;
-  --table-header-bg: #ffffff;
+  --in-table-header-c: #71717a;
+  --in-table-header-bg: #ffffff;
 
-  --table-row-hover-bg: #fafafa;
+  --in-table-row-hover-bg: #fafafa;
 
-  --select-area-bg: #18181b14;
+  --in-select-area-bg: #18181b14;
 
   font-size: 14px;
 
@@ -45,21 +45,21 @@
   // Dark mode variant
   &.dark, [data-theme="dark"] & {
     --bg: #09090b;
-    --c-primary: #fafafa;
+    --in-c-primary: #fafafa;
 
-    --menu-bg: #09090b;
-    --li-hover-bg: #27272a;
+    --in-menu-bg: #09090b;
+    --in-li-hover-bg: #27272a;
 
-    --table-b-c: #27272a;
-    --table-c: #fafafa;
-    --table-bg: #09090b;
+    --in-table-b-c: #27272a;
+    --in-table-c: #fafafa;
+    --in-table-bg: #09090b;
 
-    --table-header-c: #71717a;
-    --table-header-bg: #09090b;
+    --in-table-header-c: #71717a;
+    --in-table-header-bg: #09090b;
 
-    --table-row-hover-bg: #18181b;
+    --in-table-row-hover-bg: #18181b;
 
-    --select-area-bg: #ffffff14;
+    --in-select-area-bg: #ffffff14;
 
     color-scheme: dark;
   }

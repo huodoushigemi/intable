@@ -144,7 +144,7 @@ const FillHandleLayer: Component<TableStore> = (store) => {
     const w = ri - l, h = b - t
     if (w <= 0 || h <= 0) return 'display:none;position:absolute'
     return `position:absolute;left:${l}px;top:${t}px;width:${w}px;height:${h}px;` +
-      `border:1.5px dashed var(--c-primary);background:rgba(99,102,241,0.08);pointer-events:none;z-index:3`
+      `border:1.5px dashed var(--in-c-primary);background:rgba(99,102,241,0.08);pointer-events:none;z-index:3`
   })
 
   const [handleEl, setHandleEl] = createSignal<HTMLElement>()
@@ -214,7 +214,7 @@ const FillHandleLayer: Component<TableStore> = (store) => {
   return (
     <>
       <div style={previewStyle()} />
-      <div ref={setHandleEl} title='Drag to fill' class='pointer-events-auto w-2.5 h-2.5 bg-[--c-primary] b-(2px solid) b-[--table-bg] cursor-crosshair' onDblClick={handleDblClick} />
+      <div ref={setHandleEl} title='Drag to fill' class='pointer-events-auto w-2.5 h-2.5 bg-[--in-c-primary] b-(2px solid) b-[--in-table-bg] cursor-crosshair' onDblClick={handleDblClick} />
     </>
   )
 }

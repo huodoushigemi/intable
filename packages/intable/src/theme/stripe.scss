@@ -6,22 +6,22 @@
 
 .data-table {
   --bg: #ffffff;
-  --c-primary: #635bff;
+  --in-c-primary: #635bff;
 
-  --menu-bg: #ffffff;
-  --li-hover-bg: #f6f8fa;
+  --in-menu-bg: #ffffff;
+  --in-li-hover-bg: #f6f8fa;
 
-  --table-b: 1px solid var(--table-b-c);
-  --table-b-c: #e3e8ee;
-  --table-c: #0a2540;
-  --table-bg: #ffffff;
+  --in-table-b: 1px solid var(--in-table-b-c);
+  --in-table-b-c: #e3e8ee;
+  --in-table-c: #0a2540;
+  --in-table-bg: #ffffff;
 
-  --table-header-c: #425466;
-  --table-header-bg: #f7fafc;
+  --in-table-header-c: #425466;
+  --in-table-header-bg: #f7fafc;
 
-  --table-row-hover-bg: #f7fafc;
+  --in-table-row-hover-bg: #f7fafc;
 
-  --select-area-bg: #635bff1a;
+  --in-select-area-bg: #635bff1a;
 
   font-size: 13.5px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -36,7 +36,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--table-header-c);
+    color: var(--in-table-header-c);
   }
 
   &--small {

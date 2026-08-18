@@ -90,13 +90,13 @@ const IconUnsorted = () => (
 )
 
 const IconAsc = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--c-primary,#6366f1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--in-c-primary,#6366f1)">
     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
   </svg>
 )
 
 const IconDesc = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--c-primary,#6366f1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--in-c-primary,#6366f1)">
     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
   </svg>
 )

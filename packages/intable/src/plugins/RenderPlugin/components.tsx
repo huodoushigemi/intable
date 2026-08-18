@@ -75,7 +75,7 @@ export const Progress = component(({ value, disabled, onChange, ...props }) => {
     return v <= 1 ? Math.round(v * 100) : Math.min(100, Math.max(0, Math.round(v)))
   }
   // const color = () => pct() >= 100 ? '#10b981' : pct() >= 60 ? '#3b82f6' : pct() >= 30 ? '#f59e0b' : '#ef4444'
-  const color = () => 'var(--c-primary)'
+  const color = () => 'var(--in-c-primary)'
   props = combineProps({
     get class() { return 'in-progress flex items-center h-full w-full' },
   }, props)

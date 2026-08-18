@@ -6,22 +6,22 @@
 
 .data-table {
   --bg: #ffffff;
-  --c-primary: #0969da;
+  --in-c-primary: #0969da;
 
-  --menu-bg: #ffffff;
-  --li-hover-bg: #f3f4f6;
+  --in-menu-bg: #ffffff;
+  --in-li-hover-bg: #f3f4f6;
 
-  --table-b: 1px solid var(--table-b-c);
-  --table-b-c: #d0d7de;
-  --table-c: #1f2328;
-  --table-bg: #ffffff;
+  --in-table-b: 1px solid var(--in-table-b-c);
+  --in-table-b-c: #d0d7de;
+  --in-table-c: #1f2328;
+  --in-table-bg: #ffffff;
 
-  --table-header-c: #636c76;
-  --table-header-bg: #f6f8fa;
+  --in-table-header-c: #636c76;
+  --in-table-header-bg: #f6f8fa;
 
-  --table-row-hover-bg: #f6f8fa;
+  --in-table-row-hover-bg: #f6f8fa;
 
-  --select-area-bg: #0969da1a;
+  --in-select-area-bg: #0969da1a;
 
   font-size: 14px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
@@ -41,7 +41,7 @@
   }
 
   tbody tr:nth-child(even):hover td {
-    background-color: var(--table-row-hover-bg);
+    background-color: var(--in-table-row-hover-bg);
   }
 
   &--small {
@@ -55,21 +55,21 @@
   // Dark (GitHub Dark Default)
   &.dark, [data-theme="dark"] & {
     --bg: #0d1117;
-    --c-primary: #388bfd;
+    --in-c-primary: #388bfd;
 
-    --menu-bg: #161b22;
-    --li-hover-bg: rgba(177, 186, 196, 0.12);
+    --in-menu-bg: #161b22;
+    --in-li-hover-bg: rgba(177, 186, 196, 0.12);
 
-    --table-b-c: #30363d;
-    --table-c: #e6edf3;
-    --table-bg: #0d1117;
+    --in-table-b-c: #30363d;
+    --in-table-c: #e6edf3;
+    --in-table-bg: #0d1117;
 
-    --table-header-c: #8b949e;
-    --table-header-bg: #161b22;
+    --in-table-header-c: #8b949e;
+    --in-table-header-bg: #161b22;
 
-    --table-row-hover-bg: #161b22;
+    --in-table-row-hover-bg: #161b22;
 
-    --select-area-bg: #388bfd1f;
+    --in-select-area-bg: #388bfd1f;
 
     color-scheme: dark;
 

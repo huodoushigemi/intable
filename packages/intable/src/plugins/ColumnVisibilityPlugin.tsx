@@ -49,7 +49,7 @@ const ColumnVisibilityLayer: Component<TableStore> = (props) => {
         middleware={[offset({ mainAxis: 4 })]}
         reference={(
           <button
-            class='flex items-center justify-center w-6.5 h-6.5 rd-1 shadow-sm b-(1 solid var(--table-b-c)) cursor-pointer bg-[--table-header-bg]'
+            class='flex items-center justify-center w-6.5 h-6.5 rd-1 shadow-sm b-(1 solid var(--in-table-b-c)) cursor-pointer bg-[--in-table-header-bg]'
             title='Column Visibility'
           >
             <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' class='w-3.5 h-3.5'>
@@ -59,15 +59,15 @@ const ColumnVisibilityLayer: Component<TableStore> = (props) => {
         )}
         floating={
           <div
-            class='rd-1.5 shadow-xl py-1 min-w-44 bg-[--table-header-bg]'
-            style='border:1px solid var(--table-b-c);z-index:101'
+            class='rd-1.5 shadow-xl py-1 min-w-44 bg-[--in-table-header-bg]'
+            style='border:1px solid var(--in-table-b-c);z-index:101'
           >
             {/* Header */}
-            <div class='flex items-center justify-between px-3 py-1.5' style='border-bottom:1px solid var(--table-b-c)'>
-              <span class='text-xs font-semibold uppercase tracking-wide' style='color:var(--table-c)'>
+            <div class='flex items-center justify-between px-3 py-1.5' style='border-bottom:1px solid var(--in-table-b-c)'>
+              <span class='text-xs font-semibold uppercase tracking-wide' style='color:var(--in-table-c)'>
                 Columns
               </span>
-              <button class='text-xs cursor-pointer hover:underline c-[--c-primary]' onClick={toggleAll}>
+              <button class='text-xs cursor-pointer hover:underline c-[--in-c-primary]' onClick={toggleAll}>
                 {allHidden() ? 'Show all' : 'Hide all'}
               </button>
             </div>
@@ -77,7 +77,7 @@ const ColumnVisibilityLayer: Component<TableStore> = (props) => {
               <For each={allUserCols()}>
                 {(col) => {
                   return (
-                    <label class='flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer select-none hover:bg-[--li-hover-bg]'>
+                    <label class='flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer select-none hover:bg-[--in-li-hover-bg]'>
                       <input type='checkbox' class='w-3.5 h-3.5 cursor-pointer' checked={!isHidden(col.id)} onChange={() => toggle(col.id)} />
                       <span class='truncate flex-1'>{col.name ?? col.id}</span>
                       <Show when={isHidden(col.id)}>

@@ -1,13 +1,13 @@
 .data-table {
-  --table-b: 1px solid var(--table-b-c);
-  --table-b-c: var(--ant-table-border-color, #f0f0f0);
-  --table-c: var(--ant-color-text, rgba(0,0,0,0.88));
-  --table-bg: var(--ant-color-bg-container, #fff);
+  --in-table-b: 1px solid var(--in-table-b-c);
+  --in-table-b-c: var(--ant-table-border-color, #f0f0f0);
+  --in-table-c: var(--ant-color-text, rgba(0,0,0,0.88));
+  --in-table-bg: var(--ant-color-bg-container, #fff);
 
-  --table-header-c: var(--ant-table-header-color, rgba(0,0,0,0.88));
-  --table-header-bg: var(--ant-table-header-bg, #fafafa);
+  --in-table-header-c: var(--ant-table-header-color, rgba(0,0,0,0.88));
+  --in-table-header-bg: var(--ant-table-header-bg, #fafafa);
 
-  --table-row-hover-bg: var(--ant-table-row-hover-bg, #fafafa);
+  --in-table-row-hover-bg: var(--ant-table-row-hover-bg, #fafafa);
 
   font-size: 14px;
   
@@ -20,7 +20,7 @@
       right: 0;
       height: 1.6em;
       width: 1px;
-      background-color: var(--table-b-c);
+      background-color: var(--in-table-b-c);
       transform: translateY(-50%);
     }
   }

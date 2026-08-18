@@ -1,18 +1,18 @@
 .data-table {
   --bg: var(--el-bg-color, #fff);
 
-  --menu-bg: var(--el-bg-color-overlay, #fff);
-  --li-hover-bg: var(--el-fill-color-light, #f5f7fa);
+  --in-menu-bg: var(--el-bg-color-overlay, #fff);
+  --in-li-hover-bg: var(--el-fill-color-light, #f5f7fa);
 
-  --table-b: 1px solid var(--table-b-c);
-  --table-b-c: var(--el-table-border-color, #ebeef5);
-  --table-c: var(--el-table-text-color, #606266);
-  --table-bg: var(--el-table-tr-bg-color, #fff);
+  --in-table-b: 1px solid var(--in-table-b-c);
+  --in-table-b-c: var(--el-table-border-color, #ebeef5);
+  --in-table-c: var(--el-table-text-color, #606266);
+  --in-table-bg: var(--el-table-tr-bg-color, #fff);
 
-  --table-header-c: var(--el-table-header-text-color, #909399);
-  --table-header-bg: var(--table-bg);
+  --in-table-header-c: var(--el-table-header-text-color, #909399);
+  --in-table-header-bg: var(--in-table-bg);
   
-  --table-row-hover-bg: var(--el-table-row-hover-bg-color, #f5f7fa);
+  --in-table-row-hover-bg: var(--el-table-row-hover-bg-color, #f5f7fa);
 
   line-height: 23px;
   font-size: 14px;

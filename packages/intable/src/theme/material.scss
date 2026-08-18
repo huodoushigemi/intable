@@ -6,22 +6,22 @@
 
 .data-table {
   --bg: #fffbfe;
-  --c-primary: #6750a4;
+  --in-c-primary: #6750a4;
 
-  --menu-bg: #ece6f0;
-  --li-hover-bg: rgba(103, 80, 164, 0.08);
+  --in-menu-bg: #ece6f0;
+  --in-li-hover-bg: rgba(103, 80, 164, 0.08);
 
-  --table-b: 1px solid var(--table-b-c);
-  --table-b-c: #cac4d0;
-  --table-c: #1c1b1f;
-  --table-bg: #fffbfe;
+  --in-table-b: 1px solid var(--in-table-b-c);
+  --in-table-b-c: #cac4d0;
+  --in-table-c: #1c1b1f;
+  --in-table-bg: #fffbfe;
 
-  --table-header-c: #49454f;
-  --table-header-bg: #fffbfe;
+  --in-table-header-c: #49454f;
+  --in-table-header-bg: #fffbfe;
 
-  --table-row-hover-bg: rgba(103, 80, 164, 0.08);
+  --in-table-row-hover-bg: rgba(103, 80, 164, 0.08);
 
-  --select-area-bg: rgba(103, 80, 164, 0.12);
+  --in-select-area-bg: rgba(103, 80, 164, 0.12);
 
   font-size: 14px;
   font-family: 'Roboto', sans-serif;
@@ -38,7 +38,7 @@
   }
 
   tr:not(:last-child) td {
-    border-bottom: 1px solid var(--table-b-c);
+    border-bottom: 1px solid var(--in-table-b-c);
   }
 
   &--small {
@@ -52,21 +52,21 @@
   // Dark variant (M3 dark)
   &.dark, [data-theme="dark"] & {
     --bg: #1c1b1f;
-    --c-primary: #d0bcff;
+    --in-c-primary: #d0bcff;
 
-    --menu-bg: #2b2930;
-    --li-hover-bg: rgba(208, 188, 255, 0.08);
+    --in-menu-bg: #2b2930;
+    --in-li-hover-bg: rgba(208, 188, 255, 0.08);
 
-    --table-b-c: #49454f;
-    --table-c: #e6e1e5;
-    --table-bg: #1c1b1f;
+    --in-table-b-c: #49454f;
+    --in-table-c: #e6e1e5;
+    --in-table-bg: #1c1b1f;
 
-    --table-header-c: #cac4d0;
-    --table-header-bg: #1c1b1f;
+    --in-table-header-c: #cac4d0;
+    --in-table-header-bg: #1c1b1f;
 
-    --table-row-hover-bg: rgba(208, 188, 255, 0.08);
+    --in-table-row-hover-bg: rgba(208, 188, 255, 0.08);
 
-    --select-area-bg: rgba(208, 188, 255, 0.12);
+    --in-select-area-bg: rgba(208, 188, 255, 0.12);
 
     color-scheme: dark;
   }

@@ -39,6 +39,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 自动填充 | `autoFill` prop |
 | Excel 导入/导出 | `store.commands.exportExcel()` / `readExcel()` |
 | 分页 | `pagination` prop |
+| 计算列 | 列加 `valueGetter` / `valueSetter` |
 
 ## 可选插件（需传入 `plugins=[]`）
 
@@ -89,6 +90,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | CRUD、增删改查、新增行、删除行、保存、提交 API、刷新 | `./scenes/12-crud.md` |
 | 关联、关系、ORM、对象关系映射、单选、多选、关联选择、嵌套表格、级联 | `./scenes/16-orm.md` |
 | request、异步数据、服务端请求 | `./scenes/request.md` |
+| 计算列、派生列、valueGetter、valueSetter | `./scenes/express.md` |
 
 ---
 

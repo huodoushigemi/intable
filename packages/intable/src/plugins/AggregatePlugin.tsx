@@ -82,7 +82,7 @@ export const AggregatePlugin: Plugin = {
                     })
                     return (
                       <td
-                        style={`${col.width ? `width:${col.width}px;` : ''};border-top:1px solid var(--table-b-c)`}
+                        style={`${col.width ? `width:${col.width}px;` : ''};border-top:1px solid var(--in-table-b-c)`}
                         class={col.class as string | undefined}
                       >
                         <Show when={col.aggregate} fallback={
@@ -90,7 +90,7 @@ export const AggregatePlugin: Plugin = {
                             <span class='text-xs font-semibold tracking-wide select-none'>{renderComponent(label(), undefined, store)}</span>
                           </Show>
                         }>
-                          <span class='font-mono text-sm tabular-nums c-[--c-primary]'>{renderComponent(val(), undefined, store)}</span>
+                          <span class='font-mono text-sm tabular-nums c-[--in-c-primary]'>{renderComponent(val(), undefined, store)}</span>
                         </Show>
                       </td>
                     )

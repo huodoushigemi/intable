@@ -1,18 +1,19 @@
 import { createComputed, untrack } from 'solid-js'
 import { type Plugin } from '..'
+import { useMemoAsync } from '../hooks'
 
 declare module '../index' {
   interface TableProps {
 
   }
   interface TableColumn {
-    valueGetter?: (o: TDProps) => any
-    valueSetter?: (o: TDProps, v: any) => void
+    valueGetter?: (o: Pick<TDProps, 'data' | 'col'>) => any
+    valueSetter?: (o: Pick<TDProps, 'data' | 'col' | 'value'>) => void
   }
 }
 
 export const ExpressPlugin: Plugin = {
-  name: 'expand',
+  name: 'express',
 
   store: (store) => ({
 
@@ -27,9 +28,10 @@ export const ExpressPlugin: Plugin = {
           for (let y = 0; y < store.props.data.length; y++) {
             const row = store.props.data[y]
             if (!col.id) continue
+            const value = useMemoAsync(() => col.valueGetter?.({ col, data: row }))
             Object.defineProperty(row, col.id!, {
-              get: () => col.valueGetter?.({ col, data: row, x, y }),
-              set: (v) => untrack(() => col.valueSetter?.({ col, data: row, value: row[col.id], x, y }, v)),
+              get: value,
+              set: (v) => untrack(() => col.valueSetter?.({ col, data: row, value: v })),
               enumerable: true,
               configurable: true
             })

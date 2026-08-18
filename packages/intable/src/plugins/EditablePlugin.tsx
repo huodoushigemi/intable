@@ -214,7 +214,7 @@ const Input = o => <input {...o} />
 
 export const editors: Record<string, Editor> = {
   text: createEditor(Input),
-  textarea: createEditor(o => <Textarea autosize={{ minRows: 2, maxRows: 3 }} {...o} class={`${o.class} bg-[--table-bg] outline-(1.5px solid [--c-primary])`} />),
+  textarea: createEditor(o => <Textarea autosize={{ minRows: 2, maxRows: 3 }} {...o} class={`${o.class} bg-[--in-table-bg] outline-(1.5px solid [--in-c-primary])`} />),
   number: createEditor(Input, { type: 'number', out: v => Number(v) }),
   range: createEditor(Input, { type: 'range', out: v => Number(v) }),
   date: createEditor(Input, { type: 'date' }, true),

@@ -141,7 +141,7 @@ export const Select = (props: SelectProps) => {
   const floating = (
     <div
       ref={dropdownRef}
-      class='in-select-dropdown bg-white border border-gray/20 rd-sm shadow-lg overflow-hidden flex flex-col z-9'
+      class='in-select-dropdown'
     >
       <Show when={props.searchable}>
         <div class='p-2 border-b border-gray/10'>
@@ -161,7 +161,7 @@ export const Select = (props: SelectProps) => {
           <For each={filteredOptions()}>
             {opt => (
               <div
-                class={`px-3 py-2 text-sm cursor-pointer flex items-center gap-2 transition-colors ${selector.has(opt.value) ? 'in-select-option-active' : 'hover:bg-gray/5'} ${opt.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                class={`in-select-option ${selector.has(opt.value) ? 'in-select-option-active' : ''} ${opt.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={() => handleSelect(opt)}
               >
                 <span class='flex-1 truncate'>{renderComponent(opt.label)}</span>
