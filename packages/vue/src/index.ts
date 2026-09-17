@@ -6,7 +6,7 @@ import './style.scss'
 
 // import '../../intable/src/wc'
 
-export type { TableProps } from 'intable'
+export * from 'intable'
 
 import { h, normalizeClass, toRaw, render, type Component, type FunctionalComponent, type App } from 'vue'
 import { stringifyStyle } from '@vue/shared'

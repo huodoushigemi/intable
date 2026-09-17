@@ -2,6 +2,7 @@ import { useEffect, useRef, createElement as h, type FC, useMemo } from 'react'
 import { createRoot, flushSync } from './utils'
 
 import { type TableProps } from 'intable'
+export * from 'intable'
 // import { solidComponent } from '../../intable/src/components/utils'
 // import '../../intable/src/wc'
 import 'intable/wc'

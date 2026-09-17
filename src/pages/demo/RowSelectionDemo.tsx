@@ -19,10 +19,11 @@ export default () => (
     border
     stickyHeader
     size='small'
+    scroll={{ x: 'max-content' }}
     rowSelection={{
       enable: true,
       multiple: true,
-      onChange: (selected, unselected) => console.log('selected:', selected, 'unselected:', unselected),
+      onChange: (selected) => console.log('selected:', selected),
     }}
   />
 )

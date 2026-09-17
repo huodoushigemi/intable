@@ -1,4 +1,4 @@
-import { mergeProps, Show } from 'solid-js'
+import { mergeProps, runWithOwner, Show, untrack } from 'solid-js'
 import { keyBy } from 'es-toolkit'
 import type { Plugin, TableColumn, TableStore } from '..'
 import { Filter, firstRule, isRuleNode } from '../components/Filter'
@@ -171,7 +171,7 @@ export const FilterPlugin: Plugin = {
         initialValue: [],
         ...filter,
       }, filter),
-      store.filter ??= useControlled(filter, store.owner),
+      untrack(() => store.filter ??= runWithOwner(store.owner, () => useControlled(filter))!),
       store.filter.$setOpt(filter),
       store.filter
     ),

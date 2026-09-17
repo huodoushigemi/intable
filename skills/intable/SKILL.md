@@ -10,8 +10,8 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 框架 | 包名 | 命令 |
 |------|------|------|
 | SolidJS | `intable` | `pnpm add intable` |
-| React | `@intable/react` | `pnpm add @intable/react` |
-| Vue 3 | `@intable/vue` | `pnpm add @intable/vue` |
+| React | `@intable/react` | `pnpm add intable @intable/react` |
+| Vue 3 | `@intable/vue` | `pnpm add intable @intable/vue` |
 
 ---
 

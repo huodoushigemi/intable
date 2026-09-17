@@ -21,7 +21,7 @@ declare module '../../index' {
   }
 }
 
-export type Render = (props: TDProps) => JSX.Element | any
+export type Render = (props: TDProps) => any
 
 export const RenderPlugin: Plugin = {
   name: 'render',

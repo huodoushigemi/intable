@@ -59,7 +59,7 @@ class SingleSet extends KeyedSet {
   }
 }
 
-export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
+export function useSelector<T = any, V = T extends (infer U)[] ? U : T>(opt: UseSelectorOpt<T>) {
   opt = useControlled(opt)
 
   const Set2 = (v?) => opt.multiple ? new KeyedSet(v, opt.key) : new SingleSet(v, opt.key)
@@ -71,7 +71,7 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
   const has = createSelector<Set<any>, any>(selected, (a, b) => b.has(a as T))
 
   // 检查值是否可选择
-  const isSelectable = (v: T): boolean => {
+  const isSelectable = (v: V): boolean => {
     return opt.selectable ? opt.selectable(v) : true
   }
 
@@ -81,13 +81,13 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
   }
 
   // 设置选择
-  const set = (v: T) => {
+  const set = (v: V) => {
     if (!isSelectable(v)) return
     opt.onChange?.(opt.multiple ? [v] : v as any)
   }
 
   // 添加选择
-  const add = (v: T) => {
+  const add = (v: V) => {
     if (!isSelectable(v)) return
     const newSet = Set2([...selected()])
     newSet.add(v)
@@ -95,28 +95,28 @@ export function useSelector<T = any>(opt: UseSelectorOpt<T>) {
   }
 
   // 删除选择
-  const del = (v: T) => {
+  const del = (v: V) => {
     const newSet = Set2([...selected()])
     newSet.delete(v)
     opt.onChange?.(opt.multiple ? [...newSet] : [...newSet][0])
   }
 
   // 切换选择状态
-  const toggle = (v: T) => {
+  const toggle = (v: V) => {
     has(v) ? del(v) : add(v)
   }
 
-  const isAll = (data: T[]) => {
+  const isAll = (data: V[]) => {
     data = data.filter(e => isSelectable(e))
     return !!data.length && data.every(d => has(d))
   }
 
-  const isIndeterminate = (data: T[]) => {
+  const isIndeterminate = (data: V[]) => {
     data = data.filter(e => isSelectable(e))
     return !!data.length && !isAll(data) && data.some(d => has(d))
   }
 
-  const selectAll = (data: T[]) => {
+  const selectAll = (data: V[]) => {
     const val = data.filter(e => isSelectable(e))
     opt.onChange?.(opt.multiple ? val : val[0] as any)
   }

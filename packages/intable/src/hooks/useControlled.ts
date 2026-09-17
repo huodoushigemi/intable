@@ -1,4 +1,4 @@
-import { createSignal, mergeProps, runWithOwner } from "solid-js"
+import { createSignal, mergeProps } from "solid-js"
 
 type Opt = Partial<{
   value
@@ -7,13 +7,11 @@ type Opt = Partial<{
   initialValue
 }>
 
-export const useControlled = <T extends Opt>(opt: T, owner?) => {
-  const run = fn => owner ? runWithOwner(owner, fn) : fn()
-  
-  const [_opt, $setOpt] = run(() => createSignal(opt ?? {}))
-  opt = run(() => mergeProps(_opt))
+export const useControlled = <T extends Opt>(opt: T) => {
+  const [_opt, $setOpt] = createSignal(opt ?? {})
+  opt = mergeProps(_opt) as T
 
-  const [v, setV] = run(() => createSignal(opt.value ?? opt.initialValue ?? opt.defaultValue))
+  const [v, setV] = createSignal(opt.value ?? opt.initialValue ?? opt.defaultValue)
   const val = () => 'value' in opt ? opt.value : v()
   
   return mergeProps(opt, {

@@ -201,7 +201,6 @@ export const createEditor = (Comp: Component<any>, extra?, isSelector?): Editor 
         options={col.enum ? resolveOptions(col.enum ?? []) : undefined}
         {...extra}
         {...props}
-        aaa={aaa}
       />),
       getValue: v,
       focus: () => el.focus(),

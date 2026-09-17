@@ -21,6 +21,7 @@ import DiffDemo from './DiffDemo'
 import TreeDemo from './TreeDemo'
 import CopyPasteDemo from './CopyPasteDemo'
 import CompositeDemo from './CompositeDemo'
+import BranchGraphDemo from './BranchGraphDemo'
 import ReactDemo from './ReactDemo'
 import ReactAntd from './ReactAntd'
 import FilterDemo from './FilterDemo'
@@ -129,6 +130,7 @@ const demos = [
   { name: 'CellMerge',       comp: CellMergeDemo,       desc: 'Merge cells (rowspan/colspan)' },
   { name: 'CopyPaste',       comp: CopyPasteDemo,       desc: 'Copy / paste cell ranges (Ctrl+C / Ctrl+V)' },
   { name: 'Tree',            comp: TreeDemo,            desc: 'Tree-structured data with expand/collapse' },
+  { name: 'BranchGraph',     comp: BranchGraphDemo,     desc: 'Git-style branch graph column drawn with SVG, links rows by parentid' },
   { name: 'History',         comp: HistoryDemo,         desc: 'Undo / Redo (Ctrl+Z / Ctrl+Y)' },
   { name: 'Diff',            comp: DiffDemo,            desc: 'Track changes & commit (Ctrl+S)' },
   { name: 'Filter',          comp: FilterDemo,          desc: 'Per-column text filter with live filtering' },

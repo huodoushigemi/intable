@@ -1,4 +1,4 @@
-import { mergeProps, Show } from 'solid-js'
+import { mergeProps, runWithOwner, Show, untrack } from 'solid-js'
 import { combineProps } from '@solid-primitives/props'
 import { type Plugin, type Plugin$0, type TableStore } from '..'
 import { useControlled } from '../hooks/useControlled'
@@ -117,7 +117,7 @@ export const SortPlugin: Plugin$0 = [{
         autoSort: true,
         initialValue: [],
       }, sort)
-      store.sort ??= useControlled(sort, store.owner)
+      untrack(() => store.sort ??= runWithOwner(store.owner, () => useControlled(sort))!)
       store.sort.$setOpt(sort)
       return store.sort
     },

@@ -9,7 +9,6 @@ const [cols, setCols] = createSignal([
 
 const [data, setData] = createSignal([
   { id: 1, name: 'src',    size: '-', type: 'folder', children: [
-    { id: 2, name: 'index.ts', size: '2KB',  type: 'file' },
     { id: 3, name: 'utils',    size: '-',    type: 'folder', children: [
       { id: 4, name: 'helper.ts', size: '1KB', type: 'file' },
       { id: 5, name: 'math.ts',   size: '3KB', type: 'file' },
@@ -18,6 +17,7 @@ const [data, setData] = createSignal([
       { id: 7, name: 'App.tsx',    size: '4KB', type: 'file' },
       { id: 8, name: 'Button.tsx', size: '1KB', type: 'file' },
     ]},
+    { id: 2, name: 'index.ts', size: '2KB',  type: 'file' },
   ]},
   { id: 9, name: 'package.json', size: '1KB', type: 'file' },
   { id: 10, name: 'README.md',    size: '2KB', type: 'file' },

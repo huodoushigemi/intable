@@ -43,19 +43,22 @@ const [data, setData] = createSignal(makeData(20, 8))
  *  - Table-level validator: blocks any value containing "error"
  */
 export default () => (
-  <Intable
-    class='h-60vh'
-    columns={cols()}
-    onColumnsChange={setCols}
-    data={data()}
-    onDataChange={setData}
-    index
-    border
-    stickyHeader
-    size='small'
-    plugins={[ZodValidatorPlugin]}
-    validator={(value) => {
-      if (String(value ?? '').toLowerCase().includes('error')) throw Error('Value must not contain "error"')
-    }}
-  />
+  <form onSubmit={() => alert('Form submitted!')}>
+    <Intable
+      class='h-60vh'
+      columns={cols()}
+      onColumnsChange={setCols}
+      data={data()}
+      onDataChange={setData}
+      index
+      border
+      stickyHeader
+      size='small'
+      plugins={[ZodValidatorPlugin]}
+      validator={(value) => {
+        if (String(value ?? '').toLowerCase().includes('error')) throw Error('Value must not contain "error"')
+      }}
+    />
+    <button type='submit'>Submit</button>
+  </form>
 )
