@@ -1,5 +1,5 @@
-import { createResource, runWithOwner, untrack, type Setter } from 'solid-js'
-import { createAsyncMemo, createDebouncedMemo } from '@solid-primitives/memo'
+import { createMemo, createResource, runWithOwner, untrack, type Setter } from 'solid-js'
+import { createScheduled, debounce } from '@solid-primitives/scheduled'
 import { type Plugin } from '..'
 import type { AndOrNode } from '../components/AndOr'
 import type { SortKey } from './SortPlugin'
@@ -40,11 +40,15 @@ export const RequestPlugin: Plugin = {
       }
       Promise.resolve().then(() => { // 避免循环依赖
       untrack(() => {
-        const request = runWithOwner(store.owner, () => createResource(
-          createDebouncedMemo(createAsyncMemo(async () => JSON.stringify({ filters: store.props.filter?.value, sorts: store.props.sort?.value, page: store.props.pagination?.value, pageSize: store.props.pagination?.pageSize })), 300),
-          (params) => store.props.request!(JSON.parse(params)),
-          { initialValue: { data: [], total: 0 } }
-        ))!
+        const request = runWithOwner(store.owner, () => {
+          const scheduled = createScheduled(fn => (fn(), debounce(fn, 300)))
+          const params = createMemo(p => scheduled() ? ({ filters: store.props.filter?.value, sorts: store.props.sort?.value }) : p) as any
+          return createResource(
+            createMemo(() => JSON.stringify({ ...params(), page: store.props.pagination?.value, pageSize: store.props.pagination?.pageSize })),
+            (params) => store.props.request!(JSON.parse(params)),
+            { initialValue: { data: [], total: 0 } }
+          )
+        })!
         store.request = noproxy({
           get data() { return request[0]() },
           get loading() { return request[0].loading ?? false },

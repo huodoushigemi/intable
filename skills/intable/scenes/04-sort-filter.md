@@ -1,5 +1,9 @@
 # 列排序 / 列筛选
 
+本文介绍了如何使用列排序和列筛选功能。
+
+服务端示例见：[request.md](./request.md)、[querybuilder.go](./example/querybuilder.go)。
+
 ## 列排序（内置）
 
 在列上加 `sortable: true`，点击列头循环切换：升序 → 降序 → 取消。
@@ -14,16 +18,6 @@ const columns = [
 
 // 基础（客户端自动排序）
 <Intable columns={columns} data={data} sort={{ multiple: true }} />
-
-// 服务端排序
-<Intable
-  columns={columns}
-  data={data}
-  sort={{
-    autoSort: false,
-    onChange: (sorts) => fetchData(sorts),  // sorts: [{ field, order: 'asc'|'desc' }]
-  }}
-/>
 
 // 受控排序
 const [sort, setSort] = useState([{ field: 'age', order: 'asc' }])
@@ -53,16 +47,6 @@ const columns = [
 
 // 客户端实时过滤
 <Intable columns={columns} data={data} filter={{ autoMatch: true }} />
-
-// 服务端过滤
-<Intable
-  columns={columns}
-  data={data}
-  filter={{
-    autoMatch: false,
-    onChange: (filters) => fetchData(filters),
-  }}
-/>
 ```
 
 各列 `type` 对应可用操作符：

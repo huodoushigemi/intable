@@ -1,6 +1,6 @@
 # request 异步数据请求
 
-`request` 是**内置功能**（非插件），传入 `request` 函数后，`data`、`loading`、`pagination` 自动由请求驱动，无需手动管理。
+`request` 是**内置功能**，传入 `request` 函数后，`data`、`loading`、`pagination` 自动由请求驱动，无需手动管理。
 
 ---
 

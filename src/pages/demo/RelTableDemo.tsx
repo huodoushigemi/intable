@@ -81,6 +81,7 @@ const postTable = {
   ],
   rowKey: 'id',
   pagination: { enable: true },
+  filter: { autoMatch: false },
   request: async (params) => {
     const data = [
       { id: 1, title: 'Post 1', content: 'Content 1', author: { id: 1, name: 'Alice' }, date: '2024-01-01' },
