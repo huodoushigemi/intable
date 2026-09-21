@@ -106,7 +106,7 @@ function matchFilter(raw: any, ruleNode: RuleNode, type: string) {
   }
 
   // todo
-  if (type === 'date') {
+  if (type === 'date' || type === 'datetime') {
     const a = toDateTs(raw)
     const b = toDateTs(fv)
     const list = toList(fv).map(toDateTs).filter(v => v != null)

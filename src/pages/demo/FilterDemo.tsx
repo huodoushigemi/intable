@@ -22,6 +22,7 @@ const [cols, setCols] = createSignal<TableColumn[]>([
   { id: 'age',        name: 'Age',        type: 'number',   width: 100, filterable: true },
   { id: 'score',      name: 'Score',      type: 'number',   width: 110, filterable: true },
   { id: 'joinDate',   name: 'Join Date',  type: 'date',     width: 140, filterable: true },
+  { id: 'datetime',   name: 'Date Time',  type: 'datetime',     width: 140, filterable: true },
   { id: 'active',     name: 'Active',     type: 'checkbox', width: 100, filterable: true },
 ])
 

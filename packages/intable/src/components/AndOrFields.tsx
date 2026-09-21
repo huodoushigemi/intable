@@ -86,6 +86,20 @@ export const RULES_BY_TYPE: Record<string, Array<{ label: string; value: RuleOp 
     { label: '为空', value: 'blank' },
     { label: '不为空', value: 'noblank' },
   ],
+  datetime: [
+    { label: '等于', value: 'eq' },
+    { label: '不等于', value: 'ne' },
+    { label: '早于', value: 'lt' },
+    { label: '晚于', value: 'gt' },
+    { label: '不晚于', value: 'lte' },
+    { label: '不早于', value: 'gte' },
+    { label: '介于', value: 'between' },
+    { label: '不介于', value: 'not_between' },
+    { label: '在列表中', value: 'in' },
+    { label: '不在列表中', value: 'not_in' },
+    { label: '为空', value: 'blank' },
+    { label: '不为空', value: 'noblank' },
+  ],
   enum: [
     { label: '等于', value: 'eq' },
     { label: '不等于', value: 'ne' },
@@ -146,6 +160,7 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
     <Switch
       fallback={(
         <Input
+          type={type() == 'datetime' ? 'datetime-local' : type()}
           class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
           value={props.value ?? ''}
           placeholder={props.placeholder}
@@ -160,12 +175,11 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
       <Match when={isBetweenOp(op())}>
         {(() => {
           const [start, end] = toPair(props.value)
-          const inputType = type() === 'number' ? 'number' : (type() === 'date' ? 'date' : 'text')
           return (
             <div class='flex-1 flex items-center gap-1'>
               <Input
                 class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-                type={inputType}
+                type={type()}
                 value={start ?? ''}
                 placeholder='开始'
                 onChange={e => props.onChange([e, end ?? ''])}
@@ -173,7 +187,7 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
               <span class='text-xs c-gray/70'>~</span>
               <Input
                 class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-                type={inputType}
+                type={type()}
                 value={end ?? ''}
                 placeholder='结束'
                 onChange={e => props.onChange([start ?? '', e])}
@@ -199,25 +213,6 @@ export const RuleValueEditor = (props: RuleValueEditorProps) => {
           value={toList(props.value).join(', ')}
           placeholder={props.placeholder ?? '多个值用逗号分隔'}
           onChange={e => props.onChange(toList((e.target as HTMLInputElement).value))}
-        />
-      </Match>
-
-      <Match when={type() === 'number'}>
-        <Input
-          class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-          type='number'
-          value={props.value ?? ''}
-          placeholder={props.placeholder}
-          onChange={props.onChange}
-        />
-      </Match>
-
-      <Match when={type() === 'date'}>
-        <Input
-          class={props.class ?? 'flex-1 px-2 py-1 rounded-md border'}
-          type='date'
-          value={props.value ?? ''}
-          onChange={props.onChange}
         />
       </Match>
 
@@ -250,7 +245,7 @@ export function normalizeType(field?: Field) {
 }
 
 function defaultOp(type: string): RuleOp {
-  return RULES_BY_TYPE[type]?.[0]?.value
+  return RULES_BY_TYPE[type]?.[0]?.value ?? 'eq'
 }
 
 export function newRule(field: Field, current?: Partial<RuleNode>): RuleNode {
