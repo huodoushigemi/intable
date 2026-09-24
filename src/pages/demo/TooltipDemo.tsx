@@ -4,7 +4,7 @@ const data = [
   { id: 1, name: 'Alice',   dept: 'Engineering', salary: 120000, note: 'Team lead. Joined 2019. Expert in distributed systems and performance tuning.' },
   { id: 2, name: 'Bob',     dept: 'Design',       salary: 95000,  note: 'UI/UX specialist. Designed the current design system from scratch.' },
   { id: 3, name: 'Charlie', dept: 'Engineering', salary: 105000, note: 'Full-stack engineer. Owns the data pipeline and ETL workflows.' },
-  { id: 4, name: 'Diana',   dept: 'Product',      salary: 115000, note: 'Product manager. Runs cross-functional sprints.' },
+  { id: 4, name: 'Diana',   dept: 'Product',      salary: 115000, note: 'Product manager.' },
   { id: 5, name: 'Eve',     dept: 'Engineering', salary: 98000,  note: 'Frontend engineer. Core contributor to the component library.' },
   { id: 6, name: 'Frank',   dept: 'Design',       salary: 88000,  note: 'Motion designer & illustrator. Handles brand identity.' },
 ]
@@ -17,7 +17,7 @@ const columns = [
   // Value-as-tooltip (shows cell raw value)
   { id: 'salary', name: 'Salary',  width: 100, tooltip: true },
   // Computed tooltip — full note on hover, cell shows truncated
-  { id: 'note', name: 'Notes', width: 180, class: 'truncate', tooltip: ({ value }) => value },
+  { id: 'note', name: 'Notes', width: 180, tooltip: true },
 ]
 
 export default () => (
