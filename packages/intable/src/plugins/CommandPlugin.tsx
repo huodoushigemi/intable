@@ -59,7 +59,7 @@ export const CommandPlugin: Plugin = {
       // Merge keybindings from all plugins in priority order (later index = lower priority = outer wrapper).
       // createMemo re-creates the tinykeys handler whenever plugins or user overrides change.
       const handler = createMemo(() => {
-        const merged: Record<string, (e: KeyboardEvent) => void> = {}
+        const merged: Record<string, (e: KeyboardEvent) => void | boolean> = {}
         for (const p of store.plugins) {
           const bindings = runWithOwner(owner, () => p.keybindings?.(store))
           if (bindings) Object.assign(merged, bindings)
@@ -72,12 +72,17 @@ export const CommandPlugin: Plugin = {
             else if (typeof val === 'function') merged[key] = val
           }
         }
-        // Wrap each handler: preventDefault + call
+        // Wrap each handler: call, then preventDefault unless the handler returns false
+        // (返回 false 表示交给浏览器默认行为，例如原生文本复制)。
         return createKeybindingsHandler(
           Object.fromEntries(
             Object.entries(merged).map(([k, fn]) => [k, (e: KeyboardEvent) => {
-              e.preventDefault()
-              fn(e)
+              let allowDefault = false
+              try {
+                allowDefault = fn(e) === false
+              } finally {
+                if (!allowDefault) e.preventDefault()
+              }
             }])
           )
         )

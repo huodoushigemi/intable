@@ -6,7 +6,7 @@
 
 ## 列排序（内置）
 
-在列上加 `sortable: true`，点击列头循环切换：升序 → 降序 → 取消。
+在列上加 `sortable: true` 点击列头排序按钮图标循环切换：升序 → 降序 → 取消。
 
 ```tsx
 const columns = [

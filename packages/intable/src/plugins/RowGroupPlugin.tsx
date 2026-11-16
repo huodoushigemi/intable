@@ -3,6 +3,30 @@ import { findLast } from 'es-toolkit/compat'
 import { type Plugin } from '..'
 import { batch, createMemo, useContext } from 'solid-js'
 import type { TableStore } from '..'
+import { computeAgg } from './AggregatePlugin'
+import { renderComponent } from '../components/utils'
+
+/** Symbol marking a generated row-group header row. */
+export const GROUP = Symbol('row-group')
+
+/** 递归收集分组下所有叶子数据行（跳过嵌套分组头）。 */
+export const groupLeaves = (rows: any[] = [], ret: any[] = []): any[] => {
+  for (const row of rows) {
+    if (row?.[GROUP]) groupLeaves(row[GROUP].children, ret)
+    else ret.push(row)
+  }
+  return ret
+}
+
+/**
+ * 返回分组的全部叶子行，**不受展开状态影响**。
+ * 顶层分组头始终存在于 `props.data` 中，且其 `children` 保存了完整子树，
+ * 因此无论折叠与否都能拿到全量数据，用于合计行等场景。
+ */
+export const rowGroupLeafRows = (data: any[] = []): any[] => {
+  const tops = data.filter(r => r?.[GROUP]?.path?.length === 1)
+  return tops.length ? tops.flatMap(r => groupLeaves(r[GROUP].children)) : data
+}
 
 declare module '../index' {
   interface TableProps {
@@ -86,25 +110,34 @@ export const RowGroupPlugin: Plugin = {
     Td: ({ Td }, { store }) => store.props?.rowGroup?.fields ? o => {
       // todo
       if (!o.data?.[GROUP]) return Td(o)
-      
+
       const { props } = store
       const show = createMemo(() => store.rowGroup.isExpand(o.data))
-      
+      const isFirst = () => props.columns?.findIndex(e => !e[store.internal]) == o.x
+
+      // 分组行：除分组列外，带 aggregate 的列显示该组的聚合值
+      const agg = createMemo(() => {
+        if (isFirst() || !o.col.aggregate) return undefined
+        const raw = computeAgg(o.col, groupLeaves(o.data[GROUP].children))
+        const fmt = props.aggregate?.formatter
+        return raw != null && fmt ? fmt(raw, o.col.aggregate, o.col) : raw
+      })
+
       return (
         <Td {...o}>
-          {props.columns?.findIndex(e => !e[store.internal]) == o.x ? (
+          {isFirst() ? (
             <div class='flex items-center' style={`padding-left: ${(o.data[GROUP].path.length - 1) * 16}px`} onDblClick={() => store.rowGroup.toggleExpand(o.data)}>
               <ILucideChevronRight class='icon-clickable mr-2' style={`transform: rotate(${show() ? 90 : 0}deg); opacity: .6`} onClick={() => store.rowGroup.toggleExpand(o.data)} />
               {o.data[GROUP].value}
             </div>
+          ) : o.col.aggregate ? (
+            <span class='font-mono text-sm tabular-nums c-[--in-c-primary]'>{renderComponent(agg(), undefined, store)}</span>
           ) : o.children}
         </Td>
       )
     } : Td,
   },
 }
-
-const GROUP = Symbol('row-group')
 
 const expandData = (data, store: TableStore, path2 = [] as any[]) => {
   const fields = store.props!.rowGroup!.fields!

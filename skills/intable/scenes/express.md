@@ -4,6 +4,24 @@
 
 ---
 
+## 何时使用 valueGetter
+
+`valueGetter` 会把结果定义为 `row[col.id]` 的 getter，派生值因此贯穿整个数据管道：
+
+| 场景 | 选择 |
+|------|------|
+| 全名、小计、百分比等计算列 | `valueGetter` |
+| 派生值需要排序 / 筛选 / 合计 / 导出 | `valueGetter`（`render` 不影响这些） |
+| 按 id 异步查询名称等 | 异步 `valueGetter` |
+| 派生列可编辑并写回源字段 | `valueGetter` + `valueSetter` |
+| 只是想改颜色、图标、标签样式，值不变 | `render` / `type` / `enum`，见 [07-render.md](./07-render.md) |
+
+判断口诀：**值变了用 `valueGetter`，只是长得不一样用 `render`。**
+
+> 可编辑的派生列必须提供 `valueSetter`，否则编辑结果无处写入。
+
+---
+
 ## valueGetter — 计算列值
 
 列的值由函数动态返回，支持同步和异步：

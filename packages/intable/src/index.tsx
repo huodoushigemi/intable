@@ -1,4 +1,4 @@
-import { createContext, createMemo, createSignal, For, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner, createRenderEffect, createResource } from 'solid-js'
+import { createContext, createMemo, createSignal, For, Show, useContext, createEffect, type JSX, type Component, createComputed, onMount, mergeProps, mapArray, onCleanup, getOwner, runWithOwner, on, untrack, batch, Index, $PROXY, type Owner, createRenderEffect, createResource } from 'solid-js'
 import { createMutable } from 'solid-js/store'
 import { combineProps } from '@solid-primitives/props'
 import { createLazyMemo } from '@solid-primitives/memo'
@@ -73,7 +73,7 @@ export interface Plugin {
    * Collected and registered as a **single** keydown listener by CommandPlugin.
    * Keys use tinykeys syntax, e.g. `'$mod+Z'`, `'$mod+Shift+K'`.
    */
-  keybindings?: (store: TableStore) => Record<string, (e?: KeyboardEvent) => void>
+  keybindings?: (store: TableStore) => Record<string, (e?: KeyboardEvent) => void | boolean>
 }
 
 export type Plugin$0 = Plugin | Plugin[] | ((store: TableStore) => Plugin)
@@ -85,6 +85,11 @@ export interface TableProps {
   index?: boolean
   border?: boolean
   stickyHeader?: boolean
+  /**
+   * 无表头模式：不渲染 `thead`，仅显示数据行。
+   * 适用于外部已有表头、移动端卡片列表等场景。
+   */
+  headless?: boolean
   class?: any
   style?: any
   rowKey?: any
@@ -142,7 +147,10 @@ export interface TableColumn extends Obj {
   name?: any
   width?: number
   fixed?: 'left' | 'right'
-  class?: any
+  /** 表头与单元格都会应用的 class。 */
+  class?: string
+  /** 仅单元格（td）应用的 class，支持函数。 */
+  cellClass?: any
   style?: any
   // props?: (props) => JSX.HTMLAttributes<any>
 }
@@ -236,7 +244,9 @@ export const Intable = (props: TableProps) => {
     <Ctx.Provider value={ctx}>
       <ctx.props.Scroll>
         <ctx.props.Table>
-          <THead />
+          <Show when={!store.props.headless}>
+            <THead />
+          </Show>
           <TBody />
         </ctx.props.Table>
       </ctx.props.Scroll>
@@ -463,10 +473,21 @@ function BasePlugin(): Plugin$0 {
       },
       Td: ({ Td = td }, { store }) => o => {
         const { props } = useContext(Ctx)
+        const [el, setEl] = createSignal<HTMLElement>()
         const mProps = mergeProps(o, {
-          get class() { return [unFn(props.cellClass, o), o.col.class, o.class].filter(Boolean).join(' ') },
+          ref: setEl,
+          get class() { return [unFn(props.cellClass, o), o.col.class, unFn(o.col.cellClass, o), o.class].filter(Boolean).join(' ') },
           get style() { return [unFn(props.cellStyle, o), o.col.style, o.col.width && `width: ${o.col.width}px; min-width: ${o.col.width}px; max-width: ${o.col.width}px`, o.style].filter(Boolean).join(';') }
         })
+
+        // 无表头时不渲染 th，改用首行单元格宽度补齐列宽，供固定列偏移计算
+        if (props.headless) createEffect(() => {
+          const td = el()
+          if (!td || o.y !== 0 || (o.colspan ?? 1) != 1) return
+          store.thObs.observe(td)
+          onCleanup(() => store.thObs.unobserve(td))
+        })
+
         return <Td {...mProps} />
       },
       EachRows: ({ EachRows }) => EachRows || (o => <For each={o.each}>{(e, i) => o.children(() => e, i)}</For>),
@@ -508,9 +529,11 @@ const StickyHeaderPlugin: Plugin = {
 const FixedColumnPlugin: Plugin$0 = store => {
   const fixedOffsets = createLazyMemo(() => {
     const offsets = {}
+    // 优先使用实测表头宽度；无表头（headless）或尚未测量时回退到列定义宽度
+    const widths = store.props.columns.map((col, i) => store.thSizes[i]?.width ?? col.width ?? 0)
     for (const [i, col] of store.props.columns.entries()) {
-      if (col.fixed === 'left') offsets[i] = sumBy(store.thSizes.slice(0, i), s => s?.width || 0)
-      if (col.fixed === 'right') offsets[i] = sumBy(store.thSizes.slice(i + 1), s => s?.width || 0)
+      if (col.fixed === 'left') offsets[i] = sumBy(widths.slice(0, i), w => w)
+      if (col.fixed === 'right') offsets[i] = sumBy(widths.slice(i + 1), w => w)
     }
     return offsets
   })
@@ -578,3 +601,4 @@ export const defaultsPlugins = [
 
 export { renders } from './plugins/RenderPlugin'
 export { editors } from './plugins/EditablePlugin'
+export type { Enum, EnumOption } from './utils'

@@ -60,12 +60,26 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 |------|------|
 | `columns` / `data` / `rowKey` / `request` | 列定义 / 行数据 / 唯一标识字段 / 异步数据请求 |
 | `border` / `stickyHeader` / `index` / `loading` | 外观控制 |
+| `headless` | 无表头模式：不渲染 `thead`，只显示数据行 |
 | `scroll` | `{ x }` 横向滚动宽度 |
 | `plugins` | 可选插件数组 |
 | `store` | `(store) => void` 获取内部 store |
 | `onDataChange` / `onColumnsChange` | 数据/列变更回调 |
 | `cellClass` / `cellStyle` | 单元格 class/style 回调 |
 | `keybindings` | `{ 'Mod+K': handler }` 覆盖或 `false` 禁用快捷键 |
+
+---
+
+## `render` 与 `valueGetter` 怎么选
+
+| 目标 | 用什么 |
+|------|--------|
+| 只改单元格外观：状态标签、颜色、图标、按钮、链接、进度条 | 列 `render`（优先用 `type` / `enum` 内置渲染） |
+| 值需要计算/派生，并且要参与排序、筛选、合计、导出 | 列 `valueGetter`（支持异步） |
+| 派生列还要可编辑并写回其他字段 | `valueGetter` + `valueSetter` |
+| 既要派生值又要自定义外观 | `valueGetter` 算值 + `render` 画 UI |
+
+`render` 只影响显示，不改变底层值；`valueGetter` 会把结果挂到 `row[col.id]`，因此排序/筛选/合计/导出/编辑都基于派生值。
 
 ---
 

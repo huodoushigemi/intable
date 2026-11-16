@@ -6,7 +6,7 @@ const [cols, setCols] = createSignal([
   { id: 'name',     name: 'Name',     width: 120 },
   { id: 'category', name: 'Category', width: 120 },
   { id: 'region',   name: 'Region',   width: 120 },
-  { id: 'value',    name: 'Value',    width: 100 },
+  { id: 'value',    name: 'Value',    width: 100, aggregate: 'sum' as const },
 ])
 
 const categories = ['Electronics', 'Clothing', 'Food']

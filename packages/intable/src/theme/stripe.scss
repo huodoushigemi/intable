@@ -54,4 +54,26 @@
   .row-selection {
     width: 38px;
   }
+
+  // Dark variant — Stripe 深海蓝背景
+  &.dark, .dark &, [data-theme="dark"] & {
+    --bg: #0a2540;
+    --in-c-primary: #7a73ff;
+
+    --in-menu-bg: #0a2540;
+    --in-li-hover-bg: rgba(255, 255, 255, 0.06);
+
+    --in-table-b-c: rgba(255, 255, 255, 0.12);
+    --in-table-c: #e6ebf1;
+    --in-table-bg: #0a2540;
+
+    --in-table-header-c: #a3b3c9;
+    --in-table-header-bg: #0f2d4a;
+
+    --in-table-row-hover-bg: #103354;
+
+    --in-select-area-bg: rgba(122, 115, 255, 0.18);
+
+    color-scheme: dark;
+  }
 }

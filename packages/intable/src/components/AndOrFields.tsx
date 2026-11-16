@@ -1,7 +1,7 @@
 import { Match, Switch, createMemo } from 'solid-js'
 import { AndOr } from './AndOr'
 import type { AndOrNode, RuleNode } from './AndOr'
-import { resolveOptions } from '../utils'
+import { resolveOptions, type Enum } from '../utils'
 import { component } from 'undestructure-macros'
 
 export type RuleOp =
@@ -27,7 +27,7 @@ export type Field = {
   id: string
   name?: string
   type?: string
-  enum?: Record<string, any> | { label?: string; value: any }[]
+  enum?: Enum
 }
 
 type Props = {

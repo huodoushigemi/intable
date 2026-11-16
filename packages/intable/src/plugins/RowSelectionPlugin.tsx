@@ -41,7 +41,8 @@ export const RowSelectionPlugin: Plugin = {
             indeterminate={store.commands.rowSelector.isIndeterminate(store.props.data)}
             value={store.commands.rowSelector.isAll(store.props.data)}
             onChange={v => v ? store.commands.rowSelector.selectAll(store.props.data) : store.commands.rowSelector.clear()}
-            disabled={!store.props?.data?.length}
+            // 没有任何可选行时（空数据 / selectable 全部返回 false），全选不可用
+            disabled={!store.props?.data?.some(e => store.props?.rowSelection?.selectable?.(e))}
           />
         </label>
       )),

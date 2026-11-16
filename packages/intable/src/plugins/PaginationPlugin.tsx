@@ -1,4 +1,5 @@
-import { createMemo, For, Show, useContext, runWithOwner, mergeProps, untrack } from 'solid-js'
+import { createEffect, createMemo, createSignal, For, Show, useContext, runWithOwner, mergeProps, untrack } from 'solid-js'
+import type { Accessor, Setter } from 'solid-js'
 import type { Plugin, TableProps } from '..'
 import { Ctx } from '..'
 import { useControlled } from '../hooks/useControlled'
@@ -8,20 +9,38 @@ declare module '..' {
     pagination?: {
       enable?: boolean
       pageSize?: number
+      /** 每页条数下拉选项，默认 [10, 20, 50, 100]。 */
+      pageSizeOptions?: number[]
+      /** 是否显示每页条数下拉框，默认 true。 */
+      showPageSize?: boolean
       defaultValue?: number
       value?: number
       onChange?: (page: number) => void
+      /** 用户切换每页条数时触发。 */
+      onPageSizeChange?: (pageSize: number) => void
       total?: number
     }
   }
   interface TableStore {
-    
+    /** 当前每页条数（未手动切换时为 undefined，回退到 pagination.pageSize）。 */
+    _pgnSize?: Accessor<number | undefined>
+    _pgnSetSize?: Setter<number | undefined>
   }
 }
 
 
 export const PaginationPlugin: Plugin = {
   name: 'pagination',
+
+  store: (store) => {
+    const [size, setSize] = createSignal<number>()
+    // 外部 pageSize 变化时同步到内部状态（读取 rawProps，避免和下面的 getter 互相依赖）
+    createEffect(() => {
+      const v = store.rawProps.pagination?.pageSize
+      if (v != null) setSize(prev => prev === v ? prev : v)
+    })
+    return { _pgnSize: size, _pgnSetSize: setSize }
+  },
 
   rewriteProps: {
     pagination: ({ pagination }, { store }) => {
@@ -35,7 +54,13 @@ export const PaginationPlugin: Plugin = {
       const ret = untrack(() => store._pgn ??= runWithOwner(store.owner, () => useControlled(pagination!)))
       store._pgn.$setOpt(pagination)
 
-      return ret
+      return mergeProps(ret, {
+        get pageSize() { return store._pgnSize?.() ?? pagination!.pageSize! },
+        onPageSizeChange(v: number) {
+          store._pgnSetSize?.(v)
+          pagination!.onPageSizeChange?.(v)
+        },
+      })
     },
     EachRows: ({ EachRows }, { store }) => !store.props.pagination?.enable ? EachRows : (o) => {
       const p = mergeProps(() => store.props.pagination!)
@@ -65,9 +90,22 @@ function PaginationFooter() {
   const totalPage = () => Math.ceil(p.total! / pageSize())
   const pages = createMemo(() => pageNumbers(page(), totalPage()))
 
+  const sizeOptions = createMemo(() => {
+    const list = p.pageSizeOptions ?? [10, 20, 50, 100]
+    const cur = pageSize()
+    return list.includes(cur) ? list : [...list, cur].sort((a, b) => a - b)
+  })
+
   const setPage = (v: number) => {
     if (v < 1 || v > totalPage()) return
     store.props.pagination?.onChange?.(v)
+  }
+
+  const setPageSize = (v: number) => {
+    if (v === pageSize()) return
+    p.onPageSizeChange?.(v)
+    // 每页条数变化后回到第一页
+    if (page() !== 1) store.props.pagination?.onChange?.(1)
   }
 
   return (
@@ -75,6 +113,19 @@ function PaginationFooter() {
       <span class='mr-2'>
         共 {p.total} 条
       </span>
+      <Show when={p.showPageSize !== false}>
+        <select
+          class='data-table__pagination-select'
+          value={pageSize()}
+          disabled={store.props.loading}
+          onChange={e => setPageSize(+e.currentTarget.value)}
+          aria-label='每页条数'
+        >
+          <For each={sizeOptions()}>
+            {s => <option value={s} selected={s === pageSize()}>{s} 条/页</option>}
+          </For>
+        </select>
+      </Show>
       <button
         class='data-table__pagination-btn disabled:op-30'
         disabled={page() <= 1 || store.props.loading}

@@ -8,7 +8,7 @@ export function solidComponent<T extends (...arg) => JSX.Element>(comp: T) {
 }
 
 export function renderComponent(Comp: any, props?: any, store = useContext(Ctx).store) {
-  if (!Comp) return null
+  if (Comp == null) return null
   const t = typeof Comp
   if (t === 'string' || t === 'number' || t === 'boolean') {}
   else if (!Comp.__solid && store) Comp = store.props.renderer!(Comp)

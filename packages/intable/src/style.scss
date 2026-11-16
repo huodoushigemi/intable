@@ -18,13 +18,35 @@
   --in-select-area-bg: #5292f71a;
 }
 
-.data-table {
-  
+/* 深色模式基础变量（默认主题）。
+   在容器或 html 上添加 .dark / data-theme="dark" 即可切换。 */
+.dark, [data-theme="dark"] {
+  --bg: #161b22;
+  --in-bg: #161b22;
+  --in-c-primary: #388bfd;
 
+  --in-menu-bg: #161b22;
+  --in-li-hover-bg: rgba(177, 186, 196, .12);
+
+  --in-table-b-c: #30363d;
+  --in-table-c: #e6edf3;
+  --in-table-bg: #0d1117;
+
+  --in-table-header-c: #8b949e;
+  --in-table-header-bg: #161b22;
+
+  --in-table-row-hover-bg: #161b22;
+
+  --in-select-area-bg: #388bfd1f;
+
+  color-scheme: dark;
+}
+
+.data-table {
   @apply relative text-[14px] c-[--in-table-c] b-[--in-table-b-c] bg-[--in-table-bg];
 
   &--table {
-    @apply table-fixed w-auto border-collapse b-0 outline-0 c-[--in-table-c];
+    @apply table-fixed border-collapse b-0 outline-0 c-[--in-table-c];
     border-collapse: separate;
     border-spacing: 0;
   }
@@ -49,11 +71,10 @@
 
   td, th {
     @apply px-2 py-.5 outline-0 b-(0 solid [--in-table-b-c]) b-b-0 box-border v-mid;
-    text-align: inherit;
-      background-image: linear-gradient(var(--in-table-b-c), var(--in-table-b-c));
-      background-repeat: no-repeat;
-      background-size: 100% 1px, 1px 100%;
-      background-position: 100% 100%, 100% 0;
+    background-image: linear-gradient(var(--in-table-b-c), var(--in-table-b-c));
+    background-repeat: no-repeat;
+    background-size: 100% 1px, 1px 100%;
+    background-position: 100% 100%, 100% 0;
   }
 
   td:empty::after {
@@ -102,6 +123,34 @@
     }
   }
 
+  &__pagination-select {
+    @apply appearance-none mr-1 pl-2 pr-5 py-1 rd-1 cursor-pointer;
+    font: inherit;
+    color: var(--in-table-c);
+    outline: 1px solid var(--in-table-b-c);
+    outline-offset: -1px;
+    /* 自绘下拉箭头，颜色跟随 currentColor，适配各主题与暗色模式 */
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 12px) calc(50% + 1px),
+      calc(100% - 8px) calc(50% + 1px);
+    background-size: 4px 4px;
+    background-repeat: no-repeat;
+    transition: color .15s, outline-color .15s;
+    &:not(:disabled):hover {
+      color: var(--in-c-primary);
+      outline-color: var(--in-c-primary);
+    }
+    &:focus-visible {
+      outline-color: var(--in-c-primary);
+    }
+    &:disabled {
+      @apply cursor-not-allowed op-40;
+    }
+  }
+
   &--small {
     .data-table__pagination {
       @apply py-1 text-xs;
@@ -144,7 +193,7 @@
 }
 
 .sticky-header {
-  @apply sticky top-0 bg-#fff z-9;
+  @apply sticky top-0 bg-[--in-table-header-bg] z-9;
   &::after {
     @apply content-[''] absolute top-full w-full h-[10px] pointer-events-none;
     box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, .15);
@@ -152,7 +201,7 @@
 }
 
 .fixed-left, .fixed-right {
-  @apply sticky! z-2 bg-#fff;
+  @apply sticky! z-2 bg-[--in-table-bg];
   &.is-first::after, &.is-last::after {
     @apply content-[''] absolute top-0 w-[10px] h-full pointer-events-none;
   }
@@ -217,7 +266,7 @@
   }
 }
 
-.icon-clickable { 
+.icon-clickable {
   @apply flex justify-center items-center p-.5 w-5 h-5 box-border rd-1 hover:bg-gray/30 [&>svg]:(w-full h-full);
 }
 
@@ -273,6 +322,11 @@ td.is-invalid {
   &:empty {
     display: none;
   }
+  .dark & {
+    background: #2a1215;
+    color: #ff7875;
+    border-color: #58181c;
+  }
 }
 
 .in-cell__resize-handle {
@@ -320,7 +374,7 @@ td.is-invalid {
   }
 
   // Arrow via ::before pseudo-element
-  &::before { @apply content-[''] absolute w-2 h-2 rotate-45 bg-inherit; }
+  &::before { @apply content-[''] absolute w-2 h-2 rotate-45 bg-inherit pointer-events-none; }
   &[data-placement='top']::before { @apply -bottom-1 left-[calc(50%-4px)]; }
   &[data-placement='bottom']::before { @apply -top-1 left-[calc(50%-4px)]; }
   &[data-placement='left']::before { @apply -right-1 top-[calc(50%-4px)]; }

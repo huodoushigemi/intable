@@ -1,7 +1,7 @@
 import { createSignal, Show, createEffect } from 'solid-js'
 import type { Plugin, TDProps } from '..'
 import { renderComponent } from '../components/utils'
-import { combineProps } from '@solid-primitives/props'
+import { autoUpdate, createFloating, flip, offset, shift } from 'floating-ui-solid'
 import { useHover, useMemoAsync } from '../hooks'
 import { delay } from 'es-toolkit'
 import { createEventListener } from '@solid-primitives/event-listener'
@@ -30,11 +30,11 @@ export const TooltipPlugin: Plugin = {
     //
   }),
   rewriteProps: {
-    Table: ({ Table }, { store }) => (o) => {
+    Scroll: ({ Scroll }, { store }) => (o) => {
         const [td, setTd] = createSignal<HTMLElement>()
-        const [tip2, setTip2] = createSignal<HTMLElement>()
+        const [tipel, setTipel] = createSignal<HTMLElement>()
 
-        const hover = useHover(() => [td(), tip2()].filter(e => e))
+        const hover = useHover(() => [td(), tipel()].filter(e => e))
 
         // 解析 tooltip 配置，得到最终要显示的文本
         const resolve = () => {
@@ -65,18 +65,29 @@ export const TooltipPlugin: Plugin = {
           return showable() ? resolve() : delay(200).then(() => undefined)
         })
 
-        const tip = () => {
+        const content = () => {
           if (!showTd()) return
           const r = showTd()
           if (!r || r.text == null) return
           return renderComponent(r.text, { x: r.x, y: r.y, data: r.row, col: r.col, value: r.val }, store)
         }
 
+        // 使用 floating-ui 计算位置：以单元格为参考元素，tooltip 为浮层。
+        const floating = createFloating({
+          placement: 'top',
+          strategy: 'fixed',
+          middleware: [offset(0), flip(), shift({ padding: 4 })],
+          elements: {
+            reference: () => td() ?? null,
+            floating: () => tipel() ?? null,
+          },
+          whileElementsMounted: (reference, floatingEl, update) => autoUpdate(reference, floatingEl, update),
+        })
+
         createEffect(() => {
-          if (!tip2() || !showTd()) return
-          const r = showTd()!.el.getBoundingClientRect()
-          tip2()!.style.left = `${r.left + r.width / 2}px`
-          tip2()!.style.top = `${r.top - 0}px`
+          const el = tipel()
+          if (!el) return
+          Object.assign(el.style, floating.floatingStyles())
         })
 
         createEventListener(() => store.table, 'pointerover', (e: PointerEvent) => {
@@ -87,19 +98,19 @@ export const TooltipPlugin: Plugin = {
         })
 
         return (
-          <Table {...o}>
+          <Scroll {...o}>
             {o.children}
-            <Show when={tip()}>
+            <Show when={content()}>
               <div
-                ref={setTip2}
+                ref={setTipel}
                 class='in-tooltip'
-                data-placement='top'
-                style='position:fixed;z-index:9999;transform:translate(-50%,-100%)'
+                data-placement={floating.placement()}
+                style='z-index:9999'
               >
-                {tip()}
+                {content()}
               </div>
             </Show>
-          </Table>
+          </Scroll>
         )
       },
 

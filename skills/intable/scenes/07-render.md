@@ -1,5 +1,29 @@
 # 自定义渲染 / Tooltip / 单元格合并
 
+## 何时使用 render
+
+`render` 只接管单元格的**显示**，拿到的是已解析好的 `value`，不会修改行数据：
+
+- 适合：状态徽标、颜色、图标、按钮/链接、进度条、头像等纯视觉定制。
+- 不适合：需要影响排序、筛选、合计、导出、编辑的值 —— 这些仍基于 `row[col.id]` 原值。
+- 若展示的值本身是算出来的，先用 `valueGetter` 生成派生值（见 [express.md](./express.md)），再在 `render` 里用 `value` 画 UI。
+- `type` / `enum` 是内置的 render 预设，能满足时优先使用，不要手写 `render`。
+
+```tsx
+// valueGetter 算百分比（可排序/筛选/合计），render 只负责画进度条
+{
+  id: 'progress', name: '进度', width: 160,
+  valueGetter: ({ data }) => data.done / data.total * 100,
+  render: ({ value }) => (
+    <div class='h-2 rd-1 bg-gray-200'>
+      <div class='h-full rd-1 bg-blue-500' style={`width:${value}%`} />
+    </div>
+  ),
+}
+```
+
+内置进度条可直接用 `{ id: 'progress', type: 'progress', max: 100 }`，此时 `value` 为 0–100 的原始数值。
+
 ## 自定义单元格渲染（内置）
 
 通过列的 `render` / `type` / `enum` 控制，无需额外配置。
@@ -24,11 +48,11 @@ const columns = [
   { id: 'joined', name: '入职', width: 140, type: 'date' },
 ]
 
-// 枚举列自动渲染为标签，且支持设置颜色
+// 枚举列自动渲染为标签，且支持为每个选项设置颜色 / class
 const DeptEnum = {
   eng: { label: '工程', color: '#1890ff' },
-  design: { label: '设计', color: '#13c2c2' },
-  pm: { label: '产品', color: '#eb2f96' },
+  design: { label: '设计', color: '#13c2c2', class: 'font-medium' },
+  pm: { label: '产品', color: '#eb2f96', class: 'italic' },
 }
 
 <Intable columns={columns} data={data} />

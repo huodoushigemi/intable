@@ -30,14 +30,30 @@ const columns = [
 }
 ```
 
-## 自定义标签和数值格式化
+## 分组行聚合（rowGroup）
+
+同时开启 `rowGroup` 时，每个分组行的 `aggregate` 列会显示**该分组下叶子行**的聚合值（折叠时也显示）：
+
+```tsx
+<Intable
+  columns={[
+    { id: 'name',     name: '名称', width: 120 },
+    { id: 'category', name: '分类', width: 120 },
+    { id: 'value',    name: '金额', width: 100, aggregate: 'sum' },
+    { id: 'orders',   name: '订单数', width: 90, aggregate: 'count' },
+  ]}
+  data={data}
+  rowGroup={{ fields: ['category'] }}
+/>
+```
+
+## 数值格式化
 
 ```tsx
 <Intable
   columns={columns}
   data={data}
   aggregate={{
-    label: '合计',    // 第一用户列显示的标签，默认 'Σ'
     formatter: (value, type, col) => {
       if (col.id === 'sales')  return `¥${Number(value).toLocaleString()}`
       if (col.id === 'score')  return `${value} 分`
@@ -46,3 +62,5 @@ const columns = [
   }}
 />
 ```
+
+非聚合列在合计行中留空，不显示额外标签。

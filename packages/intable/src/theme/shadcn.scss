@@ -43,7 +43,7 @@
   }
 
   // Dark mode variant
-  &.dark, [data-theme="dark"] & {
+  &.dark, .dark &, [data-theme="dark"] & {
     --bg: #09090b;
     --in-c-primary: #fafafa;
 

@@ -50,7 +50,7 @@
   }
 
   // Dark variant (M3 dark)
-  &.dark, [data-theme="dark"] & {
+  &.dark, .dark &, [data-theme="dark"] & {
     --bg: #1c1b1f;
     --in-c-primary: #d0bcff;
 

@@ -32,7 +32,7 @@ export default () => (
     </div>
 
     <Intable
-      class='h-300px'
+      class='h-150px w-550px'
       columns={columns as any}
       data={data}
       rowKey='id'

@@ -38,7 +38,7 @@ export default () => (
     border
     stickyHeader
     size='small'
-    tree={{ children: 'children' }}
+    tree={{ children: 'children', indentLine: true }}
     rowKey='id'
   />
 )

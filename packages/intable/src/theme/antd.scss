@@ -39,4 +39,25 @@
       padding: 8px;
     }
   }
+
+  // Dark variant — 优先使用 Ant Design 的暗色 token，未引入 antd 时回退到内置暗色值
+  &.dark, .dark &, [data-theme="dark"] & {
+    --in-c-primary: var(--ant-color-primary, #1677ff);
+    --in-bg: var(--ant-color-bg-container, #141414);
+    --in-menu-bg: var(--ant-color-bg-elevated, #1f1f1f);
+    --in-li-hover-bg: var(--ant-color-fill-secondary, rgba(255, 255, 255, 0.08));
+
+    --in-table-b-c: var(--ant-table-border-color, #303030);
+    --in-table-c: var(--ant-color-text, rgba(255, 255, 255, 0.85));
+    --in-table-bg: var(--ant-color-bg-container, #141414);
+
+    --in-table-header-c: var(--ant-table-header-color, rgba(255, 255, 255, 0.85));
+    --in-table-header-bg: var(--ant-table-header-bg, #1d1d1d);
+
+    --in-table-row-hover-bg: var(--ant-table-row-hover-bg, #262626);
+
+    --in-select-area-bg: rgba(22, 119, 255, 0.2);
+
+    color-scheme: dark;
+  }
 }

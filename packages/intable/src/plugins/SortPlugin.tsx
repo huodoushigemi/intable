@@ -84,19 +84,19 @@ function applySort(data: any[], sortKeys: SortKey[], colMap: Record<string, any>
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
 const IconUnsorted = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 opacity-50 shrink-0 flex-none ml-1">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5 opacity-50 shrink-0 flex-none">
     <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4M16 15l-4 4-4-4" />
   </svg>
 )
 
 const IconAsc = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--in-c-primary,#6366f1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none" style="color:var(--in-c-primary,#6366f1)">
     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
   </svg>
 )
 
 const IconDesc = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none ml-1" style="color:var(--in-c-primary,#6366f1)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 shrink-0 flex-none" style="color:var(--in-c-primary,#6366f1)">
     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
   </svg>
 )
@@ -166,16 +166,17 @@ export const SortPlugin: Plugin$0 = [{
         sort.onChange([...ret])
       }
 
-      const thProps = combineProps(o, { get class() { return isSortable() ? 'cursor-pointer select-none' : '' }, onClick: handleClick })
 
       return (
-        <Th {...thProps}>
+        <Th {...o}>
           <div class="flex items-center w-full">
             {o.children}
             <Show when={isSortable()}>
-              <Show when={sortKey()} fallback={<IconUnsorted />}>
-                {sk => <>{sk().order == 'asc' ? <IconAsc /> : <IconDesc />}</>}
-              </Show>
+              <button type='button' class='icon-clickable in-sort-btn ml-1' onClick={() => handleClick()} on:pointerdown={e => e.stopPropagation()}>
+                <Show when={sortKey()} fallback={<IconUnsorted />}>
+                  {sk => <>{sk().order == 'asc' ? <IconAsc /> : <IconDesc />}</>}
+                </Show>
+              </button>
             </Show>
           </div>
         </Th>

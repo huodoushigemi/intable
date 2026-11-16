@@ -22,7 +22,7 @@ export const Tags = component(({ value, children, disabled, onChange, onAdd, col
   return (
     <div {...props}>
       <For each={toarr(value)}>{e => (
-        <Tag disabled={disabled} value={e?.text ?? e?.label ?? e?.name ?? e} color={color ?? e?.color} onDel={() => onChange(toarr(value).filter(e2 => e2 != e))}>
+        <Tag disabled={disabled} class={e?.class} value={e?.text ?? e?.label ?? e?.name ?? e} color={color ?? e?.color} onDel={() => onChange(toarr(value).filter(e2 => e2 != e))}>
           {children ? children(e) : (e?.text ?? e?.label ?? e?.name ?? e)}
         </Tag>
       )}</For>

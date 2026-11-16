@@ -83,6 +83,12 @@ export const ClipboardPlugin: Plugin = {
   ],
   commands: store => ({
     copy: () => {
+      // 表格默认 select-none（用于单元格框选），但 tooltip、展开行等区域允许
+      // 原生选择文本。存在这类原生选区时交给浏览器复制，不拦截 Cmd/Ctrl+C。
+      const sel = document.getSelection()
+      if (sel && !sel.isCollapsed && sel.toString() && sel.anchorNode && store.scroll_el?.contains(sel.anchorNode)) {
+        return false
+      }
       const { start, end } = store.selected
       if (!start?.length) return
       const [x1, x2] = [start[0], end[0]].sort((a, b) => a - b)

@@ -3,7 +3,7 @@ import { component } from 'undestructure-macros'
 import dayjs from 'dayjs'
 import { type Plugin, type TDProps } from '../..'
 import { Checkbox, Files, Tags, Rate, Progress } from './components'
-import { getOpt, toArr } from '../../utils'
+import { getOpt, toArr, type Enum } from '../../utils'
 import { renderComponent, solidComponent } from '../../components/utils'
 
 declare module '../../index' {
@@ -13,7 +13,7 @@ declare module '../../index' {
   interface TableColumn {
     type?: string
     render?: string | Render
-    enum?: Record<string, any> | { label?: string; value: any }[]
+    enum?: Enum
     max?: number
   }
   interface TableStore {

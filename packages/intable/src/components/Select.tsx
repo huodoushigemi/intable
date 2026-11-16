@@ -10,6 +10,8 @@ export interface SelectOption {
   label: string
   value: any
   disabled?: boolean
+  /** 应用于下拉选项与已选标签的 class。 */
+  class?: string
 }
 
 export interface SelectProps {
@@ -77,9 +79,14 @@ export const Select = (props: SelectProps) => {
     selector.del(val)
   }
 
+  const getOption = (val: any) => {
+    const k = props.valueKey
+    return allOptions().find(o => k ? o.value?.[k] === val[k] : o.value === val)
+  }
+
   const getLabel = (val: any) => {
     const k = props.valueKey
-    const opt = allOptions().find(o => k ? o.value?.[k] === val[k] : o.value === val)
+    const opt = getOption(val)
     return opt?.label ?? (k ? val?.[k] : val)
   }
 
@@ -126,7 +133,7 @@ export const Select = (props: SelectProps) => {
           <Show when={toarr(selector.value).length > 0} fallback={<span class='text-gray-400'>{props.placeholder || '请选择'}</span>}>
             <For each={toarr(selector.value)}>
               {val => (
-                <Tag value={getLabel(val)} onDel={() => handleRemove(val)} />
+                <Tag class={getOption(val)?.class} value={getLabel(val)} onDel={() => handleRemove(val)} />
               )}
             </For>
           </Show>
@@ -148,7 +155,7 @@ export const Select = (props: SelectProps) => {
           <input
             ref={searchInput}
             type='text'
-            class='w-full px-2 py-1 text-sm border border-gray/20 rd-sm outline-none focus:border-primary'
+            class='w-full px-2 py-1 text-sm border border-gray/20 rd-sm focus:border-primary'
             placeholder='搜索...'
             value={search()}
             onInput={e => setSearch(e.currentTarget.value)}
@@ -161,7 +168,7 @@ export const Select = (props: SelectProps) => {
           <For each={filteredOptions()}>
             {opt => (
               <div
-                class={`in-select-option ${selector.has(opt.value) ? 'in-select-option-active' : ''} ${opt.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                class={`in-select-option ${selector.has(opt.value) ? 'in-select-option-active' : ''} ${opt.disabled ? 'opacity-50 cursor-not-allowed' : ''} ${opt.class || ''}`}
                 onClick={() => handleSelect(opt)}
               >
                 <span class='flex-1 truncate'>{renderComponent(opt.label)}</span>

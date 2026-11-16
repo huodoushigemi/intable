@@ -15,7 +15,23 @@
 />
 ```
 
-分页栏显示效果：`共 100 条  ‹ 1 2 … 10 ›`
+分页栏显示效果：`共 100 条  [20 条/页 ▾]  ‹ 1 2 … 10 ›`
+
+每页条数下拉框默认显示，选项可配置：
+
+```tsx
+<Intable
+  columns={columns}
+  data={data}
+  pagination={{
+    enable: true,
+    pageSize: 20,
+    pageSizeOptions: [10, 20, 50, 100],
+    showPageSize: true, // 设为 false 可隐藏下拉框
+    onPageSizeChange: (size) => console.log('每页条数:', size),
+  }}
+/>
+```
 
 ---
 
@@ -48,6 +64,9 @@
 | -------------- | ------------------------------------------------------ | ------- | --------------------------------------- |
 | `enable`       | `boolean`                                              | `false` | 启用分页                                |
 | `pageSize`     | `number`                                               | `20`    | 每页条数                                |
+| `pageSizeOptions` | `number[]`                                          | `[10, 20, 50, 100]` | 每页条数下拉选项             |
+| `showPageSize` | `boolean`                                              | `true`  | 是否显示每页条数下拉框                  |
 | `defaultValue` | `number`                                               | `1`     | 默认页码                                |
 | `value`        | `number`                                               | —       | 受控模式：当前页码                      |
 | `onChange`     | `(page: number) => void`                               | —       | 页码变化回调                            |
+| `onPageSizeChange` | `(pageSize: number) => void`                       | —       | 每页条数变化回调                        |

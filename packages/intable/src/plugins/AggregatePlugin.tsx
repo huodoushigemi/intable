@@ -1,6 +1,8 @@
 import { createMemo, For, Show } from 'solid-js'
 import { type Plugin, type TableColumn } from '..'
 import { renderComponent } from '../components/utils'
+import { unFn } from '../utils'
+import { rowGroupLeafRows } from './RowGroupPlugin'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -17,11 +19,6 @@ export type AggregateType =
 declare module '../index' {
   interface TableProps {
     aggregate?: {
-      /**
-       * Label shown in the first user column when that column itself
-       * has no `aggregate` setting.  Defaults to `'Σ'`.
-       */
-      label?: string
       /**
        * Format a computed aggregate value before display.
        * Return a string/number or a JSX element.
@@ -42,7 +39,7 @@ declare module '../index' {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function computeAgg(col: TableColumn, data: any[]): any {
+export function computeAgg(col: TableColumn, data: any[]): any {
   const { aggregate: agg } = col
   if (!agg) return undefined
   const vals = data.map(r => r[col.id]).filter(v => v != null && v !== '')
@@ -64,8 +61,6 @@ export const AggregatePlugin: Plugin = {
     Tbody: ({ Tbody }, { store }) => (o) => {
       const cols = () => store.props.columns ?? []
       const hasAgg = createMemo(() => cols().some(c => !!c.aggregate))
-      const firstUserIdx = createMemo(() => cols().findIndex(c => !c[store.internal]))
-      const label = () => store.props.aggregate?.label ?? 'Σ'
       const fmt = () => store.props.aggregate?.formatter
 
       return (
@@ -75,21 +70,18 @@ export const AggregatePlugin: Plugin = {
             <tfoot class='sticky bottom-0 z-2'>
               <tr style='font-weight:600'>
                 <For each={cols()}>
-                  {(col, i) => {
+                  {col => {
                     const val = createMemo(() => {
-                      const raw = computeAgg(col, store.props.data)
+                      // 分组时取全量叶子行（折叠不影响合计），并排除合成行
+                      const raw = computeAgg(col, rowGroupLeafRows(store.props.data).filter(r => !r?.[store.internal]))
                       return raw != null && fmt() ? fmt()!(raw, col.aggregate!, col) : raw
                     })
                     return (
                       <td
                         style={`${col.width ? `width:${col.width}px;` : ''};border-top:1px solid var(--in-table-b-c)`}
-                        class={col.class as string | undefined}
+                        class={[col.class, unFn(col.cellClass)].filter(Boolean).join(' ') || undefined}
                       >
-                        <Show when={col.aggregate} fallback={
-                          <Show when={i() === firstUserIdx()}>
-                            <span class='text-xs font-semibold tracking-wide select-none'>{renderComponent(label(), undefined, store)}</span>
-                          </Show>
-                        }>
+                        <Show when={col.aggregate}>
                           <span class='font-mono text-sm tabular-nums c-[--in-c-primary]'>{renderComponent(val(), undefined, store)}</span>
                         </Show>
                       </td>

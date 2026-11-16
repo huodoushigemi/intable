@@ -36,4 +36,26 @@
       padding: 4px 8px;
     }
   }
+
+  // Dark variant — 优先使用 Element Plus 的暗色变量，未引入时回退到内置暗色值
+  &.dark, .dark &, [data-theme="dark"] & {
+    --bg: var(--el-bg-color, #141414);
+
+    --in-c-primary: var(--el-color-primary, #409eff);
+    --in-menu-bg: var(--el-bg-color-overlay, #1d1e1f);
+    --in-li-hover-bg: var(--el-fill-color-light, #262727);
+
+    --in-table-b-c: var(--el-table-border-color, #363637);
+    --in-table-c: var(--el-table-text-color, #e5eaf3);
+    --in-table-bg: var(--el-table-tr-bg-color, #141414);
+
+    --in-table-header-c: var(--el-table-header-text-color, #a3a6ad);
+    --in-table-header-bg: var(--in-table-bg);
+
+    --in-table-row-hover-bg: var(--el-table-row-hover-bg-color, #262727);
+
+    --in-select-area-bg: rgba(64, 158, 255, 0.18);
+
+    color-scheme: dark;
+  }
 }

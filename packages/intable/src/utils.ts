@@ -101,13 +101,15 @@ export async function findAsync<T>(arr: T[], cb: (e: T, i: number) => Promise<bo
 
 type Fnable<T> = T | (() => T)
 type Awatable<T> = T | Promise<T>
-type BaseType = string | number | boolean | null
+
+export type Enum = Record<string, any> | EnumOption[]
+export type EnumOption = { label?: any; value: any; class?: string; color?: string; }
 
 const cache = new WeakMap
 const cache2 = new WeakMap
 
-export function resolveOptions(opts: Fnable<Awatable<Record<string, any> | ({ label: any; value: any } | BaseType)[]>>): { label: any; value: any }[] {
-  let ret = opts
+export function resolveOptions(opts: Fnable<Awatable<Enum>>): { label: any; value: any; [key: string]: any }[] {
+  let ret: any = opts
   if (isFunction(ret)) ret = ret()
   if (isPromise(ret)) {
     if (cache.has(opts)) return cache.get(opts)()
@@ -129,7 +131,7 @@ export const getOpt = (() => {
   }
 })()
 
-function resolveOpt(opt) {
+export function resolveOpt(opt) {
   return (
     isPlainObject(opt) ? opt :
     Array.isArray(opt) ? { label: opt[0], value: opt[1] } :

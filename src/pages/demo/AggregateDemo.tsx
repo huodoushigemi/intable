@@ -40,13 +40,10 @@ export default () => (
       border
       stickyHeader
       aggregate={{
-        label: 'Σ',
         formatter: (val, type) =>
-          type === 'sum'
-            ? `$${Number(val).toLocaleString()}`
-            : type === 'avg'
-              ? Number(val).toFixed(1)
-              : val,
+          type === 'sum' ? `$${Number(val).toLocaleString()}` :
+          type === 'avg' ? Number(val).toFixed(1) :
+          val,
       }}
     />
   </div>
