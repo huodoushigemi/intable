@@ -78,7 +78,7 @@ export const TooltipPlugin: Plugin = {
           strategy: 'fixed',
           middleware: [offset(0), flip(), shift({ padding: 4 })],
           elements: {
-            reference: () => td() ?? null,
+            reference: () => showTd()?.el ?? null,
             floating: () => tipel() ?? null,
           },
           whileElementsMounted: (reference, floatingEl, update) => autoUpdate(reference, floatingEl, update),

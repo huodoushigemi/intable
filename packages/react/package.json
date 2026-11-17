@@ -1,6 +1,6 @@
 {
   "name": "@intable/react",
-  "version": "0.0.84",
+  "version": "0.0.86",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
