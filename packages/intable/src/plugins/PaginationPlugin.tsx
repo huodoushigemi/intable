@@ -62,7 +62,8 @@ export const PaginationPlugin: Plugin = {
         },
       })
     },
-    EachRows: ({ EachRows }, { store }) => !store.props.pagination?.enable ? EachRows : (o) => {
+    // todo createMemo()()
+    EachRows: ({ EachRows }, { store }) => createMemo(() => !store.props.pagination?.enable)() ? EachRows : (o) => {
       const p = mergeProps(() => store.props.pagination!)
       // Server-side request mode: parent already sliced data
       if (store.props.request) return <EachRows {...o} />

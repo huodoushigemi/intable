@@ -78,4 +78,7 @@ export default defineConfig({
 
     (await import('rollup-plugin-visualizer')).visualizer()
   ],
+  server: {
+    port: 3000,
+  }
 })

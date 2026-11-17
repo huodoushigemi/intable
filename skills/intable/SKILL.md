@@ -79,7 +79,7 @@ description: "Building web tables with SolidJS/React/Vue 3, implementing CRUD (c
 | 派生列还要可编辑并写回其他字段 | `valueGetter` + `valueSetter` |
 | 既要派生值又要自定义外观 | `valueGetter` 算值 + `render` 画 UI |
 
-`render` 只影响显示，不改变底层值；`valueGetter` 会把结果挂到 `row[col.id]`，因此排序/筛选/合计/导出/编辑都基于派生值。
+`render` 只影响显示，不改变底层值；`valueGetter` 会把结果挂到 `row[col.id]`，因此排序/筛选/合计/导出/编辑都基于派生值。派生列 `id` 建议用 `_` 前缀（如 `_total`），避免覆盖原始字段。
 
 ---
 

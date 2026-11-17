@@ -12,7 +12,7 @@
 ```tsx
 // valueGetter 算百分比（可排序/筛选/合计），render 只负责画进度条
 {
-  id: 'progress', name: '进度', width: 160,
+  id: '_progress', name: '进度', width: 160,
   valueGetter: ({ data }) => data.done / data.total * 100,
   render: ({ value }) => (
     <div class='h-2 rd-1 bg-gray-200'>

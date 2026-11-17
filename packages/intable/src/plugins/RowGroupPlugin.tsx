@@ -5,17 +5,22 @@ import { batch, createMemo, useContext } from 'solid-js'
 import type { TableStore } from '..'
 import { computeAgg } from './AggregatePlugin'
 import { renderComponent } from '../components/utils'
+import { noproxy } from '../hooks'
+import { log } from '../utils'
 
 /** Symbol marking a generated row-group header row. */
 export const GROUP = Symbol('row-group')
 
 /** 递归收集分组下所有叶子数据行（跳过嵌套分组头）。 */
-export const groupLeaves = (rows: any[] = [], ret: any[] = []): any[] => {
-  for (const row of rows) {
-    if (row?.[GROUP]) groupLeaves(row[GROUP].children, ret)
-    else ret.push(row)
+export const groupLeaves = (rows: any[] = []): any[] => {
+  const groupLeaves2 = (rows: any[], ret: any[] = []) => {
+    for (const row of rows) {
+      if (row?.[GROUP]) groupLeaves2(row[GROUP].children, ret)
+      else ret.push(row)
+    }
+    return ret
   }
-  return ret
+  return [...new Set(groupLeaves2(rows))]
 }
 
 /**
@@ -24,8 +29,7 @@ export const groupLeaves = (rows: any[] = [], ret: any[] = []): any[] => {
  * 因此无论折叠与否都能拿到全量数据，用于合计行等场景。
  */
 export const rowGroupLeafRows = (data: any[] = []): any[] => {
-  const tops = data.filter(r => r?.[GROUP]?.path?.length === 1)
-  return tops.length ? tops.flatMap(r => groupLeaves(r[GROUP].children)) : data
+  return data[0]?.[GROUP] ? groupLeaves(data) : data
 }
 
 declare module '../index' {
@@ -46,7 +50,7 @@ declare module '../index' {
 }
 
 /** Serialize a group path to a plain string key for O(1) Set-style lookup */
-const pathKey = (path: any[]): string => path.join('\0')
+const pathKey = (data): string => (Array.isArray(data) ? data : data[GROUP].path).join('\0')
 
 export const RowGroupPlugin: Plugin = {
   name: 'row-group',
@@ -56,14 +60,14 @@ export const RowGroupPlugin: Plugin = {
       // Plain object acts as a reactive Map<string, true> inside createMutable.
       // Property reads are tracked by SolidJS; O(1) vs previous O(n) isEqual scan.
       expandKeys: {} as Record<string, true | undefined>,
-      isExpand: data => !!store.rowGroup.expandKeys[pathKey(data[GROUP].path)],
+      isExpand: data => !!store.rowGroup.expandKeys[pathKey(data)],
       expand: (data, r) => batch(() =>
         r
-          ? data[GROUP].path2.forEach(e => { store.rowGroup.expandKeys[pathKey(e[GROUP].path)] = true })
-          : (store.rowGroup.expandKeys[pathKey(data[GROUP].path)] = true)
+          ? data[GROUP].path2.forEach(e => { store.rowGroup.expandKeys[pathKey(e)] = true })
+          : (store.rowGroup.expandKeys[pathKey(data)] = true)
       ),
       toggleExpand: data => {
-        const k = pathKey(data[GROUP].path)
+        const k = pathKey(data)
         store.rowGroup.expandKeys[k] ? delete store.rowGroup.expandKeys[k] : (store.rowGroup.expandKeys[k] = true)
       }
     }
@@ -91,7 +95,7 @@ export const RowGroupPlugin: Plugin = {
   rewriteProps: {
     data: ({ data }, { store }) => (
       store.props?.rowGroup?.fields?.length
-        ? expandData(data, store)
+        ? log(expandData(data, store))
         : data
     ),
     newRow: ({ newRow }, { store }) => function (i) {
@@ -108,7 +112,7 @@ export const RowGroupPlugin: Plugin = {
       return row
     },
     Td: ({ Td }, { store }) => store.props?.rowGroup?.fields ? o => {
-      // todo
+      // todo bug
       if (!o.data?.[GROUP]) return Td(o)
 
       const { props } = store
@@ -118,7 +122,7 @@ export const RowGroupPlugin: Plugin = {
       // 分组行：除分组列外，带 aggregate 的列显示该组的聚合值
       const agg = createMemo(() => {
         if (isFirst() || !o.col.aggregate) return undefined
-        const raw = computeAgg(o.col, groupLeaves(o.data[GROUP].children))
+        const raw = computeAgg(o.col, groupLeaves([o.data]))
         const fmt = props.aggregate?.formatter
         return raw != null && fmt ? fmt(raw, o.col.aggregate, o.col) : raw
       })
@@ -127,7 +131,7 @@ export const RowGroupPlugin: Plugin = {
         <Td {...o}>
           {isFirst() ? (
             <div class='flex items-center' style={`padding-left: ${(o.data[GROUP].path.length - 1) * 16}px`} onDblClick={() => store.rowGroup.toggleExpand(o.data)}>
-              <ILucideChevronRight class='icon-clickable mr-2' style={`transform: rotate(${show() ? 90 : 0}deg); opacity: .6`} onClick={() => store.rowGroup.toggleExpand(o.data)} />
+              <ILucideChevronRight class='icon-clickable mr-2 flex-shrink-0' style={`transform: rotate(${show() ? 90 : 0}deg); opacity: .6`} onClick={() => store.rowGroup.toggleExpand(o.data)} />
               {o.data[GROUP].value}
             </div>
           ) : o.col.aggregate ? (
@@ -144,12 +148,12 @@ const expandData = (data, store: TableStore, path2 = [] as any[]) => {
   const col = store.props!.columns.find(e => !e[store.internal])
   if (!col) return data
   if (fields.length == path2.length) return data
-  const path = path2[path2.length - 1]?.[GROUP].path || []
-  const obj = groupBy(data, e => e[fields[path.length]])
+  const obj = groupBy(data, e => e[fields[path2.length]])
   return Object.keys(obj).flatMap(k => {
-    const group = { [col.id]: k, [store.internal]: 1 } as any
+    const  path = [...path2.map(e => e[GROUP].value), k]
+    const group = (store.__rowgroup_map ??= noproxy({}))[pathKey(path)] ??= { [col.id]: k, [store.internal]: 1 } as any
     const ps = [...path2, group]
-    group[GROUP] = { path: [...path, k], value: k, path2: ps }
+    group[GROUP] = { path, value: k, path2: ps }
     group[GROUP].children = expandData(obj[k], store, ps)
     const arr = store.rowGroup.isExpand(group) ? group[GROUP].children : []
     return [group, ...arr]

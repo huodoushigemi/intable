@@ -18,6 +18,8 @@
 
 判断口诀：**值变了用 `valueGetter`，只是长得不一样用 `render`。**
 
+> **派生列的 `id` 建议加 `_` 前缀**（如 `_fullName`、`_total`）：`valueGetter` 会在每一行上以 `col.id` 定义 getter，若与原始字段同名会覆盖原值；加前缀还能让派生字段在遍历/序列化行数据时一眼可辨。
+>
 > 可编辑的派生列必须提供 `valueSetter`，否则编辑结果无处写入。
 
 ---
@@ -31,7 +33,7 @@ const columns = [
   { id: 'firstName', name: '姓', width: 100 },
   { id: 'lastName', name: '名', width: 100 },
   {
-    id: 'fullName',
+    id: '_fullName',
     name: '全名',
     width: 150,
     valueGetter: ({ data }) => `${data.firstName} ${data.lastName}`,
@@ -40,6 +42,8 @@ const columns = [
 
 <Intable columns={columns} data={data} rowKey='id' />
 ```
+
+> 注意 `id` 是 `_fullName` 而不是 `fullName`：派生 getter 挂在 `row[col.id]` 上，加 `_` 前缀可避免和原始字段冲突。
 
 ### valueGetter 参数
 
@@ -58,7 +62,7 @@ const columns = [
 const columns = [
   { id: 'userId', name: '用户ID', width: 100 },
   {
-    id: 'userName',
+    id: '_userName',
     name: '用户名',
     width: 150,
     valueGetter: async ({ data }) => {
@@ -81,7 +85,7 @@ const columns = [
   { id: 'firstName', name: '姓', width: 100, editable: true },
   { id: 'lastName', name: '名', width: 100, editable: true },
   {
-    id: 'fullName',
+    id: '_fullName',
     name: '全名',
     width: 150,
     editable: true,
@@ -114,7 +118,7 @@ const columns = [
   { id: 'price', name: '单价', width: 100, editable: true, type: 'number' },
   { id: 'quantity', name: '数量', width: 100, editable: true, type: 'number' },
   {
-    id: 'total',
+    id: '_total',
     name: '小计',
     width: 120,
     valueGetter: ({ data }) => (data.price || 0) * (data.quantity || 0),
